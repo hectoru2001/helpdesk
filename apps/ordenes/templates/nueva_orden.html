@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% load static %}
-{% block content %}
+
+{% block content %} 
+
 <div class="my-4">
     <div class="row justify-content-center">
         <div class="col-lg-10">
@@ -29,12 +31,12 @@
                         <div class="row g-3">
                             {# Oficio #}
                             <div class="col-md-3">
-                                <label for="oficio" class="form-label fw-semibold">Oficio</label>
-                                <input type="text" class="form-control" id="oficio" name="oficio" 
-                                       value="{{ form.oficio.value|default:'S/N' }}" 
-                                       placeholder="Ej: OF-2024-001" required>
-                                <div class="invalid-feedback">Ingrese el número de oficio.</div>
+                                <label for="oficio" class="form-label fw-semibold">Oficio (opcional)</label>
+                                <input type="text" class="form-control" id="oficio" name="oficio"
+                                    value="{{ form.oficio.value|default:'S/N' }}"
+                                    placeholder="Ej: OF-2024-001">
                             </div>
+
 
                             {# Prioridad #}
                             <div class="col-md-3">
@@ -136,27 +138,99 @@
                                 <p>Responsables</p>
                             </div>
 
-                            {# Asignar usuario - Solución simple #}
-                            <div class="col-md-6">
-                                <label for="{{ form.usuarios_asignados.id_for_label }}" class="form-label">
-                                    {{ form.usuarios_asignados.label }}
-                                </label>
-                                {{ form.usuarios_asignados }}
-                                <div class="form-text text-muted">
-                                    Mantén presionada la tecla <kbd>Ctrl</kbd> (Windows) o <kbd>Cmd</kbd> (Mac) para seleccionar varios usuarios.
+                            {# Asignar usuario - Solución final #}
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="{{ form.usuarios_asignados.id_for_label }}" class="form-label">
+                                        {{ form.usuarios_asignados.label }}
+                                    </label>
+                                    {{ form.usuarios_asignados }}
+                                    <div class="form-text text-muted">
+                                        Mantén presionada la tecla <kbd>Ctrl</kbd> (Windows) o <kbd>Cmd</kbd> (Mac) para seleccionar varios usuarios.
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Usuarios seleccionados</label>
+                                    <table class="table table-bordered table-sm" id="tablaUsuariosSeleccionados">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Nombre de usuario</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="2" class="text-center text-muted">Sin usuarios seleccionados</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
 
-
-
-                            {# Equipo #}
-                            <div class="col-md-6">
-                                <label for="equipo" class="form-label">Equipo</label>
-                                <input type="text" class="form-control" id="equipo" name="equipo" 
-                                       value="{{ form.equipo.value|default:'' }}"
-                                       placeholder="Ej: Laptop Dell Latitude" required>
-                                <div class="invalid-feedback">Ingrese el equipo.</div>
+                            <div class="row g-3">
+                                <!-- Select para decidir si se agregará equipo -->
+                                <div class="col-md-6">
+                                    <label for="tiene_equipo" class="form-label">¿Agregar equipo a la orden?</label>
+                                    <select id="tiene_equipo" name="tiene_equipo" class="form-select">
+                                        <option value="">Seleccione una opción</option>
+                                        <option value="si">Sí</option>
+                                        <option value="no">No</option>
+                                    </select>
+                                </div>
                             </div>
+
+                            <!-- Formulario de equipo (oculto inicialmente) -->
+                            <div id="formularioEquipo" style="display:none; margin-top: 1rem;">
+                                <h5>Datos del equipo</h5>
+                                <div class="row g-3">
+                                    
+
+                                    <div class="col-md-2">
+                                        <label for="{{ form_equipo.entregado_foraneo.id_for_label }}" class="form-label">Entregado foráneo</label>
+                                        {{ form_equipo.entregado_foraneo }}
+                                    </div>
+
+                                    <div class="col-md-5">
+                                        <label for="patrimonio" class="form-label"># Patrimonio</label>
+                                        <input type="text" class="form-control" id="patrimonio" name="patrimonio"
+                                            disabled>
+                                    </div>
+
+                                    <div class="col-md-5">
+                                        <label for="serie" class="form-label"># Serie</label>
+                                        <input type="text" class="form-control" id="serie" name="serie"
+                                             disabled>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="equipo" class="form-label">Equipo</label>
+                                        <input type="text" class="form-control" id="equipo" name="equipo"
+                                             disabled>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <label for="marca" class="form-label">Marca</label>
+                                        <select class="form-select" id="marca" name="marca" disabled>
+                                            <option value="">Seleccione una marca</option>
+                                            {% for marca in marcas %}
+                                                <option value="{{ marca.id }}">{{ marca.nombre }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="color" class="form-label">Color</label>
+                                        <select class="form-select" id="color" name="color" disabled>
+                                            <option value="">Seleccione un color</option>
+                                            {% for color in colores %}
+                                                <option value="{{ color.id }}">{{ color.nombre }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
 
                 
 
@@ -173,20 +247,8 @@
     </div>
 </div>
 
-{# Validación con Bootstrap 5 #}
-<script>
-    (function () {
-        'use strict'
-        var forms = document.querySelectorAll('.needs-validation')
-        Array.prototype.slice.call(forms).forEach(function (form) {
-            form.addEventListener('submit', function (event) {
-                if (!form.checkValidity()) {
-                    event.preventDefault()
-                    event.stopPropagation()
-                }
-                form.classList.add('was-validated')
-            }, false)
-        })
-    })()
-</script>
+{% block extra_js %}
+
+<script defer src="{% static 'js/nueva_orden.js' %}"></script>
+{% endblock %}
 {% endblock %}

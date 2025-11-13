@@ -48,3 +48,9 @@ class OrdenForm(BootstrapMixin, forms.ModelForm):
         self.fields['aplicacion'].queryset = Aplicaciones.objects.order_by('descripcion')
         self.fields['problema'].queryset = Problemas.objects.order_by('descripcion')
         self.fields['clasificacion'].queryset = Clasificaciones.objects.order_by('descripcion')
+
+class EquipoXOrdenForm(BootstrapMixin, forms.ModelForm):
+    class Meta:
+        model = EquipoXOrden
+        exclude = ['orden'] 
+        fields = '__all__'
