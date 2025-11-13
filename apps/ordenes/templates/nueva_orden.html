@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="my-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            {# Mensajes de Django #}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post" action="" enctype="multipart/form-data" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                {# Errores del formulario #}
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            {# Oficio #}
+                            <div class="col-md-3">
+                                <label for="oficio" class="form-label fw-semibold">Oficio</label>
+                                <input type="text" class="form-control" id="oficio" name="oficio" 
+                                       value="{{ form.oficio.value|default:'S/N' }}" 
+                                       placeholder="Ej: OF-2024-001" required>
+                                <div class="invalid-feedback">Ingrese el número de oficio.</div>
+                            </div>
+
+                            {# Prioridad #}
+                            <div class="col-md-3">
+                                <label for="prioridad" class="form-label fw-semibold">Prioridad</label>
+                                <select class="form-select" id="prioridad" name="prioridad" required>
+                                    <option value="">-- Seleccione --</option>
+                                    <option value="minima">Mínima</option>
+                                    <option value="normal">Normal</option>
+                                    <option value="programada">Programada</option>
+                                    <option value="urgente">Urgente</option>
+                                    <option value="inmediata">Inmediata</option>
+                                </select>
+                                <div class="invalid-feedback">Seleccione la prioridad.</div>
+                            </div>
+
+                            <div class="col-md-6"></div>
+
+                            {# Usuarios (normalmente serían selects con datos de la BD) #}
+                            <div class="col-md-3">
+                                <label for="usuario_solicita" class="form-label fw-semibold">
+                                    <i class="fas fa-user"></i> Usuario que solicita
+                                </label>
+                                <select class="form-select" id="usuario_solicita" name="usuario_solicita" required onchange="actualizarNombreUsuario()">
+                                    <option value="">-- Seleccione --</option>
+                                    {% for usuario in usuarios %}
+                                        <option value="{{ usuario.id }}" data-nombre="{{ usuario.nombre }}"
+                                            {% if form.usuario_solicita.value == usuario.id %}selected{% endif %}>
+                                            {{ usuario.nombre }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="col-md-9">
+                                <label for="usuario_solicita_text" class="form-label fw-semibold">Nombre del usuario</label>
+                                <input type="text" class="form-control" id="usuario_solicita_text"
+                                    name="usuario_solicita_text"
+                                    value="{{ form.usuario_solicita_text.value|default:'' }}"
+                                    placeholder="Nombre del usuario" readonly>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label for="usuario_asigna" class="form-label">Usuario que asigna</label>
+                                <select class="form-select" id="usuario_asigna" name="usuario_asigna" required>
+                                    <option value="">-- Seleccione --</option>
+                                    {% for usuario in usuarios %}
+                                        <option value="{{ usuario.id }}" {% if form.usuario_asigna.value == usuario.id %}selected{% endif %}>
+                                            {{ usuario.nombre }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">Seleccione el usuario que asigna.</div>
+                            </div>
+
+                            <div class="col-md-9">
+                                <label for="usuario_solicita_text" class="form-label fw-semibold">Nombre del usuario</label>
+                                <input type="text" class="form-control" id="usuario_solicita_text"
+                                    name="usuario_solicita_text"
+                                    value="{{ form.usuario_solicita_text.value|default:'' }}"
+                                    placeholder="Nombre del usuario" readonly>
+                            </div>
+
+                            <!-- Linea separadora -->
+                            <div class="col-12">
+                                <hr>
+                                <p class="">Detalles de la orden:</p>
+                            </div>
+
+                            {# Aplicación #}
+                            <div class="col-md-4">
+                                <label for="{{ form.aplicacion.id_for_label }}" class="form-label">Aplicación</label>
+                                {{ form.aplicacion }}
+                                <div class="invalid-feedback">Seleccione una aplicación.</div>
+                            </div>
+
+                            {# Clasificación #}
+                            <div class="col-md-4">
+                                <label for="{{ form.clasificacion.id_for_label }}" class="form-label"> Clasificación </label>
+                                {{ form.clasificacion }}
+                                <div class="invalid-feedback">Seleccione una clasificación.</div>
+                            </div>
+
+                            {# Problema #}
+                            <div class="col-md-4">
+                                <label for="{{ form.problema.id_for_label }}" class="form-label"> Problema </label>
+                                {{ form.problema }}
+                                <div class="invalid-feedback">Seleccione un problema.</div>
+                            </div>
+
+                            {# Descripción detallada #}
+                            <div class="col-12">
+                                <label for="{{ form.descripcion.id_for_label }}" class="form-label">Descripción / Problema / Petición</label>
+                                {{ form.descripcion }}
+                                <div class="invalid-feedback">La descripción detallada es obligatoria.</div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <hr>
+                                <p>Responsables</p>
+                            </div>
+
+                            {# Asignar usuario - Solución simple #}
+                            <div class="col-md-6">
+                                <label for="{{ form.usuarios_asignados.id_for_label }}" class="form-label">
+                                    {{ form.usuarios_asignados.label }}
+                                </label>
+                                {{ form.usuarios_asignados }}
+                                <div class="form-text text-muted">
+                                    Mantén presionada la tecla <kbd>Ctrl</kbd> (Windows) o <kbd>Cmd</kbd> (Mac) para seleccionar varios usuarios.
+                                </div>
+                            </div>
+
+
+
+                            {# Equipo #}
+                            <div class="col-md-6">
+                                <label for="equipo" class="form-label">Equipo</label>
+                                <input type="text" class="form-control" id="equipo" name="equipo" 
+                                       value="{{ form.equipo.value|default:'' }}"
+                                       placeholder="Ej: Laptop Dell Latitude" required>
+                                <div class="invalid-feedback">Ingrese el equipo.</div>
+                            </div>
+
+                
+
+                        </div>
+                    </div>
+
+                    <div class="card-footer text-end">
+                        <a href="" class="btn btn-secondary me-2">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Guardar orden</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{# Validación con Bootstrap 5 #}
+<script>
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms).forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })()
+</script>
+{% endblock %}

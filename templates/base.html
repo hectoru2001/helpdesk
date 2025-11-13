@@ -1,0 +1,179 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HelpDesk</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Plantilla CSS -->
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <style>
+
+    </style>
+</head>
+<body>
+    <button class="mobile-toggle d-md-none">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <div class="sidebar" id="sidebar">
+        <div class="toggle-btn" id="sidebarToggle">
+            <i class="bi bi-chevron-left"></i>
+        </div>
+        
+        <div class="sidebar-header">
+            <div class="logo-container">
+                <img src="" alt="Logo" class="logo">
+                <span class="brand-text">HelpDesk</span>
+            </div>
+        </div>
+        
+        <hr class="my-2 mx-3" style="border-color: rgba(255,255,255,0.1);">
+        
+        <div class="sidebar-nav">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-house-fill nav-icon"></i>
+                        <span class="nav-text">Inicio</span>
+                    </a>
+                    <div class="submenu show">
+                        <a href="#" class="submenu-link">Panel Principal</a>
+                        <a href="#" class="submenu-link">Estadísticas</a>
+                    </div>
+                </li>
+
+                <li class="nav-item">
+                    <a href="#ordenesSubmenu" class="nav-link" data-bs-toggle="collapse" aria-expanded="false">
+                        <i class="bi bi-file-earmark-text-fill nav-icon"></i>
+                        <span class="nav-text">Órdenes</span>
+                        <i class="bi bi-chevron-right nav-chevron ms-1"></i>
+                    </a>
+                    <div class="submenu collapse" id="ordenesSubmenu">
+                        <a href="{% url 'crear_orden' %}" class="submenu-link">Nueva</a>
+                        <a href="#" class="submenu-link">Gestionar</a>
+                    </div>
+                </li>
+
+                <li class="nav-item">
+                    <a href="#usuariosSubmenu" class="nav-link" data-bs-toggle="collapse" aria-expanded="false">
+                        <i class="bi bi-people-fill nav-icon"></i>
+                        <span class="nav-text">Usuarios</span>
+                        <i class="bi bi-chevron-right nav-chevron ms-1"></i>
+                    </a>
+                    <div class="submenu collapse" id="usuariosSubmenu">
+                        <a href="#" class="submenu-link">Todos los usuarios</a>
+                        <a href="#" class="submenu-link">Roles</a>
+                        <a href="#" class="submenu-link">Permisos</a>
+                    </div>
+                </li>
+
+                <li class="nav-item">
+                    <a href="#calificacionesSubmenu" class="nav-link" data-bs-toggle="collapse" aria-expanded="false">
+                        <i class="bi bi-star-fill nav-icon"></i>
+                        <span class="nav-text">Calificaciones</span>
+                        <i class="bi bi-chevron-right nav-chevron ms-1"></i>
+                    </a>
+                    <div class="submenu collapse" id="calificacionesSubmenu">
+                        <a href="#" class="submenu-link">Ver Calificaciones</a>
+                        <a href="#" class="submenu-link">Reportes de Estrellas</a>
+                    </div>
+                </li>
+
+                <li class="nav-item">
+                    <a href="#reportesSubmenu" class="nav-link" data-bs-toggle="collapse" aria-expanded="false">
+                        <i class="bi bi-file-earmark-bar-graph-fill nav-icon"></i>
+                        <span class="nav-text">Reportes</span>
+                        <i class="bi bi-chevron-right nav-chevron ms-1"></i>
+                    </a>
+                    <div class="submenu collapse" id="reportesSubmenu">
+                        <a href="#" class="submenu-link">Reportes de Ventas</a>
+                        <a href="#" class="submenu-link">Reportes de Usuarios</a>
+                        <a href="#" class="submenu-link">Reportes Generales</a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="content-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="h3 mb-0">Panel Principal</h1>
+        <p class="mb-0 text-muted">Bienvenido al sistema de HelpDesk municipal</p>
+    </div>
+
+    <div class="d-flex align-items-center gap-3">
+        <div class="dropdown">
+            <button class="btn btn-light position-relative shadow-sm rounded-circle" id="notifDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-bell text-primary"></i>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    {{ notificaciones|length|default:"0" }}
+                </span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-lg" aria-labelledby="notifDropdown" style="width: 300px;">
+                {% if notificaciones %}
+                    {% for n in notificaciones %}
+                        <li class="dropdown-item small">
+                            <i class="bi bi-info-circle text-primary me-2"></i> {{ n.mensaje }}
+                            <small class="d-block text-muted">{{ n.fecha|date:"d/m/Y H:i" }}</small>
+                        </li>
+                    {% endfor %}
+                {% else %}
+                    <li class="dropdown-item text-center text-muted small">No hay notificaciones</li>
+                {% endif %}
+            </ul>
+        </div>
+
+        <div class="dropdown">
+            <a class="d-flex align-items-center text-decoration-none dropdown-toggle" href="#" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-user-circle text-primary fs-5 me-2"></i>
+                <span class="fw-semibold text-dark">{{ request.user.get_full_name|default:request.user.username }}</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end shadow-lg" aria-labelledby="userDropdown">
+                <li><a class="dropdown-item" href=""><i class="fas fa-id-badge me-2 text-primary"></i> Perfil</a></li>
+                <li><a class="dropdown-item" href=""><i class="fas fa-cog me-2 text-secondary"></i> Configuración</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Cerrar sesión</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+
+        
+        <main>
+            {% block content %}
+            
+            {% endblock %}
+        </main>
+
+        <footer class="app-footer">
+            <div class="footer-container">
+                <div class="footer-content">
+                    <div class="footer-brand">
+                        <img src="https://via.placeholder.com/150x40/8B1A3B/FFFFFF?text=Municipio" alt="Logo Dependencia" class="footer-logo">
+                    </div>
+                    <div class="footer-extra-image">
+                        <img src="https://via.placeholder.com/150x40/8B1A3B/FFFFFF?text=Juarez+Conectado" alt="Juárez Conectado" class="extra-footer-logo">
+                    </div>
+                    <div class="developer-info">
+                        <span class="developed-by">Desarrollado Por:</span>
+                        <img src="https://via.placeholder.com/150x40/8B1A3B/FFFFFF?text=DGIC" alt="Dirección General de Innovación y Calidad"
+                            class="developer-logo">
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="{% static 'js/base.js' %}"></script>
+</body>
+</html>
