@@ -56,7 +56,7 @@
                     </a>
                     <div class="submenu collapse" id="ordenesSubmenu">
                         <a href="{% url 'crear_orden' %}" class="submenu-link">Nueva</a>
-                        <a href="#" class="submenu-link">Gestionar</a>
+                        <a href="{% url 'lista_ordenes' %}" class="submenu-link">Gestionar</a>
                     </div>
                 </li>
 
@@ -67,7 +67,7 @@
                         <i class="bi bi-chevron-right nav-chevron ms-1"></i>
                     </a>
                     <div class="submenu collapse" id="usuariosSubmenu">
-                        <a href="#" class="submenu-link">Todos los usuarios</a>
+                        <a href="{% url 'lista_usuarios' %}" class="submenu-link">Todos los usuarios</a>
                         <a href="#" class="submenu-link">Roles</a>
                         <a href="#" class="submenu-link">Permisos</a>
                     </div>

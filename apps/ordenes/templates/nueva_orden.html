@@ -31,7 +31,7 @@
                         <div class="row g-3">
                             {# Oficio #}
                             <div class="col-md-3">
-                                <label for="oficio" class="form-label fw-semibold">Oficio (opcional)</label>
+                                <label for="oficio" class="form-label fw-semibold">Oficio</label>
                                 <input type="text" class="form-control" id="oficio" name="oficio"
                                     value="{{ form.oficio.value|default:'S/N' }}"
                                     placeholder="Ej: OF-2024-001">
@@ -60,7 +60,7 @@
                                     <i class="fas fa-user"></i> Usuario que solicita
                                 </label>
                                 <select class="form-select" id="usuario_solicita" name="usuario_solicita" required onchange="actualizarNombreUsuario()">
-                                    <option value="">-- Seleccione --</option>
+                                    <option value="1">-- Seleccione --</option>
                                     {% for usuario in usuarios %}
                                         <option value="{{ usuario.id }}" data-nombre="{{ usuario.nombre }}"
                                             {% if form.usuario_solicita.value == usuario.id %}selected{% endif %}>
@@ -81,7 +81,7 @@
                             <div class="col-md-3">
                                 <label for="usuario_asigna" class="form-label">Usuario que asigna</label>
                                 <select class="form-select" id="usuario_asigna" name="usuario_asigna" required>
-                                    <option value="">-- Seleccione --</option>
+                                    <option value="1">-- Seleccione --</option>
                                     {% for usuario in usuarios %}
                                         <option value="{{ usuario.id }}" {% if form.usuario_asigna.value == usuario.id %}selected{% endif %}>
                                             {{ usuario.nombre }}
@@ -210,23 +210,13 @@
                                     </div>
                                     
                                     <div class="col-md-4">
-                                        <label for="marca" class="form-label">Marca</label>
-                                        <select class="form-select" id="marca" name="marca" disabled>
-                                            <option value="">Seleccione una marca</option>
-                                            {% for marca in marcas %}
-                                                <option value="{{ marca.id }}">{{ marca.nombre }}</option>
-                                            {% endfor %}
-                                        </select>
+                                        <label for="{{ form_equipo.marca.id_for_label }}" class="form-label">Marca</label>
+                                        {{ form_equipo.marca }}
                                     </div>
 
                                     <div class="col-md-4">
-                                        <label for="color" class="form-label">Color</label>
-                                        <select class="form-select" id="color" name="color" disabled>
-                                            <option value="">Seleccione un color</option>
-                                            {% for color in colores %}
-                                                <option value="{{ color.id }}">{{ color.nombre }}</option>
-                                            {% endfor %}
-                                        </select>
+                                        <label for="{{ form_equipo.color.id_for_label }}" class="form-label">Color</label>
+                                        {{ form_equipo.color }}
                                     </div>
                                 </div>
                             </div>

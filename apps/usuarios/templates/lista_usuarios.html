@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2 class="mb-3">Listado de órdenes</h2>
+
+<div class="mb-3">
+    <form method="get" class="row g-2">
+        <div class="col-md-4">
+            <input type="text" name="q" class="form-control" placeholder="Buscar por número de orden" value="{{ request.GET.q }}">
+        </div>
+        <div class="col-md-3">
+            <select name="estatus" class="form-select">
+                <option value="">-- Todos los estatus --</option>
+                <option value="Abierto" {% if request.GET.estatus == 'Abierto' %}selected{% endif %}>Abierto</option>
+                <option value="En proceso" {% if request.GET.estatus == 'En proceso' %}selected{% endif %}>En proceso</option>
+                <option value="Cerrado" {% if request.GET.estatus == 'Cerrado' %}selected{% endif %}>Cerrado</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="clasificacion" class="form-select">
+                <option value="">-- Todos  --</option>
+                <option value="Bug" {% if request.GET.clasificacion == 'Bug' %}selected{% endif %}>Progamadores</option>
+                <option value="Mejora" {% if request.GET.clasificacion == 'Mejora' %}selected{% endif %}>Técnicos</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+        </div>
+        {% if request.GET.q or request.GET.estatus or request.GET.clasificacion %}
+        <div class="col-md-2">
+            <a href="?" class="btn btn-secondary w-100">Limpiar</a>
+        </div>
+        {% endif %}
+    </form>
+</div>
+
+<div class="table-container">
+    <table class="custom-table">
+        <thead class="table-dark">
+            <tr>
+                <th>Numero Empleado</th>
+                <th>Nombre</th>
+                <th>Usuario</th>
+                <th>Tipo</th>
+                <th>Correo</th>
+                <th>Estatus</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% if usuarios %}
+                {% for u in usuarios %}
+                <tr>
+                    <td>{{ u.empleado }}</td>
+                    <td>{{ u.usuarios.get_full_name }}</td>
+                    <td>{{ u.usuarios.username }}</td>
+                    <td>{{ u.tipo }}</td>
+                    <td>{{ u.email }}</td>
+                    <td>Estatus</td>
+
+                    <td>
+                        <div class="" style="gap: 10px; display: flex;">
+                            <a href=""><i class="bi bi-eye"></i></a>
+                            <a href=""><i class="bi bi-pencil"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="8" class="text-center">No hay órdenes registradas.</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% if is_paginated %}
+<nav>
+    <ul class="pagination justify-content-center">
+
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">«</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link">«</span>
+        </li>
+        {% endif %}
+
+        {% for num in paginator.page_range %}
+        {% if num == page_obj.number %}
+        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+        {% else %}
+        <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+        {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">»</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link">»</span>
+        </li>
+        {% endif %}
+
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

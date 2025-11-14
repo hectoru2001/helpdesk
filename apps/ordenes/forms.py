@@ -54,3 +54,9 @@ class EquipoXOrdenForm(BootstrapMixin, forms.ModelForm):
         model = EquipoXOrden
         exclude = ['orden'] 
         fields = '__all__'
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            
+            self.fields['marca'].queryset = Marcas.objects.order_by('marca')
+            self.fields['color'].queryset = Colores.objects.order_by('color')
