@@ -1,0 +1,451 @@
+<!-- templates/editar_orden.html -->
+{% extends 'base.html' %}
+{% block title %} <h5 class="title-secondary">Editar orden</h5> {% endblock %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <form method="post" enctype="multipart/form-data" id="ordenForm">
+                    {% csrf_token %}
+                    
+                    <!-- Navegación por pestañas -->
+                    <div class="card-header bg-primario">
+                        <ul class="nav border-bottom" id="ordenTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active border-0 px-4 py-3" 
+                                        id="principal-tab" 
+                                        data-bs-toggle="tab" 
+                                        data-bs-target="#principal" 
+                                        type="button" 
+                                        role="tab">
+                                    <i class="fas fa-info-circle me-2"></i> Principal
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link border-0 px-4 py-3" 
+                                        id="solicitantes-tab" 
+                                        data-bs-toggle="tab" 
+                                        data-bs-target="#solicitantes" 
+                                        type="button" 
+                                        role="tab">
+                                    <i class="fas fa-users me-2"></i> Solicitantes
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link border-0 px-4 py-3" 
+                                        id="equipos-tab" 
+                                        data-bs-toggle="tab" 
+                                        data-bs-target="#equipos" 
+                                        type="button" 
+                                        role="tab">
+                                    <i class="fas fa-laptop me-2"></i> Equipos
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link border-0 px-4 py-3" 
+                                        id="archivos-tab" 
+                                        data-bs-toggle="tab" 
+                                        data-bs-target="#archivos" 
+                                        type="button" 
+                                        role="tab">
+                                    <i class="fas fa-paperclip me-2"></i> Archivos
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card-body">
+                        <!-- Contenido de las pestañas -->
+                        <div class="tab-content" id="ordenTabsContent">
+                            
+                            <!-- Pestaña 1: Información Principal -->
+                            <div class="tab-pane fade show active" id="principal" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <h5 class="border-bottom pb-2 mb-4">
+                                            <i class="fas fa-info-circle me-2"></i>Información General de la Orden
+                                        </h5>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">{{ form.oficio.label }}
+                                            {% if form.oficio.field.required %}<span class="text-danger">*</span>{% endif %}
+                                        </label>
+                                        {{ form.oficio|add_class:"form-control" }}
+                                        {% if form.oficio.errors %}
+                                        <div class="text-danger small">{{ form.oficio.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">{{ form.prioridad.label }}</label>
+                                        {{ form.prioridad|add_class:"form-select" }}
+                                    </div>
+                                    
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">{{ form.estatus.label }}</label>
+                                        {{ form.estatus|add_class:"form-select" }}
+                                    </div>
+                                    
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">{{ form.telefono.label }}</label>
+                                        {{ form.telefono|add_class:"form-control"|attr:"placeholder:Ej. 555-123-4567" }}
+                                    </div>
+                                    
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">{{ form.aplicacion.label }}</label>
+                                        {{ form.aplicacion|add_class:"form-control" }}
+                                    </div>
+                                    
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">{{ form.clasificacion.label }}</label>
+                                        {{ form.clasificacion|add_class:"form-select" }}
+                                    </div>
+                                    
+                                    <div class="col-12 mb-3">
+                                        <label class="form-label">{{ form.descripcion.label }}
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        {{ form.descripcion|add_class:"form-control"|attr:"rows:4"|attr:"placeholder:Describa detalladamente el problema o solicitud..." }}
+                                        {% if form.descripcion.errors %}
+                                        <div class="text-danger small">{{ form.descripcion.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="col-12 mb-3">
+                                        <label class="form-label">{{ form.solucion.label }}</label>
+                                        {{ form.solucion|add_class:"form-control"|attr:"rows:4"|attr:"placeholder:Describa la solución aplicada o propuesta..." }}
+                                    </div>
+                                    
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">{{ form.fecha_inicio.label }}</label>
+                                        {{ form.fecha_inicio|add_class:"form-control"|attr:"type:datetime-local" }}
+                                    </div>
+                                    
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">{{ form.fecha_terminado.label }}</label>
+                                        {{ form.fecha_terminado|add_class:"form-control"|attr:"type:datetime-local" }}
+                                    </div>
+                                    
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">{{ form.fecha_estimada.label|default:"Fecha Estimada" }}</label>
+                                        <input type="datetime-local" class="form-control" name="fecha_estimada" 
+                                               value="{{ orden.fecha_estimada|date:'Y-m-d\TH:i' }}" >
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">{{ form.tiempo_resolucion.label|default:"Tiempo de Resolución" }}</label>
+                                        {{ form.tiempo_resolucion|add_class:"form-control"|attr:"placeholder:Ej. 2 horas" }}
+                                    </div>
+                                    
+                                    <div class="col-12 mt-4">
+                                        <div class="card bg-light">
+                                            <div class="card-body">
+                                                <h6 class="card-title">
+                                                    <i class="fas fa-history me-2"></i>Historial de la Orden
+                                                </h6>
+                                                <div class="row">
+                                                    <div class="col-md-4">
+                                                        <small class="text-muted">Creada:</small>
+                                                        <div class="fw-bold">{{ orden.fecha_captura|date:"d/m/Y H:i" }}</div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <small class="text-muted">Por:</small>
+                                                        <div class="fw-bold">{{ orden.usuario_captura|default:"Sistema" }}</div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <small class="text-muted">Última modificación:</small>
+                                                        <div class="fw-bold">{{ orden.fecha_modificacion|date:"d/m/Y H:i"|default:"No modificada" }}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Pestaña 2: Solicitantes -->
+                            <div class="tab-pane fade" id="solicitantes" role="tabpanel">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h5 class="border-bottom pb-2 mb-0">
+                                        <i class="fas fa-users me-2"></i>Solicitantes
+                                    </h5>
+                                    {% comment %} Solo mostrar botón de agregar si se permiten nuevos solicitantes {% endcomment %}
+                                    {% if permitir_nuevos_solicitantes %}
+                                    <button type="button" class="btn btn-primary" id="add-solicitante">
+                                        <i class="fas fa-plus me-1"></i> Agregar Solicitante
+                                    </button>
+                                    {% endif %}
+                                </div>
+                                
+                                {{ solicitantes_formset.management_form }}
+                                
+                                <div id="solicitantes-formset">
+                                    {% for form in solicitantes_formset %}
+                                        {% if form.instance.pk %}  {# Solo mostrar formularios existentes #}
+                                        <div class="card mb-3 solicitante-form">
+                                            <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+                                                <span>
+                                                    <i class="fas fa-user me-1"></i>
+                                                    Solicitante #{{ form.instance.pk }}
+                                                    {% if form.instance.equipo %}
+                                                    - {{ form.instance.equipo }}
+                                                    {% endif %}
+                                                </span>
+                                                {% if form.can_delete %}
+                                                <label class="form-check-label text-danger ms-2">
+                                                    {{ form.DELETE|add_class:"form-check-input" }} 
+                                                    <span class="ms-1">Eliminar</span>
+                                                </label>
+                                                {% endif %}
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    {% for field in form.visible_fields %}
+                                                        {% if field.name != 'DELETE' and field.name != 'orden' %}
+                                                        <div class="col-md-6 mb-3">
+                                                            <label class="form-label fw-bold">
+                                                                {{ field.label|title }}
+                                                                {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                                                            </label>
+                                                            {{ field|add_class:"form-control" }}
+                                                            {% if field.errors %}
+                                                            <div class="text-danger small">{{ field.errors }}</div>
+                                                            {% endif %}
+                                                        </div>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </div>
+                                                {% for hidden in form.hidden_fields %}
+                                                    {{ hidden }}
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    {% empty %}
+                                        <div class="alert alert-info">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-info-circle fa-2x me-3"></i>
+                                                <div>
+                                                    <h6 class="alert-heading mb-1">No hay solicitantes registrados</h6>
+                                                    <p class="mb-0">Esta orden no tiene solicitantes asociados.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                {% if solicitantes_formset.total_form_count == 0 %}
+                                <div class="alert alert-warning">
+                                    <div class="d-flex">
+                                        <i class="fas fa-exclamation-triangle text-warning fa-lg me-3 mt-1"></i>
+                                        <div>
+                                            <h6 class="alert-heading mb-1">Atención</h6>
+                                            <p class="mb-0">Esta orden no tiene solicitantes. Debe tener al menos un solicitante asociado.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                            </div>
+                            
+                            <!-- Pestaña 3: Equipos -->
+                            <div class="tab-pane fade" id="equipos" role="tabpanel">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h5 class="border-bottom pb-2 mb-0">
+                                        <i class="fas fa-laptop me-2"></i>Gestión de Equipos
+                                    </h5>
+                                    <a href="{% url 'agregar_equipos' orden.orden%}" class="btn btn-primary" id="add-equipo">
+                                        <i class="fas fa-plus me-1"></i> Agregar Equipo
+                                    </a>
+                                </div>
+
+                                <!-- Formset para agregar nuevos equipos -->
+                                {{ equipos_formset.management_form }}
+                                <div id="equipos-formset">
+                                {# Mostrar equipos ya existentes #}
+                                {% for form in equipos_formset %}
+                                    {% if form.instance.pk %}
+                                    <div class="card mb-3 equipo-form">
+                                        <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+                                            <span><i class="fas fa-desktop me-1"></i> Equipo #{{ forloop.counter }}</span>
+                                            <label class="form-check-label text-danger ms-2">
+                                                {{ form.DELETE|add_class:"form-check-input" }}
+                                                <span class="ms-1">Eliminar</span>
+                                            </label>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                {% for field in form.visible_fields %}
+                                                    {% if field.name != 'DELETE' and field.name != 'orden' %}
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label fw-bold">{{ field.label }}</label>
+                                                        {{ field|add_class:"form-control" }}
+                                                    </div>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                            {% for hidden in form.hidden_fields %}
+                                                {{ hidden }}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+
+                            </div>
+         
+                            <!-- Pestaña 4: Archivos Adjuntos -->
+                            <div class="tab-pane fade" id="archivos" role="tabpanel">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h5 class="border-bottom pb-2 mb-0">
+                                        <i class="fas fa-paperclip me-2"></i>Archivos Adjuntos
+                                    </h5>
+                                    <a href="{% url 'agregar_archivos' orden.orden %}" class="btn btn-primary" id="add-archivo">
+                                        <i class="fas fa-plus me-1"></i> Agregar Archivo
+                                    </a>
+                                </div>
+                                
+                                <!-- Archivos existentes -->
+                                {% if orden.archivos.exists %}
+                                <div class="mt-4">
+                                    <div class="row">
+                                        {% for archivo in orden.archivos.all %}
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card h-100">
+                                                <div class="card-body">
+                                                    <div class="d-flex align-items-center mb-3">
+                                                        <div class="me-3">
+                                                            <i class="fas fa-file-{% if archivo.archivo.name|slice:'-4:' == '.pdf' %}pdf text-danger{% elif archivo.archivo.name|slice:'-4:' == '.doc' or archivo.archivo.name|slice:'-5:' == '.docx' %}word text-primary{% elif archivo.archivo.name|slice:'-4:' == '.jpg' or archivo.archivo.name|slice:'-5:' == '.jpeg' or archivo.archivo.name|slice:'-4:' == '.png' %}image text-success{% elif archivo.archivo.name|slice:'-4:' == '.xls' or archivo.archivo.name|slice:'-5:' == '.xlsx' %}excel text-success{% elif archivo.archivo.name|slice:'-4:' == '.zip' or archivo.archivo.name|slice:'-4:' == '.rar' %}archive text-warning{% else %}alt text-secondary{% endif %} fa-2x"></i>
+                                                        </div>
+                                                        <div class="flex-grow-1">
+                                                            <h6 class="card-title mb-1">{{ archivo.nombre|default:archivo.archivo.name }}</h6>
+                                                            <p class="card-text small text-muted mb-0">
+                                                                <i class="fas fa-calendar me-1"></i>
+                                                                {{ archivo.fecha_captura|date:"d/m/Y" }}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between">
+                                                        <span class="badge bg-light text-dark">
+                                                            {{ archivo.archivo.size|filesizeformat }}
+                                                        </span>
+                                                        <a href="{{ archivo.archivo.url }}" download
+                                                           class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-download me-1"></i> Descargar
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Footer con botones de acción -->
+                    <div class="card-footer bg-light">
+                        <div class="d-flex justify-content-end align-items-center gap-2">
+
+                            <a href="{% url 'lista_ordenes' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i> Cancelar
+                            </a>
+
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Guardar Cambios
+                            </button>
+
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validación antes de cambiar de pestaña (opcional)
+    const ordenTabs = document.getElementById('ordenTabs');
+    if (ordenTabs) {
+        ordenTabs.addEventListener('click', function(e) {
+            // Aquí podrías agregar validación antes de cambiar de pestaña
+            console.log('Cambiando a pestaña:', e.target.getAttribute('data-bs-target'));
+        });
+    }
+    
+    // Manejar la validación del formulario
+    document.getElementById('ordenForm').addEventListener('submit', function(e) {
+        let isValid = true;
+        let firstInvalidTab = null;
+        
+        // Validar campos requeridos en pestaña Principal
+        const requiredFields = document.querySelectorAll('#principal [required]');
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                isValid = false;
+                field.classList.add('is-invalid');
+                
+                // Activar pestaña principal si hay error
+                if (!firstInvalidTab) {
+                    firstInvalidTab = 'principal';
+                    const principalTab = document.querySelector('#principal-tab');
+                    const tab = new bootstrap.Tab(principalTab);
+                    tab.show();
+                }
+                
+                // Crear mensaje de error si no existe
+                if (!field.nextElementSibling || !field.nextElementSibling.classList.contains('invalid-feedback')) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'invalid-feedback';
+                    errorDiv.textContent = 'Este campo es requerido';
+                    field.parentNode.appendChild(errorDiv);
+                }
+            } else {
+                field.classList.remove('is-invalid');
+                const errorDiv = field.parentNode.querySelector('.invalid-feedback');
+                if (errorDiv) errorDiv.remove();
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+            
+            // Mostrar alerta
+            alert('Por favor complete los campos requeridos antes de guardar.');
+            
+            // Mover al primer campo con error
+            if (firstInvalidTab === 'principal') {
+                const firstError = document.querySelector('#principal .is-invalid');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstError.focus();
+                }
+            }
+        }
+    });
+    
+    const inputs = document.querySelectorAll('input, textarea, select');
+    inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            if (this.checkValidity && !this.checkValidity()) {
+                this.classList.add('is-invalid');
+            } else {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

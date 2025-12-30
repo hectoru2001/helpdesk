@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %} <h5 class="title-secondary">Mis órdenes asignadas</h5> {% endblock %}
+{% block content %}
+
+    {% csrf_token %}
+
+    <!-- FILTRO POR FECHAS -->
+    <form method="get" class="row g-3 mb-4">
+
+        <div class="col-md-3">
+            <label for="fecha_inicio" class="form-label">Fecha Inicio</label>
+            <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio"
+                value="{{ request.GET.fecha_inicio }}">
+        </div>
+
+        <div class="col-md-3">
+            <label for="fecha_fin" class="form-label">Fecha Fin</label>
+            <input type="date" class="form-control" id="fecha_fin" name="fecha_fin"
+                value="{{ request.GET.fecha_fin }}">
+        </div>
+
+        <div class="col-md-2">
+            <label for="estatus" class="form-label">Estatus</label>
+            <select id="estatus" name="estatus" class="form-control">
+                <option value="">-- Todos --</option>
+                <option value="E"  {% if request.GET.estatus == "E" %}selected{% endif %}>En Proceso</option>
+                <option value="A"    {% if request.GET.estatus == "A" %}selected{% endif %}>Asignadas</option>
+                <option value="C" {% if request.GET.estatus == "C" %}selected{% endif %}>Canceladas</option>
+                <option value="T"  {% if request.GET.estatus == "T" %}selected{% endif %}>Terminadas</option>
+            </select>
+        </div>
+
+        {% if tipo_usuario == "A" %}
+        <div class="col-md-2">
+            <label for="todas" class="form-label">¿Mostrar solo mis órdenes?</label>
+            <select name="todas" id="todas" class="form-control">
+                <option value="si" {% if request.GET.estatus == "si" %}selected{% endif %}>Si</option>
+                <option value="no" {% if request.GET.estatus == "no" %}selected{% endif %}>No</option>
+            </select>
+        </div>
+        {% endif %}
+        <div class="col-md-2 align-self-end">
+            <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+        </div>
+
+    </form>
+
+    <!-- TABLA DE ÓRDENES -->
+    <div class="table-container">
+        <table class="custom-table">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Fecha Captura</th>
+                    <th>Beneficiado</th>
+                    <th>Estatus General</th>
+                    <th>Mi Avance </th>
+                    <th>Asignado a</th>
+                    <th>Progreso</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if ordenes %}
+                    {% for orden in ordenes %}
+                        <tr>
+                            <td>{{ orden.orden }}</td>
+                            <td>{{ orden.fecha_captura|date:"d/m/Y H:i" }}</td>
+                            <td>{{ orden.solicitantes.first.nombre_beneficiado }}</td>
+                            <td>
+                                {% if orden.estatus == "T" %}
+                                    <span class="badge bg-success">Terminada</span>
+                                {% elif orden.estatus in "E" %}
+                                    <span class="badge bg-warning text-dark">Pendiente</span>
+                                {% elif orden.estatus in "A" %}
+                                    <span class="badge bg-primary">Asignada</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Desconocido</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% with mi_registro=orden.usuarios_orden.all|dictsort:"id" %}
+                                    {% for ux_o in orden.usuarios_orden.all %}
+                                        {% if ux_o.realiza_id == request.user.id %}
+                                            
+                                            {% if ux_o.estatus == "T" %}
+                                                <span class="badge bg-success">Completada</span>
+
+                                            {% elif ux_o.estatus == "E" %}
+                                                <span class="badge bg-warning text-dark">En proceso</span>
+
+                                            {% elif ux_o.estatus == "A" %}
+                                                <span class="badge bg-primary">Asignada</span>
+
+                                            {% elif ux_o.estatus == "C" %}
+                                                <span class="badge bg-danger">Cancelada</span>
+
+                                            {% else %}
+                                                <span class="badge bg-secondary">Desconocido</span>
+
+                                            {% endif %}
+
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endwith %}
+                            </td>
+                            <td>
+                                {% for ux_o in orden.usuarios_orden.all %}
+                                    {{ ux_o.realiza.get_full_name }}
+                                    {% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% if orden.estatus == "A" %}
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-warning text-dark" style="width: 25%;">
+                                            25%
+                                        </div>
+                                    </div>
+
+                                {% elif orden.estatus == "E" %}
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-primary" style="width: 50%;">
+                                            50%
+                                        </div>
+                                    </div>
+
+                                {% elif orden.estatus == "T" %}
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-success" style="width: 100%;">
+                                            100%
+                                        </div>
+                                    </div>
+                                
+                                {% elif orden.estatus == "C" %}
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-danger" style="width: 0%;">
+                                            Cancelada
+                                        </div>
+                                    </div>
+                                    
+                                {% else %}
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-secondary" style="width: 0%;">
+                                            Desconocido
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </td>                         
+                            <td class="text-center">
+                                <button type="button"
+                                    class="btn btn-sm btn-outline-primary btn-procesar-orden"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#procesarOrdenModal"
+                                    data-orden-id="{{ orden.orden }}"
+                                    title="Trabajar orden">
+                                    <i class="bi bi-arrow-up-right-square"></i>
+                                </button>
+                                
+                                {% if tipo_usuario == "A" and orden.estatus != "T"%}
+                                    <button type="button"
+                                        class="btn btn-sm btn-outline-warning btn-reasignar-orden"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#reasignarOrdenModal"
+                                        data-orden-id="{{ orden.orden }}"
+                                        title="Reasignar orden">
+                                        <i class="bi bi-arrow-repeat"></i>
+                                    </button>
+                                {% endif %}
+
+                            </td>
+
+
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">No hay órdenes registradas.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if ordenes.paginator.num_pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+
+            {% if ordenes.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" 
+                    href="?page={{ ordenes.previous_page_number }}{% if request.GET.fecha_inicio %}&fecha_inicio={{ request.GET.fecha_inicio }}{% endif %}{% if request.GET.fecha_fin %}&fecha_fin={{ request.GET.fecha_fin }}{% endif %}{% if request.GET.estatus %}&estatus={{ request.GET.estatus }}{% endif %}">
+                        Anterior
+                    </a>
+                </li>
+            {% endif %}
+
+            {% for num in ordenes.paginator.page_range %}
+                {% if ordenes.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link" 
+                        href="?page={{ num }}{% if request.GET.fecha_inicio %}&fecha_inicio={{ request.GET.fecha_inicio }}{% endif %}{% if request.GET.fecha_fin %}&fecha_fin={{ request.GET.fecha_fin }}{% endif %}{% if request.GET.estatus %}&estatus={{ request.GET.estatus }}{% endif %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if ordenes.has_next %}
+                <li class="page-item">
+                    <a class="page-link" 
+                    href="?page={{ ordenes.next_page_number }}{% if request.GET.fecha_inicio %}&fecha_inicio={{ request.GET.fecha_inicio }}{% endif %}{% if request.GET.fecha_fin %}&fecha_fin={{ request.GET.fecha_fin }}{% endif %}{% if request.GET.estatus %}&estatus={{ request.GET.estatus }}{% endif %}">
+                        Siguiente
+                    </a>
+                </li>
+            {% endif %}
+
+        </ul>
+    </nav>
+    {% endif %}
+
+
+
+    <div class="modal fade" id="procesarOrdenModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable"> 
+            <div class="modal-content">
+                <div class="modal-header bg-primario text-white">
+                    <h5 class="modal-title">Procesar orden</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body" id="modal-procesar-contenido">
+                    <div class="text-center text-muted py-5">
+                        <div class="spinner-border text-primary mb-3"></div>
+                        <p>Cargando datos...</p>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Reasignar Orden -->
+    <div class="modal fade" id="reasignarOrdenModal" tabindex="-1" aria-labelledby="reasignarOrdenModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+        
+        <!-- Header -->
+        <div class="modal-header">
+            <h5 class="modal-title" id="reasignarOrdenModalLabel">Reasignar Orden</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        
+        <!-- Body -->
+        <div class="modal-body" id="modal-reasignar-contenido">
+            <div class="text-center text-muted py-5">
+            <div class="spinner-border text-primary mb-3"></div>
+            <p>Cargando datos...</p>
+            </div>
+        </div>
+        
+        </div>
+    </div>
+    </div>
+
+    <script defer src="{% static 'js/asignar_detalles.js' %}"></script>
+{% endblock content %}

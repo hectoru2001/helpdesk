@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %} <h5 class="title-secondary">Lista de empleados</h5> {% endblock %}
+{% block content %}
+{% include "mensajes.html" %}
+
+<div class="card shadow">
+    <div class="card-body">
+        <div class="mb-3 d-flex justify-content-between align-items-center">
+            <input type="text" id="buscarInput" class="form-control w-25" placeholder="Buscar empleado...">
+        </div>
+
+        <div class="table-container">
+            <table class="custom-table">
+                <thead class="">
+                    <tr>
+                        <th>Número</th>
+                        <th>Nombre</th>
+                        <th>Dependencia</th>
+                        <th>Correo</th>
+                        <th>Teléfono</th>
+                        <th>ID Departamento</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaEmpleados"></tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        <nav>
+            <ul class="pagination justify-content-center" id="paginacion"></ul>
+        </nav>
+    </div>
+</div>
+
+<script src="{% static 'js/lista_empleados.js' %}"></script>
+
+{% endblock %}

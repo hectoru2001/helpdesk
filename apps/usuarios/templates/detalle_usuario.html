@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primario text-white d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Detalle del Usuario</h2>
+            <a href="{% url 'lista_usuarios' %}" class="btn btn-light btn-sm">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+        </div>
+        
+        <div class="card-body">
+            <div class="row justify-content-center">
+                <div class="col-md-6 mb-3 text-center">
+                    <div class="border-bottom pb-2">
+                        <label class="fw-bold text-muted mb-1">Fotografía</label>
+                        <div class="ps-2">
+                            {% with empleado=usuario.empleado %}
+                                {% if empleado %}
+                                    <img src="{{ MEDIA_URL }}fotos/{{ empleado }}.jpg"
+                                        alt="Foto del empleado {{ empleado }}"
+                                        class="img-thumbnail"
+                                        style="max-width:180px; max-height:230px;">
+                                {% else %}
+                                    <span class="text-muted">Sin foto</span>
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="border-bottom pb-2">
+                        <label class="fw-bold text-muted mb-1">Número de empleado</label>
+                        <div class="ps-2">
+                            {{ usuario.empleado }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <div class="border-bottom pb-2">
+                        <label class="fw-bold text-muted mb-1">Tipo</label>
+                        <div class="ps-2">
+                            {{ usuario.get_tipo_display }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <div class="border-bottom pb-2">
+                        <label class="fw-bold text-muted mb-1">Username</label>
+                        <div class="ps-2">
+                            {{ usuario.usuario.username }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <div class="border-bottom pb-2">
+                        <label class="fw-bold text-muted mb-1">Nombre completo</label>
+                        <div class="ps-2">
+                            {{ usuario.usuario.get_full_name }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <div class="border-bottom pb-2">
+                        <label class="fw-bold text-muted mb-1">Email</label>
+                        <div class="ps-2">
+                            {{ usuario.usuario.email }}
+                        </div>
+                    </div>
+                </div>
+                
+                {% if usuario.departamento %}
+                <div class="col-md-6 mb-3">
+                    <div class="border-bottom pb-2">
+                        <label class="fw-bold text-muted mb-1">Departamento</label>
+                        <div class="ps-2">
+                            {{ usuario.departamento }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Información adicional del modelo ExtraUsuarios -->
+            <div class="mt-4 pt-3 border-top">
+                <h5 class="text-secondary mb-3">Información adicional</h5>
+                <div class="row">
+                    {% if usuario.usuario.date_joined %}
+                    <div class="col-md-6 mb-2">
+                        <div class="d-flex justify-content-between">
+                            <label class="fw-bold text-muted">Fecha de registro:</label>
+                            <span>{{ usuario.usuario.date_joined|date:"d/m/Y H:i" }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if usuario.usuario.last_login %}
+                    <div class="col-md-6 mb-2">
+                        <div class="d-flex justify-content-between">
+                            <label class="fw-bold text-muted">Último acceso:</label>
+                            <span>{{ usuario.usuario.last_login|date:"d/m/Y H:i" }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Agrega aquí más campos específicos de ExtraUsuarios -->
+                    {% if usuario.telefono %}
+                    <div class="col-md-6 mb-2">
+                        <div class="d-flex justify-content-between">
+                            <label class="fw-bold text-muted">Teléfono:</label>
+                            <span>{{ usuario.telefono }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if usuario.puesto %}
+                    <div class="col-md-6 mb-2">
+                        <div class="d-flex justify-content-between">
+                            <label class="fw-bold text-muted">Puesto:</label>
+                            <span>{{ usuario.puesto }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-footer bg-light">
+            <div class="d-flex justify-content-between text-muted small">
+                <span>ID: {{ usuario.id }}</span>
+                <span>Usuario: {{ usuario.username }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,111 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso | HelpDesk </title>
+    <meta name="description" content="">
+
+    <!-- Fuentes y iconos -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="{% static 'img/Rescate.ico' %}">
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+
+<body>
+
+    <div class="main-content">
+        <div class="login-wrapper">
+            <div class="login-container">
+                <div class="login-hero">
+                    <div class="hero-content">
+                        <img src="{% static 'img/LogMuni.png' %}" alt="Logo Protección Civil" class="hero-logo">
+                    </div>
+                </div>
+
+                <div class="login-form-container">
+                    <div class="form-header">
+                        <h2 class="form-title">Iniciar Sesión</h2>
+                        <p class="form-subtitle">Ingrese sus credenciales para acceder al sistema</p>
+                    </div>
+
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <div>{{ message }}</div>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+
+                    <form method="POST" id="loginForm">
+                        {% csrf_token %}
+
+                        <div class="form-group">
+                            <label for="usuario" class="form-label">Usuario</label>
+                            <div class="input-group">
+                                <i class="fas fa-user"></i>
+                                <input type="text" id="usuario" name="usuario" class="form-input" placeholder="Usuario"
+                                    required autofocus>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="contrasena" class="form-label">Contraseña</label>
+                            <div class="input-group">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" id="contrasena" name="contrasena" class="form-input"
+                                    placeholder="Contraseña" required>
+                            </div>
+                        </div>
+
+                        <button class="submit-btn" id="submitBtn">
+                            <i class="fas fa-sign-in-alt"></i> Acceder al sistema
+                        </button>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nuevo Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-row">
+                <!-- Logo y Nombre Institucional
+                <div class="footer-col">
+                    <div class="footer-logo-container">
+                        <img src="{% static 'img/logopyj.png' %}" alt="Logo Dependencia" class="footer-logo">
+                    </div>
+                </div>
+                -->
+                <!-- Enlaces Rápidos -->
+                <div class="footer-col">
+                    <div class="footer-links">
+                        <img src="{% static 'img/juarez-conectado.png' %}" alt="Juárez Conectado"
+                            class="juarez-conectado-logo">
+                    </div>
+                </div>
+
+                <!-- Desarrollador con Logo -->
+                <div class="footer-col">
+                    <div class="developer-container">
+                        <div class="text-end">
+                            <p class="footer-dev-name">Desarrollado por</p>
+                        </div>
+                        <img src="{% static 'img/LOGO DGIC 24-27 V.png' %}" alt="Logo Desarrollador"
+                            class="developer-logo">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

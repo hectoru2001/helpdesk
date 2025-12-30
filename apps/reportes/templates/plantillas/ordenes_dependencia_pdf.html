@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+
+<style>
+    @page {
+        size: A4 portrait;
+        margin: 2cm 1.8cm 2.2cm 1.8cm;
+    }
+
+    body {
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 10px;
+        color: #000;
+    }
+
+    /* ===== ENCABEZADO ===== */
+    .header {
+        text-align: center;
+        margin-bottom: 14px;
+    }
+
+    .header .dependencia {
+        font-size: 11px;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    .header .reporte {
+        font-size: 14px;
+        font-weight: bold;
+        margin-top: 4px;
+    }
+
+    .header .periodo {
+        font-size: 9px;
+        margin-top: 3px;
+        color: #444;
+    }
+
+    .linea {
+        border-bottom: 1px solid #000;
+        margin-top: 8px;
+    }
+
+    /* ===== TABLA ===== */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+        margin-top: 12px;
+    }
+
+    thead th {
+        font-size: 9px;
+        font-weight: bold;
+        text-align: center;
+        padding: 5px;
+        border: 1px solid #000;
+        background-color: #e6e6e6;
+    }
+
+    tbody td {
+        font-size: 9px;
+        padding: 5px;
+        border: 1px solid #000;
+        text-align: center;
+    }
+
+    tbody td.dependencia {
+        text-align: left;
+        font-weight: bold;
+    }
+
+    tbody td.header-text {
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    .header-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 10px;
+    }
+
+    .header-table td {
+        vertical-align: middle;
+    }
+
+    .header-logo {
+        width: 100px;
+        text-align: left;
+    }
+
+    .header-logo img {
+        width: 95px;
+    }
+
+    .header-text {
+        text-align: center;
+    }
+
+    /* ===== ANCHOS ===== */
+    th.dependencia, td.dependencia { width: 36%; }
+    th.num, td.num { width: 12.8%; }
+
+    /* ===== FOOTER ===== */
+    .footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        font-size: 8px;
+        text-align: right;
+        color: #444;
+        border-top: 1px solid #000;
+        padding-top: 4px;
+    }
+</style>
+</head>
+
+<body>
+
+<!-- ===== ENCABEZADO ===== -->
+<table class="header-table">
+    <tr>
+        <td class="header-logo">
+            <img src="static/img/LogMuni.png">
+        </td>
+        <td class="header-text">
+            <div class="dependencia">
+                Dirección General De Informática y Comunicaciones
+            </div>
+
+            <div class="reporte">
+                REPORTE DE ÓRDENES POR DEPENDENCIA
+            </div>
+
+            {% if fecha_inicio or fecha_fin %}
+            <div class="periodo">
+                Periodo del {{ fecha_inicio|default:"—" }} al {{ fecha_fin|default:"—" }}
+            </div>
+            {% endif %}
+        </td>
+    </tr>
+</table>
+
+<div class="linea"></div>
+
+
+<!-- ===== TABLA ===== -->
+<table>
+    <thead>
+        <tr>
+            <th class="dependencia">Dependencia Beneficiada</th>
+            <th class="num">Total</th>
+            <th class="num">Asignadas</th>
+            <th class="num">En Proceso</th>
+            <th class="num">Terminadas</th>
+            <th class="num">Canceladas</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in reporte %}
+        <tr>
+            <td class="dependencia">
+                {{ r.dependencia_beneficiado|default:"Sin dependencia" }}
+            </td>
+            <td>{{ r.total }}</td>
+            <td>{{ r.asignadas }}</td>
+            <td>{{ r.en_proceso }}</td>
+            <td>{{ r.terminadas }}</td>
+            <td>{{ r.canceladas }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6">
+                No se encontró información para los criterios seleccionados
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- ===== FOOTER ===== -->
+<div class="footer">
+    Documento generado automáticamente · {{ now|date:"d/m/Y H:i" }}
+</div>
+
+</body>
+</html>

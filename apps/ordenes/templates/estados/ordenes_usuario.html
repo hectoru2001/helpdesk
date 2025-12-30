@@ -1,0 +1,26 @@
+<h3>Órdenes del usuario {{ usuario_obj.get_full_name|default:usuario_obj.username }}</h3>
+
+<table class="table table-striped mt-4">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Descripción</th>
+            <th>Estatus</th>
+            <th>Fecha</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for orden in ordenes %}
+            <tr>
+                <td>{{ orden.id }}</td>
+                <td>{{ orden.descripcion }}</td>
+                <td>{{ orden.estatus }}</td>
+                <td>{{ orden.fecha_captura }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="4" class="text-center">Sin órdenes asignadas</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

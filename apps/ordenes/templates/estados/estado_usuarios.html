@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}
+<h5 class="title-secondary">Estado del usuario</h5>
+{% endblock %}
+
+{% block content %}
+
+{% if usuarios and usuarios|length == 1 %}
+{% with u=usuarios.0 %}
+
+<!-- ===================== -->
+<!-- CARD: RESUMEN USUARIO -->
+<!-- ===================== -->
+<div class="card shadow-sm mb-4 border-0">
+    <div class="card-body">
+
+        <div class="d-flex justify-content-between align-items-center mb-1">
+            <h4 class="mb-0">
+                {{ u.usuario.get_full_name|default:u.usuario.username }}
+            </h4>
+            <span class="badge bg-primary">{{ u.tipo }}</span>
+        </div>
+
+        <p class="text-muted mb-2">
+            Empleado: {{ u.usuario.extra.empleado }}
+        </p>
+
+        <hr>
+
+        <div class="row text-center">
+            <div class="col">
+                <h5 class="mb-0">{{ u.total }}</h5>
+                <small class="text-muted">Total</small>
+            </div>
+            <div class="col">
+                <h5 class="mb-0 text-warning">{{ u.pendientes }}</h5>
+                <small class="text-muted">Pendientes</small>
+            </div>
+            <div class="col">
+                <h5 class="mb-0 text-info">{{ u.iniciadas }}</h5>
+                <small class="text-muted">En proceso</small>
+            </div>
+            <div class="col">
+                <h5 class="mb-0 text-success">{{ u.terminadas }}</h5>
+                <small class="text-muted">Terminadas</small>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="mb-4">
+        <form method="get" class="row g-3 align-items-end">
+
+            <!-- Fecha inicio -->
+            <div class="col-md-3">
+                <label for="fecha_inicio" class="form-label small fw-semibold">
+                    Fecha inicio
+                </label>
+                <input
+                    type="date"
+                    class="form-control form-control-sm"
+                    id="fecha_inicio"
+                    name="fecha_inicio"
+                    value="{{ request.GET.fecha_inicio }}"
+                >
+            </div>
+
+            <!-- Fecha fin -->
+            <div class="col-md-3">
+                <label for="fecha_fin" class="form-label small fw-semibold">
+                    Fecha fin
+                </label>
+                <input
+                    type="date"
+                    class="form-control form-control-sm"
+                    id="fecha_fin"
+                    name="fecha_fin"
+                    value="{{ request.GET.fecha_fin }}"
+                >
+            </div>
+
+            <!-- Estatus -->
+            <div class="col-md-4">
+                <label class="form-label small fw-semibold">
+                    Estatus
+                </label>
+                <select name="estatus" class="form-select form-select-sm">
+                    <option value="">Todos los estatus</option>
+                    <option value="E" {% if request.GET.estatus == 'E' %}selected{% endif %}>En proceso</option>
+                    <option value="A" {% if request.GET.estatus == 'A' %}selected{% endif %}>Asignadas</option>
+                    <option value="C" {% if request.GET.estatus == 'C' %}selected{% endif %}>Canceladas</option>
+                    <option value="T" {% if request.GET.estatus == 'T' %}selected{% endif %}>Terminadas</option>
+                </select>
+            </div>
+
+            <!-- Botones -->
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-primary w-100">
+                    Filtrar
+                </button>
+                <a href="?" class="btn btn-sm btn-outline-secondary w-100">
+                    Limpiar
+                </a>
+            </div>
+
+        </form>
+</div>
+
+    
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+
+        <h5 class="mb-4 fw-semibold">
+            Órdenes
+        </h5>
+
+        {% if u.ordenes %}
+        <div class="d-flex flex-column gap-3">
+
+            {% for o in u.ordenes %}
+            <div class="p-3 border rounded d-flex justify-content-between align-items-center hover-shadow">
+
+                <div>
+                    <div class="fw-bold">
+                        Orden #{{ o.orden.orden}}
+                    </div>
+
+                    <small class="text-muted">
+                        {{ o.orden.fecha_captura }}
+                    </small>
+
+                    <div class="mt-1">
+                        <span class="badge
+                        {% if o.get_estatus_display == 'Pendiente' %}bg-warning text-dark
+                        {% elif o.get_estatus_display == 'En proceso' %}bg-info
+                        {% elif o.get_estatus_display == 'Terminada' %}bg-success
+                        {% else %}bg-secondary{% endif %}
+                        ">
+                            {{ o.get_estatus_display }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="text-end">
+                    {% if o.total %}
+                    <div class="fw-semibold mb-2">
+                        ${{ o.total }}
+                    </div>
+                    {% endif %}
+                    <a href="{% url 'detalle_orden' o.orden.orden %}"
+                       class="btn btn-sm btn-outline-primary">
+                        Ver detalle
+                    </a>
+                </div>
+
+            </div>
+            {% endfor %}
+
+        </div>
+        {% else %}
+            <p class="text-muted text-center py-3">
+                No tiene órdenes con los filtros seleccionados.
+            </p>
+        {% endif %}
+
+    </div>
+</div>
+
+{% endwith %}
+{% else %}
+
+<div class="alert alert-warning">
+    No se encontró información del usuario.
+</div>
+
+{% endif %}
+
+{% endblock %}

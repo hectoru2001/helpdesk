@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}<h5 class="title-secondary">Inicio</h5>{% endblock %}
+{% block content %}
+{% include 'mensajes.html' %}
+
+<div class="container-fluid">
+    <!-- Bienvenida -->
+    <div class="row mb-4 align-items-center">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+
+            <!-- Nombre -->
+            <h2 class="h4 title-primary mb-0">
+                Bienvenid@ {{ request.user.get_full_name|default:request.user.username }}
+            </h2>
+
+            <!-- Hora -->
+            <p class="title-secondary fs-3 mb-0" id="hora-actual"></p>
+
+        </div>
+
+        <!-- Fecha debajo -->
+        <div class="col-12">
+            <p class="text-muted">
+                {% now "l, d F Y" %}
+            </p>
+        </div>
+    </div>
+
+        <div class="row">
+        <!-- Columna de Órdenes Pendientes -->
+        <div class="col-lg-12 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="h5 mb-0">Órdenes recientes</h4>
+                        <span class="badge bg-primary">{{ ordenes_pendientes.count }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if ordenes %}
+                    <div class="table-container">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Orden</th>
+                                    <th>Solicitante</th>
+                                    <th>Beneficiado</th>
+                                    <th>Fecha Recepción</th>
+                                    <th>Estatus</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for orden in ordenes|slice:":10" %}
+                                <tr class="clickable-row" onclick="" style="cursor: pointer;">
+                                    <td class="fw-bold">#{{ orden.orden }}</td>
+                                    <td>{{ orden.solicitantes.first.nombre_solicitante }}</td>
+                                    <td>{{ orden.solicitantes.first.nombre_beneficiado }}</td>
+                                    <td>{{ orden.fecha_captura }}</td>
+                                    <td>{{ orden.get_estatus_display }}</td>    
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'ordenes_lista' %}" class="btn btn-primary btn-sm">Ver todas las órdenes --></a>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <p class="text-muted">No tienes órdenes pendientes</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- Tarjetas de Navegación Rápidas -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h3 class="h5 mb-3">Accesos rápidos</h3>
+            <div class="row">
+                <!-- Tarjeta 1 -->
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card h-100 border-0 shadow-sm hover-shadow">
+                        <div class="card-body text-center">
+                            <div class="bg-success bg-opacity-10 rounded-circle p-3 d-inline-flex mb-3">
+                                <i class="fas fa-plus fa-2x text-success"></i>
+                            </div>
+                            <h5 class="card-title">Crear orden</h5>
+                            <p class="card-text text-muted small">Reporta un problema</p>
+                            <a href="{% url 'lista_usuarios' %}" class="btn btn-success btn-sm stretched-link">Acceder</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 2 -->
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card h-100 border-0 shadow-sm hover-shadow">
+                        <div class="card-body text-center">
+                            <div class="bg-primary bg-opacity-10 rounded-circle p-3 d-inline-flex mb-3">
+                                <i class="fas fa-clipboard-list fa-2x text-primary"></i>
+                            </div>
+                            <h5 class="card-title">Órdenes</h5>
+                            <p class="card-text text-muted small">Gestionar mis órdenes de trabajo</p>
+                            <a href="{% url 'lista_ordenes' %}" class="btn btn-primary btn-sm stretched-link">Acceder</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tarjeta 3 -->
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card h-100 border-0 shadow-sm hover-shadow">
+                        <div class="card-body text-center">
+                            <div class="bg-warning bg-opacity-10 rounded-circle p-3 d-inline-flex mb-3">
+                                <i class="fas fa-chart-bar fa-2x text-warning"></i>
+                            </div>
+                            <h5 class="card-title">Reportes</h5>
+                            <p class="card-text text-muted small">Ver reportes y estadísticas</p>
+                            <button href="" class="btn btn-warning btn-sm stretched-link" disabled>No disponible</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tarjeta 4 -->
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card h-100 border-0 shadow-sm hover-shadow">
+                        <div class="card-body text-center">
+                            <div class="bg-info bg-opacity-10 rounded-circle p-3 d-inline-flex mb-3">
+                                <i class="fas fa-cogs fa-2x text-info"></i>
+                            </div>
+                            <h5 class="card-title">Configuración</h5>
+                            <p class="card-text text-muted small">Ajustes del sistema</p>
+                            <button href="" class="btn btn-info btn-sm stretched-link" disabled>No disponible</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <!-- Columna de Notificaciones -->
+        <div class="col-md-6 col-sm-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="h5 mb-0">Últimas notificaciones</h4>
+                        <span class="badge bg-warning">{{ notificaciones.count }}</span>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if notificaciones %}
+                    <div class="list-group list-group-flush">
+                        {% for notificacion in notificaciones|slice:":6" %}
+                        <div class="list-group-item border-0 {% if not notificacion.leida %}bg-light{% endif %}">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-shrink-0">
+                                    {% if notificacion.tipo == "success" %}
+                                        <i class="bi bi-check-circle text-success me-2"></i>
+                                    {% elif notificacion.tipo == "warning" %}
+                                        <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                                    {% elif notificacion.tipo == "alert" %}
+                                        <i class="bi bi-exclamation-octagon text-danger me-2"></i>
+                                    {% elif notificacion.tipo == "task" %}
+                                        <i class="bi bi-person-check-fill text-primary me-2"></i>
+                                    {% elif notificacion.tipo == "message" %}
+                                        <i class="bi bi-chat-left-text text-info me-2"></i>
+                                    {% else %}
+                                        <i class="bi bi-info-circle text-primary me-2"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">{{ notificacion.titulo }}</h6>
+                                    <p class="mb-1 small text-muted">{{ notificacion.mensaje|truncatewords:10 }}</p>
+                                    <small class="text-muted">{{ notificacion.fecha_captura|timesince }}</small>
+                                </div>
+                                {% if not notificacion.leida %}
+                                <span class="badge bg-primary rounded-pill">Nuevo</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if notificaciones.count > 6 %}
+                    <div class="card-footer bg-white text-center">
+                        <a href="{% url 'notificaciones' %}" class="btn btn-outline-secondary btn-sm">Ver todas</a>
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No hay notificaciones</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-sm-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h5 class="h6 mb-0">Resumen de hoy</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <div class="border-end">
+                                <h4 class="text-primary mb-1">{{ estadisticas.ordenes_hoy }}</h4>
+                                <small class="text-muted">Órdenes</small>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h4 class="text-success mb-1">{{ estadisticas.ordenes_completadas }}</h4>
+                            <small class="text-muted">Completadas</small>
+                        </div>
+                        <div class="col-6">
+                            <div class="border-end">
+                                <h4 class="text-warning mb-1">{{ estadisticas.ordenes_pendientes }}</h4>
+                                <small class="text-muted">Pendientes</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-info mb-1">{{ estadisticas.ordenes_proceso }}</h4>
+                            <small class="text-muted">En proceso</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script defer src="{% static 'js/inicio.js' %}"></script>
+
+
+<style>
+.hover-shadow:hover {
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+}
+.clickable-row:hover {
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}

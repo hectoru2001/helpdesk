@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cambio obligatorio de contraseña</title>
+
+    <style>
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .contenedor {
+            max-width: 420px;
+            margin: 90px auto;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 28px;
+            border-top: 6px solid #7A003C;
+        }
+
+        .encabezado {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .encabezado h1 {
+            font-size: 18px;
+            margin: 0;
+            text-transform: uppercase;
+            color: #7A003C;
+        }
+
+        .encabezado p {
+            font-size: 12px;
+            color: #555;
+            margin-top: 6px;
+        }
+
+        .mensaje {
+            font-size: 12px;
+            background: #f7e6ed;
+            border: 1px solid #e3b6c9;
+            color: #5a002c;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            margin-bottom: 4px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            font-size: 13px;
+            border: 1px solid #aaa;
+            border-radius: 4px;
+            margin-bottom: 14px;
+        }
+
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #7A003C;
+        }
+
+        .acciones {
+            margin-top: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            font-size: 13px;
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+            background-color: #7A003C;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #5a002c;
+        }
+
+        .errores {
+            font-size: 12px;
+            background: #f8d7da;
+            border: 1px solid #f5c2c7;
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            color: #842029;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="contenedor">
+
+    <div class="encabezado">
+        <h1>Cambio de contraseña</h1>
+        <p>Primer acceso al sistema</p>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="errores">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" autocomplete="off">
+        {% csrf_token %}
+
+        <label>Nueva contraseña</label>
+        <input type="password" name="password1" required autocomplete="new-password">
+
+        <label>Confirmar contraseña</label>
+        <input type="password" name="password2" required autocomplete="new-password">
+
+        <div class="acciones">
+            <button type="submit">
+                Guardar contraseña
+            </button>
+        </div>
+    </form>
+
+    <div class="footer">
+        Dirección General de Informática y Comunicaciones<br>
+        Sistema institucional
+    </div>
+
+</div>
+
+</body>
+</html>

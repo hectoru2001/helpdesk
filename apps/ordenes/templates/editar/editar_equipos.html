@@ -1,0 +1,46 @@
+
+<!-- templates/editar/editar_equipos.html -->
+{% extends 'base.html' %}
+{% block title %} <h5 class="title-secondary">Editar equipos</h5> {% endblock %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primario text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-desktop me-2"></i>Agregar Equipo a Orden #{{ orden.orden }}
+                    </h4>
+                </div>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="card-body">
+                        <div class="row">
+                            {% for field in form.visible_fields %}
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">{{ field.label }}</label>
+                                {{ field|add_class:"form-control" }}
+                                {% if field.help_text %}
+                                    <small class="form-text text-muted">{{ field.help_text }}</small>
+                                {% endif %}
+                                {% if field.errors %}
+                                    <div class="text-danger small">{{ field.errors }}</div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="card-footer bg-light d-flex justify-content-between">
+
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save me-1"></i> Guardar Equipo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

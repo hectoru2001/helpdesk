@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}
+<h5 class="title-secondary">Reporte de órdenes y calificación</h5>
+{% endblock %}
+
+{% block content %}
+{% include 'mensajes.html' %}
+
+<div class="container-fluid">
+
+    <!-- Filtros -->
+    <form method="get" class="row g-3 align-items-end mb-3">
+
+        <div class="col-md-3">
+            <label class="form-label">Fecha inicio</label>
+            <input type="date"
+                   name="fecha_inicio"
+                   class="form-control"
+                   value="{{ request.GET.fecha_inicio }}">
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Fecha fin</label>
+            <input type="date"
+                   name="fecha_fin"
+                   class="form-control"
+                   value="{{ request.GET.fecha_fin }}">
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Aplicación</label>
+            <select name="aplicacion" class="form-select">
+                <option value="">-- Todas --</option>
+                {% for a in aplicaciones %}
+                    <option value="{{ a.id }}"
+                        {% if request.GET.aplicacion == a.id|stringformat:"s" %}selected{% endif %}>
+                        {{ a.nombre }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">
+                Filtrar
+            </button>
+        </div>
+
+        <div class="col-md-1">
+            
+        </div>
+
+    </form>
+
+    <!-- Tabla -->
+    <div class="table-container">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Orden</th>
+                    <th>Aplicación</th>
+                    <th>Usuarios</th>
+                    <th>Comentarios</th>
+                    <th>Calificación</th>
+                    <th>Fecha cierre</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for orden in ordenes %}
+                <tr>
+
+                    <!-- Orden -->
+                    <td>
+                        <strong>#{{ orden.orden }}</strong><br>
+                        <small class="text-muted">{{ orden.prioridad }}</small>
+                    </td>
+
+                    <!-- Aplicación -->
+                    <td>
+                        {{ orden.aplicacion }}
+                        <br>
+                        <small class="text-muted">
+                            {{ orden.clasificacion }}
+                        </small>
+                    </td>
+
+                    <!-- Usuarios asociados -->
+                    <td class="text-start">
+                        {% for uo in orden.usuarios_orden.all %}
+                            <div>
+                                {{ uo.realiza.get_full_name|default:uo.realiza.username }}
+                            </div>
+                        {% empty %}
+                            <small class="text-muted">Sin asignación</small>
+                        {% endfor %}
+                    </td>
+
+                    <!-- Comentarios -->
+                    <td class="text-start">
+                        {% for c in orden.comentario.all %}
+                            {% if c.comentario %}
+                                <div class="small text-muted">
+                                    💬 {{ c.comentario|truncatechars:80 }}
+                                </div>
+                            {% else %}
+                                <div class="small text-muted">
+                                    <em>Sin comentario</em>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+
+                    <!-- Calificación -->
+                    <td class="text-center">
+                        {% for c in orden.comentario.all %}
+                            {% if c.calificacion %}
+                                <strong>⭐ {{ c.calificacion }}/5</strong>
+                            {% else %}
+                                <em class="small text-muted">Sin calificación</em>
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+
+                    <!-- Fecha -->
+                    <td>
+                        {{ orden.fecha_terminado|date:"d/m/Y" }}
+                    </td>
+
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">
+                        No hay órdenes con los filtros seleccionados
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}

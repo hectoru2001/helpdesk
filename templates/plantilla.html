@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}{% endblock %}
+
+{% block content %}
+<div class="">
+
+    <div class="text-center mb-5">
+        <h1 class="fw-bold">Documentación de Clases y Componentes</h1>
+        <p class="lead">Ejemplos de cómo usar las clases de botones, bordes, tablas y estados en tus plantillas.</p>
+    </div>
+
+    <!-- ===== Sección de Botones ===== -->
+    <section class="mb-5">
+        <h2 class="fw-bold mb-3">Botones</h2>
+        <p class="mb-3">Ejemplos de botones:</p>
+        <div class="d-flex gap-3 flex-wrap mb-3">
+            <button class="btn btn-primary">Botón Principal</button>
+            <button class="btn btn-outline-primary">Botón Secundario</button>
+        </div>
+
+        <p class="mb-2">Código de ejemplo:</p>
+        <div class="code-container p-3 mb-4 bg-light border rounded">
+            <pre><code>&lt;button class="btn btn-primary"&gt;Botón Principal&lt;/button&gt;
+&lt;button class="btn btn-outline-primary"&gt;Botón Secundario&lt;/button&gt;</code></pre>
+        </div>
+    </section>
+
+    <!-- ===== Sección de Títulos con Bordes ===== -->
+    <section class="mb-5">
+        <h2 class="fw-bold mb-3">Títulos con Bordes</h2>
+        <p class="mb-3">Se pueden aplicar bordes a títulos y párrafos:</p>
+        <div class="d-flex gap-3 flex-wrap mb-3">
+            <h1 class="title-primary">Título H1</h1>
+            <h2 class="title-secondary">Título H2</h2>
+            <h3 class="title-tertiary">Título H3</h3>
+        </div>
+
+        <p class="mb-2">Código de ejemplo:</p>
+        <div class="code-container p-3 mb-4 bg-light border rounded">
+            <pre><code>&lt;h1 class="title-primary"&gt;Título H1&lt;/h1&gt;
+&lt;h2 class="title-secondary"&gt;Título H2&lt;/h2&gt;
+&lt;h3 class="title-tertiary"&gt;Título H3&lt;/h3&gt;</code></pre>
+        </div>
+    </section>
+
+    <!-- ===== Sección de Tablas ===== -->
+    <section class="mb-5">
+        <h2 class="fw-bold mb-3">Tablas</h2>
+        <p class="mb-3">Ejemplo de tabla con clases personalizadas:</p>
+        <div class="table-container mb-3">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Ana García</td>
+                        <td>ana.garcia@ejemplo.com</td>
+                        <td>Administrador</td>
+                        <td><span class="status status-active">Activo</span></td>
+                        <td>
+                            <div class="actions">
+                                <a href="#" class="btn-action"><i class="bi bi-pencil"></i></a>
+                                <a href="#" class="btn-action"><i class="bi bi-trash"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>María Rodríguez</td>
+                        <td>maria.r@ejemplo.com</td>
+                        <td>Usuario</td>
+                        <td><span class="status status-pending">Pendiente</span></td>
+                        <td>
+                            <div class="actions">
+                                <a href="#" class="btn-action"><i class="bi bi-pencil"></i></a>
+                                <a href="#" class="btn-action"><i class="bi bi-trash"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Javier Méndez</td>
+                        <td>javier.mendez@ejemplo.com</td>
+                        <td>Usuario</td>
+                        <td><span class="status status-inactive">Inactivo</span></td>
+                        <td>
+                            <div class="actions">
+                                <a href="#" class="btn-action"><i class="bi bi-pencil"></i></a>
+                                <a href="#" class="btn-action"><i class="bi bi-trash"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p class="mb-2">Código de ejemplo:</p>
+        <div class="code-container p-3 mb-4 bg-light border rounded">
+            <pre><code>&lt;table class="custom-table"&gt;
+    &lt;thead&gt;
+        &lt;tr&gt;
+            &lt;th&gt;Usuario&lt;/th&gt;
+            &lt;th&gt;Email&lt;/th&gt;
+            &lt;th&gt;Rol&lt;/th&gt;
+            &lt;th&gt;Estado&lt;/th&gt;
+            &lt;th&gt;Acciones&lt;/th&gt;
+        &lt;/tr&gt;
+    &lt;/thead&gt;
+&lt;/table&gt;</code></pre>
+        </div>
+    </section>
+
+    <section class="mb-5">
+        <h2 class="fw-bold mb-3">Inputs</h2>
+        <p class="mb-3">
+            Ejemplo de inputs
+        </p>
+
+        <!-- Ejemplo visual -->
+        <div class="input-floating">
+            <input type="text" id="nombre" placeholder=" " required>
+            <label for="nombre">Nombre completo</label>
+        </div>
+
+        <div class="input-floating">
+            <input type="email" id="correo" placeholder=" " required>
+            <label for="correo">Correo electrónico</label>
+        </div>
+
+        <!-- Ejemplo de código -->
+        <p class="mb-2">Código de ejemplo:</p>
+        <div class="bg-light p-3 rounded border">
+    <pre><code class="language-html">&lt;div class="input-floating"&gt;
+    &lt;input type="text" id="nombre" placeholder=" " required&gt;
+    &lt;label for="nombre"&gt;Nombre completo&lt;/label&gt;
+&lt;/div&gt;
+
+&lt;div class="input-floating"&gt;
+    &lt;input type="email" id="correo" placeholder=" " required&gt;
+     &lt;label for="correo"&gt;Correo electrónico&lt;/label&gt;
+&lt;/div&gt;
+    </code></pre>
+        </div>
+    </section>
+
+
+
+</div>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %} <h5 class="title-secondary"> Listado de órdenes </h5> {% endblock %}
+{% block content %}
+{% include 'mensajes.html' %}
+<div class="container-fluid">
+
+    <!-- Filtros -->
+    <form method="get" class="row g-3 align-items-end mb-3">
+
+        <div class="col-md-3">
+            <label class="form-label">Fecha inicio</label>
+            <input type="date"
+                   name="fecha_inicio"
+                   class="form-control"
+                   value="{{ request.GET.fecha_inicio }}">
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Fecha fin</label>
+            <input type="date"
+                   name="fecha_fin"
+                   class="form-control"
+                   value="{{ request.GET.fecha_fin }}">
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Tipo de usuario</label>
+            <select name="clasificacion" class="form-select">
+                <option value="">-- Todos --</option>
+                <option value="A" {% if request.GET.clasificacion == 'A' %}selected{% endif %}>Administrador</option>
+                <option value="P" {% if request.GET.clasificacion == 'P' %}selected{% endif %}>Programadores</option>
+                <option value="T" {% if request.GET.clasificacion == 'T' %}selected{% endif %}>Técnicos</option>
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">
+                Filtrar
+            </button>
+        </div>
+
+        <div class="col-md-1">
+            <a href="{% url 'reporte_ordenes_usuario' %}?{{ request.GET.urlencode }}"
+               class="btn btn-danger w-100">
+                PDF
+            </a>
+        </div>
+
+    </form>
+
+    <!-- Tabla -->
+    <div class="table-container">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Usuario</th>
+                    <th>Total</th>
+                    <th>Asignadas</th>
+                    <th>En Proceso</th>
+                    <th>Terminadas</th>
+                    <th>Canceladas</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in reporte %}
+                <tr>
+                    <td class="text-start">
+                        {% if row.realiza__first_name %}
+                            {{ row.realiza__first_name }} {{ row.realiza__last_name|default:"" }}<br>
+                        {% endif %}
+                        <small class="text-muted">
+                            {{ row.realiza__username|default:"Sin usuario" }}
+                        </small>
+                    </td>
+                    <td><strong>{{ row.total }}</strong></td>
+                    <td>{{ row.asignadas }}</td>
+                    <td>{{ row.en_proceso }}</td>
+                    <td class="text-success fw-bold">{{ row.terminadas }}</td>
+                    <td class="text-danger">{{ row.canceladas }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">Aún no hay usuarios con órdenes</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}

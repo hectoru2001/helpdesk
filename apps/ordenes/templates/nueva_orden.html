@@ -1,0 +1,386 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %} <h5 class="title-secondary"> Crear órden </h5> {% endblock %}
+{% block content %} 
+{% include 'mensajes.html' %}
+
+<div class="my-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <form method="post" id="nuevaOrden" action="" enctype="multipart/form-data" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                {# Errores del formulario #}
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            {# Oficio #}
+                            <div class="col-md-3">
+                                    <label class="form-label fw-semibold"></label>
+
+                                <div class="form-check mb-2">
+                                    <label class="form-label fw-semibold">¿Agregar oficio?</label>
+                                    <input class="form-check-input" type="checkbox" id="usar_oficio">
+                                </div>
+                                
+                            </div>
+                            <div class="col-md-4">
+                                <label for="oficio" class="form-label fw-semibold">Oficio</label>
+                                <input type="text" class="form-control" id="oficio" name="oficio"
+                                    value="{{ form.oficio.value|default:'S/N' }}"
+                                    placeholder="Ej: OF-2024-001"
+                                    disabled>
+                            </div>
+                            {# Prioridad #}
+                            <div class="col-md-3">
+                                <label for="prioridad" class="form-label fw-semibold">Prioridad</label>
+                                <select class="form-select" id="prioridad" name="prioridad" required>
+                                    <option value="">-------</option>
+                                    <option value="minima">Mínima</option>
+                                    <option value="normal">Normal</option>
+                                    <option value="programada">Programada</option>
+                                    <option value="urgente">Urgente</option>
+                                    <option value="inmediata">Inmediata</option>
+                                </select>
+                                <div class="invalid-feedback">Seleccione la prioridad.</div>
+                            </div>
+
+                            <!-- SECCIÓN: USUARIO SOLICITA -->
+                            <div class="card p-3 mb-4 shadow-sm border-0" style="background:#fafafa;">
+                                <h5 class="fw-bold mb-3" style="color:#831F46;">
+                                    Datos del usuario solicitante
+                                </h5>
+
+                                <div class="row g-3">
+
+                                    <!-- ID -->
+                                    <div class="col-md-3">
+                                        <label for="usuario_solicita" class="form-label fw-semibold">
+                                            <i class="fas fa-user me-2"></i>Numero de Empleado
+                                        </label>
+                                        <input type="text" 
+                                            class="form-control" 
+                                            id="usuario_solicita"
+                                            name="usuario_solicita"
+                                            placeholder="Presione enter para buscar el empleado"
+                                            onkeydown="if (event.key === 'Enter') buscarYSeleccionar('usuario_solicita', 'usuario_solicita_text', 'resultados_solicita', 'solicitante');">
+
+                                        <div id="resultados_solicita"
+                                            class="list-group mt-2 position-absolute w-100"
+                                            style="display:none; max-height:200px; overflow-y:auto; z-index:1000;">
+                                        </div>
+                                    </div>
+
+                                    <!-- NOMBRE -->
+                                    <div class="col-md-9">
+                                        <label for="usuario_solicita_text" class="form-label fw-semibold">
+                                            Nombre del usuario
+                                        </label>
+                                        <input type="text" 
+                                            class="form-control"
+                                            id="usuario_solicita_text"
+                                            name="nombre_solicitante"
+                                            placeholder="Nombre del usuario"
+                                            onkeyup="buscarEmpleado('usuario_solicita_text', 'usuario_solicita', 'resultados_solicita', 'solicitante')">
+                                    </div>
+
+                                </div>
+
+                                <!-- CAMPOS EXPANDIDOS -->
+                                <div id="solicitante_campos" class="mt-4">
+                                    <div class="row g-3">
+
+                                        <div class="col-md-4">
+                                            <label class="form-label">Dependencia</label>
+                                            <input type="text" class="form-control" id="solicitante_dependencia" name="dependencia_solicitante">
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <label class="form-label">Departamento</label>
+                                            <input type="text" class="form-control" id="solicitante_departamento" name="departamento_solicitante">
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <label class="form-label">Correo</label>
+                                            <input type="email" class="form-control" id="solicitante_correo" name="correo_solicitante">
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <label class="form-label">Extensión</label>
+                                            <input type="text" class="form-control" id="solicitante_telefono" name="telefono_solicitante">
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <label class="form-label">Puesto</label>
+                                            <select class="form-select" id="solicitante_puesto" name="puesto_solicitante">
+                                                <option value="">-------</option>
+                                                <option value="Director General">Director General</option>
+                                                <option value="Director de Área">Director de Área</option>
+                                                <option value="Coordinador Administrativo">Coordinador Administrativo</option>
+                                                <option value="Coordinador de Área">Coordinador de Área</option>
+                                                <option value="Empleado">Empleado</option>
+                                                <option value="Asistente">Asistente</option>
+                                                <option value="Auxiliar">Auxiliar</option>
+                                                <option value="Secretario">Secretario</option>
+                                                <option value="Regidor">Regidor</option>
+                                            </select>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+
+                            <!-- SECCIÓN: USUARIO BENEFICIADO -->
+                            <div class="card p-3 mb-4 shadow-sm border-0" style="background:#fafafa;">
+                                <div class="row align-items-center mb-4">
+                                    <div class="col-md-8">
+                                        <h5 class="fw-bold mb-0" style="color:#831F46;">
+                                            Datos del usuario beneficiado
+                                        </h5>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input" type="checkbox" id="igual_solicitante" role="switch">
+                                            <label class="form-check-label" for="igual_solicitante">
+                                                Igual solicitante
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row g-3">
+
+                                    <!-- ID -->
+                                    <div class="col-md-3">
+                                        <label for="usuario_beneficiado" class="form-label fw-semibold">
+                                            <i class="fas fa-user"></i> Numero de Empleado
+                                        </label>
+                                        <input type="text" 
+                                            class="form-control" 
+                                            id="usuario_beneficiado"
+                                            name="usuario_beneficiado"
+                                            placeholder="Presione enter para buscar el empleado"
+                                            onkeydown="if (event.key === 'Enter') buscarYSeleccionar('usuario_beneficiado', 'usuario_beneficiado_text', 'resultados_beneficiado', 'beneficiado');">
+
+                                        <div id="resultados_beneficiado" 
+                                            class="list-group mt-2 position-absolute w-100"
+                                            style="display:none; max-height:200px; overflow-y:auto; z-index:1000;">
+                                        </div>
+                                    </div>
+
+                                    <!-- NOMBRE -->
+                                    <div class="col-md-9">
+                                        <label for="usuario_beneficiado_text" class="form-label fw-semibold">
+                                            Nombre del usuario
+                                        </label>
+                                        <input type="text" 
+                                            class="form-control" 
+                                            id="usuario_beneficiado_text"
+                                            name="nombre_beneficiado"
+                                            placeholder="Nombre del usuario"
+                                            onkeyup="buscarEmpleado('usuario_beneficiado_text', 'usuario_beneficiado', 'resultados_beneficiado', 'beneficiado')">
+                                    </div>
+
+                                </div>
+
+                                <!-- CAMPOS EXPANDIDOS -->
+                                <div id="beneficiado_campos" class="mt-4">
+                                    <div class="row g-3">
+
+                                        <div class="col-md-5">
+                                            <label class="form-label">Dependencia</label>
+                                            <input type="text" class="form-control" id="beneficiado_dependencia" name="dependencia_beneficiado">
+                                        </div>
+
+                                        <div class="col-md-3">
+                                            <label class="form-label">Departamento</label>
+                                            <input type="text" class="form-control" id="beneficiado_departamento" name="departamento_beneficiado">
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <label class="form-label">Correo</label>
+                                            <input type="email" class="form-control" id="beneficiado_correo" name="correo_beneficiado">
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <label class="form-label">Extensión</label>
+                                            <input type="text" class="form-control" id="beneficiado_telefono" name="telefono_beneficiado">
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <label class="form-label">Puesto</label>
+                                            <select class="form-select" id="beneficiado_puesto" name="puesto_beneficiado">
+                                                <option value="">-------</option>
+                                                <option value="Director General">Director General</option>
+                                                <option value="Director de Área">Director de Área</option>
+                                                <option value="Coordinador Administrativo">Coordinador Administrativo</option>
+                                                <option value="Coordinador de Área">Coordinador de Área</option>
+                                                <option value="Empleado">Empleado</option>
+                                                <option value="Asistente">Asistente</option>
+                                                <option value="Auxiliar">Auxiliar</option>
+                                                <option value="Secretario">Secretario</option>
+                                                <option value="Regidor">Regidor</option>
+                                            </select>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+
+                            <!-- Linea separadora -->
+                            <div class="col-12">
+                                <hr>
+                            </div>
+
+                            {# Aplicación #}
+                            <div class="col-md-6">
+                                <label for="{{ form.aplicacion.id_for_label }}" class="form-label">Aplicación</label>
+                                {{ form.aplicacion }}
+                                <div class="invalid-feedback">Seleccione una aplicación.</div>
+                            </div>
+
+                            {# Clasificación #}
+                            <div class="col-md-6">
+                                <label for="{{ form.clasificacion.id_for_label }}" class="form-label"> Clasificación </label>
+                                {{ form.clasificacion }}
+                                <div class="invalid-feedback">Seleccione una clasificación.</div>
+                            </div>
+
+                            {# Descripción detallada #}
+                            <div class="col-12">
+                                <label for="{{ form.descripcion.id_for_label }}" class="form-label">Descripción / Problema / Petición</label>
+                                {{ form.descripcion }}
+                                <div class="invalid-feedback">La descripción detallada es obligatoria.</div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="{{ form.usuarios_asignados.id_for_label }}" class="form-label">
+                                        {{ form.usuarios_asignados.label }}
+                                    </label>
+                                    {{ form.usuarios_asignados }}
+                                    <div class="form-text text-muted">
+                                        Mantén presionada la tecla <kbd>Ctrl</kbd> (Windows) o <kbd>Cmd</kbd> (Mac) para seleccionar varios usuarios.
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Usuarios seleccionados</label>
+                                    <table class="table table-bordered table-sm" id="tablaUsuariosSeleccionados">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Nombre de usuario</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="2" class="text-center text-muted">Sin usuarios seleccionados</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div style="display:none;">
+                                    {{ form_usuario.usuarios_asignados }}
+                                </div>
+
+                            </div>
+
+                            <div class="col-12">
+                                <hr>
+                            </div>
+
+                            <!-- Sección para adjuntar archivos -->
+                            <div class="col-12 mb-3">
+                                <label for="archivos" class="form-label">Adjuntar archivos</label>
+                                <input type="file" class="form-control" id="archivos" name="archivos" multiple>
+                                <div class="form-text text-muted">
+                                    Puede seleccionar múltiples archivos.
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <!-- Select para decidir si se agregará equipo -->
+                                <div class="col-md-6">
+                                    <label for="tiene_equipo" class="form-label">¿Agregar equipo a la orden?</label>
+                                    <select id="tiene_equipo" name="tiene_equipo" class="form-select">
+                                        <option value="si">Sí</option>
+                                        <option value="no" selected>No</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Formulario de equipo (oculto inicialmente) -->
+                            <div id="formularioEquipo" style="display:none; margin-top: 1rem;">
+                                <h5>Datos del equipo</h5>
+                                <div class="row g-3">
+                                    
+
+                                    <div class="col-md-2">
+                                        <label for="{{ form_equipo.entregado_foraneo.id_for_label }}" class="form-label">Entregado foráneo</label>
+                                        {{ form_equipo.entregado_foraneo }}
+                                    </div>
+
+                                    <div class="col-md-5">
+                                        <label for="patrimonio" class="form-label"># Patrimonio</label>
+                                        <input type="text" class="form-control" id="patrimonio" name="patrimonio"
+                                            disabled>
+                                    </div>
+
+                                    <div class="col-md-5">
+                                        <label for="serie" class="form-label"># Serie</label>
+                                        <input type="text" class="form-control" id="serie" name="serie"
+                                             disabled>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="equipo" class="form-label">Equipo</label>
+                                        <input type="text" class="form-control" id="equipo" name="equipo"
+                                             disabled>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <label for="{{ form_equipo.marca.id_for_label }}" class="form-label">Marca</label>
+                                        {{ form_equipo.marca }}
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="{{ form_equipo.color.id_for_label }}" class="form-label">Color</label>
+                                        {{ form_equipo.color }}
+                                    </div>
+                                </div>
+                            </div>
+
+
+                
+
+                        </div>
+                    </div>
+
+                    <div class="card-footer text-end">
+                        <a href="" class="btn btn-secondary me-2">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Guardar orden</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+
+    <script defer src="{% static 'js/nueva_orden.js' %}"></script>
+
+{% endblock %}
+{% endblock %}

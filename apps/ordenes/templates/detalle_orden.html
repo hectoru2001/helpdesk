@@ -1,0 +1,516 @@
+{% extends "base.html" %}
+{% block title %} 
+<div class="d-flex justify-content-between align-items-center">
+    <h5 class="title-secondary mb-0">Detalles de orden</h5>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+    <div class="row">
+        <!-- Columna principal -->
+        <div class="col-lg-8">
+            <!-- Tarjeta principal -->
+            <div class="card border-0 shadow-sm mb-4">
+                <!-- HEADER -->
+                <div class="card-header bg-primario text-white d-flex flex-column flex-md-row justify-content-between align-items-md-center py-3">
+                    <div class="mb-2 mb-md-0">
+                        <h2 class="h5 mb-1 fw-bold">
+                            <i class="bi bi-file-text me-2"></i>Detalle de Orden #{{ orden.orden }}
+                        </h2>
+                        <small class="opacity-75">
+                            <i class="bi bi-calendar me-1"></i>{{ orden.fecha_captura|date:"d/m/Y H:i" }}
+                        </small>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="javascript:void(0);" onclick="document.referrer ? history.back() : window.location.href='{% url 'lista_ordenes' %}'" 
+                           class="btn btn-outline-light btn-sm">
+                            <i class="bi bi-arrow-left me-1"></i> Volver
+                        </a>
+                        {% if tipo_usuario == "A" %}
+                        <a href="{% url 'editar_orden' orden.orden %}" class="btn btn-light btn-sm">
+                            <i class="bi bi-pencil me-1"></i> Editar
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- BODY -->
+                <div class="card-body p-0 p-md-4">
+                    <!-- Estado y prioridad -->
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <div class="d-flex align-items-center">
+                                <span class="fw-bold me-3">Estatus:</span>
+                                {% if orden.estatus == 'A' %}
+                                    <span class="badge bg-primary rounded-pill px-3 py-2">
+                                        <i class="bi bi-person-check me-1"></i>Asignada
+                                    </span>
+                                {% elif orden.estatus == 'E' %}
+                                    <span class="badge bg-warning text-dark rounded-pill px-3 py-2">
+                                        <i class="bi bi-hourglass-split me-1"></i>En Proceso
+                                    </span>
+                                {% elif orden.estatus == 'T' %}
+                                    <span class="badge bg-success rounded-pill px-3 py-2">
+                                        <i class="bi bi-check-circle me-1"></i>Terminada
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary rounded-pill px-3 py-2">
+                                        <i class="bi bi-x-circle me-1"></i>Cancelada
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center justify-content-md-end">
+                                <span class="fw-bold me-3">Prioridad:</span>
+                                    <span class="badge bg-warning text-dark rounded-pill px-3 py-2">
+                                        <i class="bi bi-exclamation-circle me-1"></i>{{ orden.get_prioridad_display }}
+                                    </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grid de información -->
+                    <div class="row g-4">
+                        <!-- Información de solicitud -->
+                        <div class="col-md-6">
+                            <div class="card h-100 border">
+                                <div class="card-header bg-light py-2">
+                                    <h6 class="mb-0 fw-bold texto-primario">
+                                        <i class="bi bi-person-badge me-2"></i>Solicitante
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <dl class="row mb-0">
+                                        <dt class="col-sm-5 text-muted">Usuario:</dt>
+                                        <dd class="col-sm-7 fw-semibold">{{ orden.usuario_solicita }}</dd>
+                                        
+                                        <dt class="col-sm-5 text-muted">Nombre:</dt>
+                                        <dd class="col-sm-7">{{ orden.solicitantes.first.nombre_solicitante|default:"-" }}</dd>
+                                        
+                                        <dt class="col-sm-5 text-muted">Dependencia:</dt>
+                                        <dd class="col-sm-7">{{ orden.solicitantes.first.dependencia_solicitante|default:"Sin oficio" }}</dd>
+                                        
+                                        <dt class="col-sm-5 text-muted">Contacto:</dt>
+                                        <dd class="col-sm-7">
+                                            <div class="small">{{ orden.solicitantes.first.correo_solicitante|default:"-" }}</div>
+                                            <div class="small">Ext: {{ orden.solicitantes.first.telefono_solicitante|default:"-" }}</div>
+                                        </dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Información de beneficiado -->
+                        <div class="col-md-6">
+                            <div class="card h-100 border">
+                                <div class="card-header bg-light py-2">
+                                    <h6 class="mb-0 fw-bold texto-primario">
+                                        <i class="bi bi-person-check me-2"></i>Beneficiado
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <dl class="row mb-0">
+                                        <dt class="col-sm-5 text-muted">Usuario:</dt>
+                                        <dd class="col-sm-7 fw-semibold">{{ orden.usuario_beneficiado|default:"-" }}</dd>
+                                        
+                                        <dt class="col-sm-5 text-muted">Nombre:</dt>
+                                        <dd class="col-sm-7">{{ orden.solicitantes.first.nombre_beneficiado|default:"-" }}</dd>
+                                        
+                                        <dt class="col-sm-5 text-muted">Dependencia:</dt>
+                                        <dd class="col-sm-7">{{ orden.solicitantes.first.dependencia_beneficiado|default:"-" }}</dd>
+                                        
+                                        <dt class="col-sm-5 text-muted">Contacto:</dt>
+                                        <dd class="col-sm-7">
+                                            <div class="small">{{ orden.solicitantes.first.correo_beneficiado|default:"-" }}</div>
+                                            <div class="small">Ext: {{ orden.solicitantes.first.telefono_beneficiado|default:"-" }}</div>
+                                        </dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="col-12">
+                            <div class="card border">
+                                <div class="card-header bg-light py-2">
+                                    <h6 class="mb-0 fw-bold texto-primario">
+                                        <i class="bi bi-card-text me-2"></i>Descripción
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="p-3 rounded" style="background-color: #e9e9e9">
+                                        {{ orden.descripcion|linebreaks }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Solución -->
+                        {% if orden.solucion %}
+                        <div class="col-12">
+                            <div class="card border">
+                                <div class="card-header bg-light py-2">
+                                    <h6 class="mb-0 fw-bold texto-primario">
+                                        <i class="bi bi-check-circle me-2"></i>Solución
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="p-3 rounded" style="background-color: #e9e9e9;">
+                                        {{ orden.solucion|linebreaks }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Clasificación y aplicación -->
+                        <div class="col-md-6">
+                            <div class="card border">
+                                <div class="card-header bg-light py-2">
+                                    <h6 class="mb-0 fw-bold texto-primario">
+                                        <i class="bi bi-tags me-2"></i>Clasificación
+                                    </h6>
+                                </div>
+                                <div class="card-body text-center py-3">
+                                    <span class="badge bg-primario text-white fs-6 px-3 py-2">
+                                        {{ orden.clasificacion }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card border">
+                                <div class="card-header bg-light py-2">
+                                    <h6 class="mb-0 fw-bold texto-primario">
+                                        <i class="bi bi-display me-2"></i>Aplicación
+                                    </h6>
+                                </div>
+                                <div class="card-body text-center py-3">
+                                    <span class="badge bg-primario text-white fs-6 px-3 py-2">
+                                        {{ orden.aplicacion }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección de seguimiento -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primario text-white py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-clock-history me-2"></i>Seguimiento de la Orden
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-borderless mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">Responsable</th>
+                                    <th>Asignado por</th>
+                                    <th>Fecha Asignación</th>
+                                    <th>Estatus</th>
+                                    <th>Inicio</th>
+                                    <th class="pe-4">Término</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for u in orden.usuarios_orden.all %}
+                                <tr class="align-middle">
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center">
+                                            <div>
+                                                <strong>{{ u.realiza.get_full_name }}</strong>
+                                                <div class="text-muted small">{{ u.realiza.username }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ u.asigna.get_full_name }}</td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">
+                                            {{ u.fecha_asigna|date:"d/m/Y" }} {{ u.fecha_asigna|date:"H:i" }}
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if u.estatus == 'P' %}bg-warning text-dark{% else %}bg-success{% endif %}">
+                                            {{ u.get_estatus_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if u.inicia %}
+                                        <div class="text-success">
+                                            <i class="bi bi-play-circle me-1"></i>
+                                            {{ u.inicia|date:"d/m/Y H:i" }}
+                                        </div>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="pe-4">
+                                        {% if u.termina %}
+                                        <div class="text-success">
+                                            <i class="bi bi-flag-fill me-1"></i>
+                                            {{ u.termina|date:"d/m/Y H:i" }}
+                                        </div>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">
+                                        <i class="bi bi-info-circle me-2"></i>No hay seguimiento registrado
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna lateral -->
+        <div class="col-lg-4 mt-4 mt-lg-0">
+            <!-- Archivos adjuntos -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primario text-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-paperclip me-2"></i>Archivos Adjuntos
+                        </h5>
+                        <span class="badge bg-light text-dark" id="archivos-count">
+                            {{ orden.archivos.count|default:0 }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if orden.archivos.all %}
+                    <div class="list-group list-group-flush">
+                        {% for archivo in orden.archivos.all %}
+                        <div class="list-group-item px-0 py-3 border-bottom">
+                            <div class="d-flex align-items-start">
+                                <!-- Icono según tipo de archivo -->
+                                <div class="flex-shrink-0 me-3">
+                                    {% if archivo.archivo.name|lower|slice:"-4:" == ".pdf" %}
+                                    <i class="bi bi-file-pdf fs-3 text-danger"></i>
+                                    {% elif archivo.archivo.name|lower|slice:"-4:" == ".doc" or archivo.archivo.name|lower|slice:"-5:" == ".docx" %}
+                                    <i class="bi bi-file-word fs-3 text-primary"></i>
+                                    {% elif archivo.archivo.name|lower|slice:"-4:" == ".xls" or archivo.archivo.name|lower|slice:"-5:" == ".xlsx" %}
+                                    <i class="bi bi-file-excel fs-3 text-success"></i>
+                                    {% elif archivo.archivo.name|lower|slice:"-4:" == ".jpg" or archivo.archivo.name|lower|slice:"-5:" == ".jpeg" or archivo.archivo.name|lower|slice:"-4:" == ".png" or archivo.archivo.name|lower|slice:"-4:" == ".gif" %}
+                                    <i class="bi bi-file-image fs-3 text-info"></i>
+                                    {% elif archivo.archivo.name|lower|slice:"-4:" == ".zip" or archivo.archivo.name|lower|slice:"-4:" == ".rar" %}
+                                    <i class="bi bi-file-zip fs-3 text-warning"></i>
+                                    {% else %}
+                                    <i class="bi bi-file-earmark fs-3 text-secondary"></i>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Información del archivo -->
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-1">
+                                        <h6 class="mb-0 fw-bold text-truncate" style="max-width: 200px;">
+                                            {{ archivo.nombre|default:archivo.archivo.name }}
+                                        </h6>
+                                        <span class="badge bg-light text-dark small">
+                                            {{ archivo.archivo.size|filesizeformat }}
+                                        </span>
+                                    </div>
+                                    
+                                    {% if archivo.descripcion %}
+                                    <p class="small mb-2">{{ archivo.descripcion }}</p>
+                                    {% endif %}
+                                    
+                                    <!-- Botones de acción -->
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ archivo.archivo.url }}" 
+                                           download 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-download me-1"></i>Descargar
+                                        </a>
+                                        <a href="{{ archivo.archivo.url }}" 
+                                           target="_blank" 
+                                           class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-eye me-1"></i>Ver
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Estadísticas -->
+                    <div class="mt-3 pt-3 border-top">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <small class="text-muted">Total archivos</small>
+                                <p class="h5 mb-0">{{ orden.archivos.count }}</p>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Tamaño total</small>
+                                <p class="h5 mb-0">
+                                    {% with total_size=0 %}
+                                        {% for archivo in orden.archivos.all %}
+                                            {% widthratio archivo.archivo.size 1 1 as size %}
+                                            {% with total_size=total_size|add:size %}
+                                            {% endwith %}
+                                        {% endfor %}
+                                        {{ total_size|filesizeformat }}
+                                    {% endwith %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-paperclip display-5 text-muted mb-3"></i>
+                        <p class="text-muted mb-0">No hay archivos adjuntos</p>
+                        {% if tipo_usuario == "A" %}
+                        <a href="{% url 'editar_orden' orden.orden %}" class="btn btn-sm btn-outline-primary mt-2">
+                            <i class="bi bi-plus-circle me-1"></i>Agregar archivos
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Equipos asociados -->
+            {% if orden.equipos.all %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primario text-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-laptop me-2"></i>Equipos Asociados
+                        </h5>
+                        <span class="badge bg-light text-dark">{{ orden.equipos.count }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="accordionEquipos">
+                        {% for equipo in orden.equipos.all %}
+                        <div class="accordion-item border mb-3">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed py-2" type="button" data-bs-toggle="collapse" 
+                                        data-bs-target="#collapseEquipo{{ forloop.counter }}">
+                                    <div class="d-flex justify-content-between w-100 me-2">
+                                        <span class="fw-bold">{{ equipo.equipo }}</span>
+                                        {% if equipo.entregado_foraneo == 1 %}
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="bi bi-truck me-1"></i>Foráneo
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="collapseEquipo{{ forloop.counter }}" class="accordion-collapse collapse" 
+                                 data-bs-parent="#accordionEquipos">
+                                <div class="accordion-body">
+                                    <dl class="row mb-2">
+                                        <dt class="col-5 text-muted">Patrimonio:</dt>
+                                        <dd class="col-7">{{ equipo.patrimonio|default:"-" }}</dd>
+                                        
+                                        <dt class="col-5 text-muted">Serie:</dt>
+                                        <dd class="col-7">{{ equipo.serie|default:"-" }}</dd>
+                                        
+                                        <dt class="col-5 text-muted">Marca:</dt>
+                                        <dd class="col-7">{{ equipo.marca|default:"-" }}</dd>
+                                        
+                                        <dt class="col-5 text-muted">Color:</dt>
+                                        <dd class="col-7">{{ equipo.color|default:"-" }}</dd>
+                                    </dl>
+                                    
+                                    {% if equipo.descripcion %}
+                                    <div class="mt-2">
+                                        <label class="text-muted small">Descripción:</label>
+                                        <p class="mb-1">{{ equipo.descripcion }}</p>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if equipo.observaciones %}
+                                    <div class="mt-2">
+                                        <label class="text-muted small">Observaciones:</label>
+                                        <p class="mb-1">{{ equipo.observaciones }}</p>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="mt-3 pt-2 border-top">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <label class="text-muted small">Resguardante:</label>
+                                                <p class="mb-0 fw-semibold">{{ equipo.nombre_resguardante }}</p>
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="text-muted small">Área:</label>
+                                                <p class="mb-0">{{ equipo.area_resguardante }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Calificación -->
+            {% if estrellas and comentario.comentario %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-warning text-dark py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-star me-2"></i>Calificación del Usuario
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <!-- Estrellas -->
+                    <div class="mb-3">
+                        <div>
+                            <span class="h4 fw-bold me-2">{{ estrellas }}/5</span>
+                            <span class="badge bg-warning text-dark">Excelente</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Comentario -->
+                    <div class="border rounded p-3 bg-light">
+                        <i class="bi bi-quote text-muted float-start me-2"></i>
+                        <p class="mb-0 text-muted fst-italic">
+                            "{{ comentario.comentario }}"
+                        </p>
+                        <i class="bi bi-quote text-muted float-end ms-2" style="transform: rotate(180deg);"></i>
+                    </div>
+                    
+                    {% if orden.fecha_terminado %}
+                    <div class="mt-3 text-muted small">
+                        <i class="bi bi-calendar-check me-1"></i>
+                        Terminado: {{ orden.fecha_terminado|date:"d/m/Y H:i" }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos adicionales para los archivos adjuntos */
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+    }
+    .text-truncate {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+</style>
+{% endblock %}

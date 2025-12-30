@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %} <h5 class="title-secondary"> Listado de órdenes </h5> {% endblock %}
+{% block content %}
+{% include 'mensajes.html' %}
+<div class="mb-3">
+    <form method="get" class="row g-2">
+        <div class="col-md-4">
+            <input type="text" name="q" class="form-control" placeholder="Buscar por número de orden" value="{{ request.GET.q }}">
+        </div>
+        <div class="col-md-3">
+            <select name="estatus" class="form-select">
+                <option value="">-- Todos los estatus --</option>
+                <option value="E" {% if request.GET.estatus == 'E' %}selected{% endif %}>En Proceso</option>
+                <option value="A" {% if request.GET.estatus == 'A' %}selected{% endif %}>Asignadas</option>
+                <option value="C" {% if request.GET.estatus == 'C' %}selected{% endif %}>Canceladas</option>
+                <option value="T" {% if request.GET.estatus == 'T' %}selected{% endif %}>Terminadas</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="prioridad" class="form-select">
+                <option value="">-- Todas las prioridades  --</option>
+                <option value="minima" {% if request.GET.prioridad == 'minima' %}selected{% endif %}>Minima</option>
+                <option value="normal" {% if request.GET.prioridad == 'normal' %}selected{% endif %}>Normal</option>
+                <option value="programada" {% if request.GET.prioridad == 'programada' %}selected{% endif %}>Programada</option>
+                <option value="urgente" {% if request.GET.prioridad == 'urgente' %}selected{% endif %}>Urgente</option>
+                <option value="inmediata" {% if request.GET.prioridad == 'inmediata' %}selected{% endif %}>Inmediata</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary w-100">
+                Filtrar
+            </button>
+            <a href="?" class="btn btn-outline-secondary w-100">
+                Limpiar
+            </a>
+        </div>
+    </form>
+</div>
+
+<div class="table-container">
+    <table class="custom-table">
+        <thead>
+            <tr>
+                <th>Prioridad</th>
+                <th>Orden</th>
+                <th>Dependencia</th>
+                <th>Solicitante</th>
+                <th>Fecha Recepcion</th>
+                <th>Estatus</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% if ordenes %}
+            {% for o in ordenes %}
+            <tr>
+                <td>{{ o.get_prioridad_display }}</td>
+                <td>{{ o.orden }}</td>
+                <td>{{ o.solicitantes.first.dependencia_solicitante }}</td>
+                <td>{{ o.solicitantes.first.nombre_solicitante }}</td>
+                <td>{{ o.fecha_captura|date:"d/m/Y H:i" }}</td>
+                <td>{{ o.get_estatus_display }}</td>
+                <td>
+                    <div class="" style="gap: 6px; display: flex;">
+                        <a href="{% url 'detalle_orden' o.orden %}" aria-label="Ver"><i class="btn btn-sm btn-outline-primary bi bi-eye"></i></a>
+                        <a href="{% url 'editar_orden' o.orden%}" aria-label="Editar"><i class="btn btn-sm btn-outline-secondary bi bi-pencil"></i></a>
+                        <button type="button" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal{{ o.orden }}" aria-label="Eliminar" class="btn btn-sm btn-outline-danger bi bi-trash"></button>
+                    </div>
+                </td>
+            </tr>
+            <!-- Modal -->
+            <div class="modal fade" id="confirmDeleteModal{{ o.orden }}" tabindex="-1" aria-labelledby="confirmDeleteLabel{{ o.orden }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="confirmDeleteLabel{{ o.orden }}">Confirmar eliminación</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        ¿Estás seguro de que quieres eliminar la orden #{{ o.orden }}? Esta acción no se puede deshacer.
+                    </div>
+                    <div class="modal-footer">
+                        <a class="btn btn-sm btn-danger bi bi-trash" href="{% url 'eliminar_orden' o.orden%}">Si, estoy seguro</a>
+                    </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="8" class="text-center">No hay órdenes registradas.</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+{% if is_paginated %}
+<nav>
+    <ul class="pagination justify-content-center">
+
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">«</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link">«</span>
+        </li>
+        {% endif %}
+
+        {% for num in paginator.page_range %}
+            {% if num == 1 or num == paginator.num_pages %}
+                {# siempre mostrar primera y última #}
+                <li class="page-item {% if num == page_obj.number %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+
+            {% elif num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+                {# mostrar páginas cercanas a la actual #}
+                <li class="page-item {% if num == page_obj.number %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+
+            {% elif num == page_obj.number|add:"-3" or num == page_obj.number|add:"3" %}
+                {# mostrar puntos suspensivos solo una vez #}
+                <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% endif %}
+        {% endfor %}
+
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">»</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link">»</span>
+        </li>
+        {% endif %}
+
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
