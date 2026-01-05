@@ -13,7 +13,7 @@ SECRET_KEY = 'wlEaxentmSboC5pei5BhvR8iJde8gDahIumrhs_LCkzdykHQEvNBB_k8jl4TZFo60F
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['hlpdesk.gobjuarez.mpio']
+ALLOWED_HOSTS = ['hlpdesk.gobjuarez.mpio', '10.236.62.93']
 CSRF_TRUSTED_ORIGINS = ['https://hlpdesk.gobjuarez.mpio/']
 
 # Application definition
