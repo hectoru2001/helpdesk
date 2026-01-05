@@ -4,10 +4,32 @@ class EmpleadoServicio:
 
     @staticmethod
     def buscar_empleado(nombre):
-        sql = """ SELECT TOP 20 * FROM vw_maestro_hd WHERE Nombre_Empleado LIKE ? """
-
+        sql = """
+            SELECT TOP 20 *
+            FROM vw_maestro_hd
+            WHERE Nombre_Empleado LIKE ?
+        """
         return query_sybase(sql, [f"%{nombre}%"])
-    
+
+    @staticmethod
+    def buscar_funcionario(nombre):
+        sql = """
+            SELECT TOP 20 *
+            FROM vw_maestro_hd
+            WHERE Nombre_Empleado LIKE ?
+        """
+        return query_sybase(sql, [f"%{nombre}%"], database="funcionarios")
+
+    @staticmethod
+    def buscar_numempleado(empleado, database="rhumanos"):
+        sql = """
+            SELECT *
+            FROM vw_maestro_hd
+            WHERE Numero_Empleado = ?
+        """
+        return query_sybase(sql, [int(empleado)], database=database)
+
+
     def listar_todos():
         sql = """ SELECT * FROM vw_maestro_hd ORDER BY Numero_Empleado """
 
@@ -17,3 +39,4 @@ class EmpleadoServicio:
         sql = """ SELECT * FROM vw_maestro_hd WHERE Numero_Empleado = ? """
 
         return query_sybase(sql, [int(empleado)])
+    

@@ -14,6 +14,7 @@ SECRET_KEY = 'wlEaxentmSboC5pei5BhvR8iJde8gDahIumrhs_LCkzdykHQEvNBB_k8jl4TZFo60F
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = ['https://hlpdesk.gobjuarez.mpio/']
 
 # Application definition
 INSTALLED_APPS = [

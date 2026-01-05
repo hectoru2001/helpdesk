@@ -72,17 +72,36 @@ let timer = null;
 function buscarEmpleado(inputTextId, inputHiddenId, resultsId, prefix) {
     clearTimeout(timer);
 
-    const input = document.getElementById(inputTextId);
-    const q = input.value.trim().toUpperCase();
+    const inputTexto = document.getElementById(inputTextId);
+    const inputAnterior = document.getElementById(inputHiddenId);
+
+    const q = inputTexto.value.trim().toUpperCase();
     if (q.length < 3) return;
 
+    const valorAnterior = Number(inputAnterior?.value || 0);
+
+    // 🔁 Elegir endpoint según el valor anterior
+    const endpoint = valorAnterior === 0
+        ? "/ordenes/funcionarios/buscar/"
+        : "/ordenes/empleados/buscar/";
+
     timer = setTimeout(() => {
-        fetch(`/ordenes/empleados/buscar/?q=${encodeURIComponent(q)}`)
+        fetch(`${endpoint}?q=${encodeURIComponent(q)}`)
             .then(res => res.json())
-            .then(data => cargarResultados(data.resultados, inputTextId, inputHiddenId, resultsId, prefix))
+            .then(data => {
+                if (!data.resultados) return;
+                cargarResultados(
+                    data.resultados,
+                    inputTextId,
+                    inputHiddenId,
+                    resultsId,
+                    prefix
+                );
+            })
             .catch(console.error);
     }, 400);
 }
+
 
 function buscarPorID(inputId, inputTextId, resultsId, prefix) {
     buscarEmpleado(inputId, inputTextId, resultsId, prefix);
@@ -139,20 +158,31 @@ function seleccionarEmpleado(emp, inputTextId, inputHiddenId, resultsId, prefix)
 function buscarYSeleccionar(inputId, inputTextId, resultsId, prefix) {
     event.preventDefault();
 
-    const valor = document.getElementById(inputId).value.trim();
+    const input = document.getElementById(inputId);
+    const valor = input.value.trim();
 
-    if (!valor) return;
+    // Si el valor es 0 → pasar al siguiente textbox
+    if (Number(valor) === 0) {
+        const inputs = Array.from(
+            document.querySelectorAll("input, select, textarea")
+        );
+
+        const index = inputs.indexOf(input);
+        if (index !== -1 && inputs[index + 1]) {
+            inputs[index + 1].focus();
+        }
+        return;
+    }
 
     fetch(`/ordenes/empleados/buscar/?q=${encodeURIComponent(valor)}`)
         .then(res => res.json())
         .then(data => {
             if (!data.resultados || data.resultados.length === 0) {
-                alert("Usuario no encontrado")
+                alert("Usuario no encontrado");
                 return;
             }
 
             const emp = data.resultados[0];
-
             seleccionarEmpleado(emp, inputTextId, inputId, resultsId, prefix);
         })
         .catch(console.error);

@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from core.servicios.empleados import EmpleadoServicio
+from core.servicios.empleados import *
 
 class BuscarEmpleadoAPI(APIView):
 
@@ -18,3 +18,12 @@ class BuscarEmpleadoAPI(APIView):
             empleados = EmpleadoServicio.buscar_empleado(q)
 
         return Response({"resultados": empleados}, status=200)
+    
+class BuscarFuncionarioAPI(APIView):
+
+    def get(self, request):
+        q = request.GET.get("q", "").strip()
+
+        funcionarios = EmpleadoServicio.buscar_funcionario(q)
+
+        return Response({"resultados": funcionarios}, status=200)

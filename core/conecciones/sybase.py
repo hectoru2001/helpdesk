@@ -1,6 +1,6 @@
 import pyodbc
 
-def get_sybase_connection():
+def get_sybase_connection(database="rhumanos"):
     return pyodbc.connect(
         "DRIVER=FreeTDS;"
         "SERVER=10.236.0.3;"
@@ -8,12 +8,12 @@ def get_sybase_connection():
         "TDS_Version=5.0;"
         "UID=usr_helpdesk;"
         "PWD=Y53r-H3lDs;"
-        "DATABASE=rhumanos;"
+        f"DATABASE={database};"
         "CHARSET=UTF8;"
     )
 
-def query_sybase(sql, params=None):
-    conn = get_sybase_connection()
+def query_sybase(sql, params=None, database="rhumanos"):
+    conn = get_sybase_connection(database)
     cursor = conn.cursor()
 
     if params:
@@ -26,3 +26,4 @@ def query_sybase(sql, params=None):
 
     conn.close()
     return results
+
