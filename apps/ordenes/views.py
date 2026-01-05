@@ -33,8 +33,6 @@ from reportlab.lib.units import mm
 from reportlab.platypus import Image
 from reportlab.lib.pagesizes import LETTER
 
-from core.decorators.permisos import administrador_required
-
 @method_decorator(administrador_required(False), name='dispatch')
 @method_decorator(csrf_exempt, name='dispatch')
 class OrdenCreateTicket(CreateView):
@@ -490,6 +488,7 @@ class OrdenesPorUsuarioView(ListView):
         return context
 
 # === Endpionts === #
+@administrador_required(True)
 def eliminar_orden(request, pk):
     orden = get_object_or_404(Orden, orden=pk)
 

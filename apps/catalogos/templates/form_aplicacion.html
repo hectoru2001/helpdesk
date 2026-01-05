@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}
+<h5 class="title-secondary">
+    {% if form.instance.pk %}
+        Editar aplicación
+    {% else %}
+        Nueva aplicación
+    {% endif %}
+</h5>
+{% endblock %}
+
+{% block content %}
+{% include 'mensajes.html' %}
+
+<form method="post" class="card p-3">
+    {% csrf_token %}
+
+    <div class="row g-3">
+        <div class="col-md-8">
+            <label class="form-label">Descripción</label>
+            {{ form.descripcion }}
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Estatus</label>
+            {{ form.estatus }}
+        </div>
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-primary">
+            Guardar
+        </button>
+        <a href="{% url 'lista_aplicaciones' %}" class="btn btn-outline-secondary">
+            Cancelar
+        </a>
+    </div>
+</form>
+{% endblock %}

@@ -3,7 +3,10 @@ from django.utils import timezone
 from apps.ordenes.models import Orden
 from apps.notificaciones.models import Notificacion
 from apps.usuarios.models import ExtraUsuarios
+from core.decorators.permisos import administrador_required
+from django.utils.decorators import method_decorator
 
+@method_decorator(administrador_required(False), name='dispatch')
 class DashboardView(TemplateView):
     template_name = 'inicio.html'
 
@@ -41,6 +44,7 @@ class DashboardView(TemplateView):
 
         return context
     
+@method_decorator(administrador_required(False), name='dispatch')
 class OrdenDetailView(DetailView):
     model = Orden
     template_name = 'detalle_orden.html'

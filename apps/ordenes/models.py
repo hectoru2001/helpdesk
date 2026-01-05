@@ -97,8 +97,6 @@ class SolicitantexOrden(models.Model):
     telefono_solicitante = models.CharField(max_length=15, **vacios)  
 
 
-
-
 # Modelos auxiliares
 class Aplicaciones(models.Model):
     descripcion = models.CharField(max_length=100)

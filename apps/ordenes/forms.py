@@ -50,8 +50,8 @@ class OrdenForm(BootstrapMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['aplicacion'].queryset = Aplicaciones.objects.order_by('descripcion')
-        self.fields['clasificacion'].queryset = Clasificaciones.objects.order_by('descripcion')
+        self.fields['aplicacion'].queryset = Aplicaciones.objects.filter(estatus=1).order_by('descripcion')
+        self.fields['clasificacion'].queryset = Clasificaciones.objects.filter(estatus=1).order_by('descripcion')
 
         self.fields['usuarios_asignados'].queryset = (
             User.objects.filter(extra__estatus="A")

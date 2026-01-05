@@ -13,11 +13,16 @@ class UsuarioCompletoForm(BootstrapMixin, forms.ModelForm):
 
     tipo = forms.ChoiceField(choices=TIPO_CHOICES, widget=forms.Select())
     empleado = forms.IntegerField()
-    password = forms.CharField(widget=forms.PasswordInput, required=False)
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        required=False,
+        label="Contraseña",
+        help_text="Si se deja vacío, la contraseña actual se conservará."
+    )
 
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email', 'password']
+        fields = ['username', 'first_name', 'last_name', 'email'] 
 
     def __init__(self, *args, **kwargs):
         self.extra = kwargs.pop('extrausuario', None)
@@ -41,8 +46,9 @@ class UsuarioCompletoForm(BootstrapMixin, forms.ModelForm):
     def save(self, commit=True):
         user = super().save(commit=False)
 
-        if self.cleaned_data.get('password'):
-            user.set_password(self.cleaned_data['password'])
+        password = self.cleaned_data.get('password')
+        if password:
+            user.set_password(password)
 
         if commit:
             user.save()

@@ -105,11 +105,13 @@
                                     {% endfor %}
                                 {% endwith %}
                             </td>
-                            <td>
-                                {% for ux_o in orden.usuarios_orden.all %}
-                                    {{ ux_o.realiza.get_full_name }}
-                                    {% if not forloop.last %}, {% endif %}
+                            <td title="{% for ux_o in orden.usuarios_orden.all %}{{ ux_o.realiza.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+                                {% for ux_o in orden.usuarios_orden.all|slice:":2" %}
+                                    {{ ux_o.realiza.get_full_name }}{% if not forloop.last %}, {% endif %}
                                 {% endfor %}
+                                {% if orden.usuarios_orden.count > 2 %}
+                                    <span class="text-primary"> (+{{ orden.usuarios_orden.count|add:"-2" }})</span>
+                                {% endif %}
                             </td>
                             <td>
                                 {% if orden.estatus == "A" %}
@@ -191,7 +193,7 @@
                 <li class="page-item">
                     <a class="page-link" 
                     href="?page={{ ordenes.previous_page_number }}{% if request.GET.fecha_inicio %}&fecha_inicio={{ request.GET.fecha_inicio }}{% endif %}{% if request.GET.fecha_fin %}&fecha_fin={{ request.GET.fecha_fin }}{% endif %}{% if request.GET.estatus %}&estatus={{ request.GET.estatus }}{% endif %}">
-                        Anterior
+                        <
                     </a>
                 </li>
             {% endif %}
@@ -215,7 +217,7 @@
                 <li class="page-item">
                     <a class="page-link" 
                     href="?page={{ ordenes.next_page_number }}{% if request.GET.fecha_inicio %}&fecha_inicio={{ request.GET.fecha_inicio }}{% endif %}{% if request.GET.fecha_fin %}&fecha_fin={{ request.GET.fecha_fin }}{% endif %}{% if request.GET.estatus %}&estatus={{ request.GET.estatus }}{% endif %}">
-                        Siguiente
+                        >
                     </a>
                 </li>
             {% endif %}

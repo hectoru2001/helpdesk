@@ -65,7 +65,10 @@
                     <div class="" style="gap: 6px; display: flex;">
                         <a href="{% url 'detalle_orden' o.orden %}" aria-label="Ver"><i class="btn btn-sm btn-outline-primary bi bi-eye"></i></a>
                         <a href="{% url 'editar_orden' o.orden%}" aria-label="Editar"><i class="btn btn-sm btn-outline-secondary bi bi-pencil"></i></a>
-                        <button type="button" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal{{ o.orden }}" aria-label="Eliminar" class="btn btn-sm btn-outline-danger bi bi-trash"></button>
+                        {% if not o.get_estatus_display == "Terminada" %}
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal{{ o.orden }}" aria-label="Eliminar" class="btn btn-sm btn-outline-danger bi bi-trash"></button>
+                        {% endif %}
+    
                     </div>
                 </td>
             </tr>

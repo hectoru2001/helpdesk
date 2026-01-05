@@ -9,8 +9,11 @@ from django.conf import settings
 from django.shortcuts import redirect
 from django.shortcuts import get_object_or_404
 from django.db import transaction, IntegrityError
+from core.decorators.permisos import administrador_required
+from django.utils.decorators import method_decorator
 
 # Vistas para usuarios
+@method_decorator(administrador_required(True), name='dispatch')
 class ListaUsuarios(ListView):
     model = ExtraUsuarios
     template_name = 'lista_usuarios.html'
@@ -40,6 +43,7 @@ class ListaUsuarios(ListView):
         qs = qs.order_by('empleado')
         return qs
 
+@method_decorator(administrador_required(True), name='dispatch')
 class CrearUsuario(CreateView):
     model = User
     form_class = UsuarioCompletoForm
@@ -75,6 +79,7 @@ class CrearUsuario(CreateView):
                 messages.warning(self.request, f"{field.capitalize()}: {error}")
         return super().form_invalid(form)
 
+@method_decorator(administrador_required(True), name='dispatch')
 class DetalleUsuario(DetailView):
     model = ExtraUsuarios
     template_name = 'detalle_usuario.html'
@@ -88,6 +93,9 @@ class DetalleUsuario(DetailView):
         context['MEDIA_URL'] = settings.MEDIA_URL
         return context
 
+from django.contrib.auth import update_session_auth_hash
+
+@method_decorator(administrador_required(True), name='dispatch')
 class ActualizarUsuario(UpdateView):
     model = User
     form_class = UsuarioCompletoForm
@@ -106,13 +114,20 @@ class ActualizarUsuario(UpdateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        form.save_extra()                     
+        form.save_extra()
+
+        if form.cleaned_data.get('password'):
+            update_session_auth_hash(self.request, self.object)
+
         messages.success(self.request, "Usuario actualizado correctamente")
         return response
 
+
+@method_decorator(administrador_required(True), name='dispatch')
 class ListaEmpleados(TemplateView):
     template_name = "lista_empleados.html"
 
+@administrador_required(True)
 def eliminar_usuario(request, pk):
     """
     Elimina un usuario y sus dependientes de ExtraUsuarios.
