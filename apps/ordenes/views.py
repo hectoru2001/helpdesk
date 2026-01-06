@@ -28,10 +28,7 @@ from apps.usuarios.models import ExtraUsuarios
 from apps.notificaciones.views import Notificar, notificaciones_activadas, obtener_correos_orden, obtener_correo_usuario
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
-from reportlab.lib import colors
-from reportlab.lib.units import mm
-from reportlab.platypus import Image
-from reportlab.lib.pagesizes import LETTER
+from reportlab.lib.utils import simpleSplit
 
 @method_decorator(administrador_required(False), name='dispatch')
 @method_decorator(csrf_exempt, name='dispatch')
@@ -150,11 +147,15 @@ class ListaOrdenes(ListView):
         qs = super().get_queryset()
 
         q = self.request.GET.get('q')
+        tipo = self.request.GET.get('tipo', 'orden')
         estatus = self.request.GET.get('estatus')
         prioridad = self.request.GET.get('prioridad')
 
         if q:
-            qs = qs.filter(orden__icontains=q)
+            if tipo == 'oficio':
+                qs = qs.filter(oficio__icontains=q)
+            else:
+                qs = qs.filter(orden__icontains=q)
 
         if estatus:
             qs = qs.filter(estatus=estatus)
@@ -273,6 +274,36 @@ class EditarOrden(UpdateView):
             print(k)
 
         return super().form_invalid(form)
+
+@method_decorator(administrador_required(True), name='dispatch')
+class DuplicarOrden(View):
+
+    template_name = "duplicar_orden.html"
+
+    def get(self, request):
+        return render(request, self.template_name)
+
+    def post(self, request):
+        numero_orden = request.POST.get("orden")
+
+        if not numero_orden:
+            messages.error(request, "Debes ingresar un número de orden.")
+            return render(request, self.template_name)
+
+        orden = Orden.objects.filter(orden=numero_orden).first()
+
+        if not orden:
+            messages.error(request, "La orden no existe.")
+            return render(request, self.template_name)
+
+        nueva_orden = duplicar_orden(orden)
+
+        messages.success(
+            request,
+            f"Orden duplicada correctamente. Nueva orden #{nueva_orden.orden}"
+        )
+
+        return redirect("lista_ordenes")
 
 @method_decorator(administrador_required(True), name='dispatch')
 class Agregar_Equipo(CreateView):
@@ -669,8 +700,6 @@ def formatear(fecha):
     if not fecha:
         return ""
     return fecha.strftime("%d/%m/%Y %H:%M")
-
-from reportlab.lib.utils import simpleSplit
 
 def draw_text_in_box(p, text, x, y, width, height, font="Helvetica", size=9, leading=11):
     p.setFont(font, size)
@@ -1081,3 +1110,47 @@ def reasignar_orden(request: HttpRequest):
             {"error": f"Error interno: {str(e)}"},
             status=500
         )
+
+@transaction.atomic
+def duplicar_orden(orden):
+    nueva_orden = Orden.objects.create(
+        oficio=orden.oficio,
+        usuario_solicita=orden.usuario_solicita,
+        usuario_beneficiado=orden.usuario_beneficiado,
+        telefono=orden.telefono,
+        aplicacion=orden.aplicacion,
+        clasificacion=orden.clasificacion,
+        descripcion=orden.descripcion,
+        prioridad=orden.prioridad,
+        equipo=orden.equipo,
+        captura=orden.captura,
+        estatus='A',
+        capacitacion=orden.capacitacion,
+        capacitacion_descripcion=orden.capacitacion_descripcion,
+    )
+
+    # Solicitantes
+    for s in orden.solicitantes.all():
+        s.pk = None
+        s.orden = nueva_orden
+        s.save()
+
+    # Equipos
+    for e in orden.equipos.all():
+        e.pk = None
+        e.orden = nueva_orden
+        e.save()
+
+    # Usuarios asignados (opcional, tú decides)
+    for u in orden.usuarios_orden.all():
+        u.pk = None
+        u.orden = nueva_orden
+        u.save()
+
+    # Archivos (NO duplica el archivo físico, solo la relación)
+    for a in orden.archivos.all():
+        a.pk = None
+        a.orden = nueva_orden
+        a.save()
+
+    return nueva_orden

@@ -58,7 +58,10 @@
                     </a>
                     <div class="submenu collapse" id="ordenesSubmenu">
                         <a href="{% url 'crear_orden' %}" class="submenu-link">Nueva</a>
-                        {% if tipo_usuario == "A" %} <a href="{% url 'lista_ordenes' %}" class="submenu-link">Gestionar</a> {% endif %}
+                        {% if tipo_usuario == "A" %} 
+                            <a href="{% url 'lista_ordenes' %}" class="submenu-link">Gestionar</a> 
+                            <a href="{% url 'duplicar_orden' %}" class="submenu-link">Duplicar</a>                    
+                        {% endif %}
                         <a href="{% url 'ordenes_lista' %}" class="submenu-link">Mis asignadas</a>
                     </div>
                 </li>

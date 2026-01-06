@@ -39,7 +39,13 @@
                 <div class="card-body p-0 p-md-4">
                     <!-- Estado y prioridad -->
                     <div class="row mb-4">
-                        <div class="col-md-6 mb-3 mb-md-0">
+                        <div class="col-md-4">
+                            <span class="fw-bold me-3">Oficio:</span>
+                            <span class="badge bg-primario rounded-pill px-3 py-2">
+                                <i class="bi bi-exclamation-circle me-1"></i>{{ orden.oficio }}
+                            </span>
+                        </div>
+                        <div class="col-md-4">
                             <div class="d-flex align-items-center">
                                 <span class="fw-bold me-3">Estatus:</span>
                                 {% if orden.estatus == 'A' %}
@@ -61,7 +67,7 @@
                                 {% endif %}
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="d-flex align-items-center justify-content-md-end">
                                 <span class="fw-bold me-3">Prioridad:</span>
                                     <span class="badge bg-warning text-dark rounded-pill px-3 py-2">

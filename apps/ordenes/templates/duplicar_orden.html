@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %} <h5 class="title-secondary"> Duplicar orden </h5> {% endblock %}
+{% block content %}
+<div>
+
+    <div class="card shadow border-0">
+        <div class="card-body px-4 py-4">
+
+            <p class="text-muted mb-4">
+                Ingresa el número de orden que deseas duplicar.  
+                Se creará una nueva orden con la misma información.
+            </p>
+
+            <form method="post" id="form-duplicar">
+                {% csrf_token %}
+
+                <div class="row align-items-end">
+                    <div class="col-md-10 mb-3">
+                        <label for="orden" class="form-label fw-semibold">
+                            Número de orden
+                        </label>
+                        <input
+                            type="text"
+                            name="orden"
+                            id="orden"
+                            class="form-control form-control"
+                            required
+                            autofocus
+                        >
+                    </div>
+
+                    <div class="col-md-2 mb-3 d-grid">
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            data-bs-toggle="modal"
+                            data-bs-target="#confirmarDuplicado"
+                        >
+                            <i class="bi bi-files"></i> Duplicar
+                        </button>
+                    </div>
+                </div>
+
+                {% if error %}
+                    <div class="alert alert-danger py-2 mt-2">
+                        {{ error }}
+                    </div>
+                {% endif %}
+
+                <!-- Modal -->
+                <div
+                    class="modal fade"
+                    id="confirmarDuplicado"
+                    tabindex="-1"
+                    aria-hidden="true"
+                >
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    Confirmar duplicado
+                                </h5>
+                                <button
+                                    type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="modal"
+                                ></button>
+                            </div>
+
+                            <div class="modal-body">
+                                <p class="mb-0">
+                                    ¿Estás seguro de que deseas duplicar la orden
+                                    <strong id="orden-preview"></strong>?
+                                </p>
+                                <small class="text-muted">
+                                    Se generará una nueva orden con un número distinto.
+                                </small>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button
+                                    type="button"
+                                    class="btn btn-outline-secondary"
+                                    data-bs-dismiss="modal"
+                                >
+                                    Cancelar
+                                </button>
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary"
+                                >
+                                    Sí, duplicar
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <!-- /Modal -->
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const formDuplicar = document.getElementById("form-duplicar");
+    const ordenInput = document.getElementById("orden");
+    const ordenPreview = document.getElementById("orden-preview");
+
+    // Actualiza preview del modal
+    ordenInput.addEventListener("input", () => {
+        ordenPreview.textContent = ordenInput.value || "—";
+    });
+
+    // Evitar envío con Enter
+    ordenInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+        }
+    });
+</script>
+
+{% endblock %}

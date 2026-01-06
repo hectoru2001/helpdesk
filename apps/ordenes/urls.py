@@ -19,6 +19,7 @@ urlpatterns = [
     path('archivo/<int:pk>/eliminar/', EliminarArchivoOrden.as_view(), name='eliminar_archivo_orden'),
     path('ordenes_usuario/<int:user_id>/', EstadoUsuariosView.as_view(), name='ordenes_usuario'),
     path('estado_usuarios/<int:user_id>/', OrdenesPorUsuarioView.as_view(), name='detalle_usuario_ordenes'),
+    path("duplicar_orden/", DuplicarOrden.as_view(), name='duplicar_orden'),
 
 
     # === Endpint órdenes asignadas === #
