@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %} <h5 class="title-secondary"> Listado de órdenes </h5> {% endblock %}
 {% block content %}
 {% include 'mensajes.html' %}
@@ -54,7 +55,13 @@
         <tbody>
             {% if ordenes %}
             {% for o in ordenes %}
-            <tr>
+            <tr class="
+                {% if o.estatus == 'E' %}fila-proceso
+                {% elif o.estatus == 'A' %}fila-asignada
+                {% elif o.estatus == 'T' %}fila-terminada
+                {% elif o.estatus == 'C' %}fila-cancelada
+                {% endif %}
+            ">
                 <td>{{ o.get_prioridad_display }}</td>
                 <td>{{ o.orden }}</td>
                 <td>{{ o.solicitantes.first.dependencia_solicitante }}</td>
@@ -65,10 +72,20 @@
                     <div class="" style="gap: 6px; display: flex;">
                         <a href="{% url 'detalle_orden' o.orden %}" aria-label="Ver"><i class="btn btn-sm btn-outline-primary bi bi-eye"></i></a>
                         <a href="{% url 'editar_orden' o.orden%}" aria-label="Editar"><i class="btn btn-sm btn-outline-secondary bi bi-pencil"></i></a>
+                        {% if tipo_usuario == "A" and o.get_estatus_display != "Terminada"%}
+                                    <button type="button"
+                                        class="btn btn-sm btn-outline-warning btn-reasignar-orden"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#reasignarOrdenModal"
+                                        data-orden-id="{{ o.orden }}"
+                                        title="Reasignar orden">
+                                        <i class="bi bi-arrow-repeat"></i>
+                                    </button>
+                                {% endif %}
                         {% if not o.get_estatus_display == "Terminada" %}
                             <button type="button" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal{{ o.orden }}" aria-label="Eliminar" class="btn btn-sm btn-outline-danger bi bi-trash"></button>
                         {% endif %}
-    
+                        
                     </div>
                 </td>
             </tr>
@@ -98,6 +115,31 @@
         </tbody>
     </table>
 </div>
+
+<div class="modal fade" id="reasignarOrdenModal" tabindex="-1" aria-labelledby="reasignarOrdenModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+        
+        <!-- Header -->
+        <div class="modal-header">
+            <h5 class="modal-title" id="reasignarOrdenModalLabel">Reasignar Orden</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        
+        <!-- Body -->
+        <div class="modal-body" id="modal-reasignar-contenido">
+            <div class="text-center text-muted py-5">
+            <div class="spinner-border text-primary mb-3"></div>
+            <p>Cargando datos...</p>
+            </div>
+        </div>
+        
+        </div>
+    </div>
+</div>
+
+<script defer src="{% static 'js/lista_ordenes.js' %}"></script>
+
 
 {% if is_paginated %}
 <nav>
@@ -145,5 +187,6 @@
 
     </ul>
 </nav>
+
 {% endif %}
 {% endblock %}

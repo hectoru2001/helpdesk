@@ -298,6 +298,24 @@
     color: #831f46;
 }
 
+
+.fila-proceso {
+    background-color: #fff3cd !important; /* amarillo suave */
+}
+
+.fila-asignada {
+    background-color: #e7f1ff !important; /* azul suave */
+}
+
+.fila-terminada {
+    background-color: #e6f4ea !important; /* verde suave */
+}
+
+.fila-cancelada {
+    background-color: #f8d7da !important; /* rojo suave */
+}
+
+
 /* ===== Fondos de elementos ===== */
 .bg-primario{
     background-color: var(--color-primary) !important;

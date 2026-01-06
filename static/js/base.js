@@ -188,6 +188,38 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!sidebar.contains(e.target) && !e.target.classList.contains('mobile-toggle')) {
             closeAllSubmenus();
         }
+
+        const item = e.target.closest(".notification-item");
+        if (!item) return;
+
+        // Si ya está leída, no hacer nada
+        if (!item.classList.contains("bg-light")) return;
+
+        const notifId = item.dataset.id;
+
+        fetch(`/notificaciones/marcar_leida/${notifId}/`, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken")
+            }
+        })
+        .then(res => res.json())
+        .then(() => {
+            // Cambio visual inmediato
+            item.classList.remove("bg-light");
+
+            // Reducir contador
+            const badge = document.querySelector("#notifDropdown .badge");
+            if (badge) {
+                const count = parseInt(badge.textContent);
+                if (count > 1) {
+                    badge.textContent = count - 1;
+                } else {
+                    badge.remove();
+                }
+            }
+        })
+        .catch(err => console.error(err));
     });
     
     // Manejo responsive
@@ -355,3 +387,18 @@ document.addEventListener('DOMContentLoaded', function() {
     `;
     document.head.appendChild(style);
 });
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}

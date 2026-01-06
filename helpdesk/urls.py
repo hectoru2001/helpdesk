@@ -9,6 +9,7 @@ urlpatterns = [
     path('ordenes/', include('apps.ordenes.urls')),
     path('usuarios/', include('apps.usuarios.urls')),
     path('calificaciones/', include('apps.calificaciones.urls')),
+    path('catalogos', include('apps.catalogos.urls')),
     path('notificaciones/', include('apps.notificaciones.urls')),
     path('reportes/', include('apps.reportes.urls')),
     path('inicio/', include('apps.inicio.urls')),

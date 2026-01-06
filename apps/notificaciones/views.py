@@ -1,5 +1,5 @@
-from django.shortcuts import render, redirect
-from django.core.mail import EmailMessage, send_mail
+from django.shortcuts import redirect
+from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.conf import settings
 from .models import Notificacion
@@ -7,8 +7,10 @@ from apps.usuarios.models import ExtraUsuarios
 from apps.ordenes.models import SolicitantexOrden
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.mail import EmailMessage, send_mail
 from smtplib import SMTPRecipientsRefused
+from django.shortcuts import get_object_or_404, redirect
+from django.http import JsonResponse
+
 
 class Notificar:
 
@@ -85,6 +87,17 @@ def marcar_notificaciones_leidas(request):
 
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
+def marcar_notificacion_leida(request, pk):
+    notificacion = get_object_or_404(
+        Notificacion,
+        pk=pk,
+        usuario=request.user
+    )
+    notificacion.leida = True
+    notificacion.save()
+    return JsonResponse({"success": True})
+
+
 def obtener_correos_orden(orden_id):
     try:
         registro = SolicitantexOrden.objects.get(orden=orden_id)
@@ -95,7 +108,6 @@ def obtener_correos_orden(orden_id):
 
     except ObjectDoesNotExist:
         return ""
-
 
 def obtener_correo_usuario(user_id):
     try:

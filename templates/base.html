@@ -112,20 +112,22 @@
 
                     </div>
                 </li>
-                <!--
+
+                {% if tipo_usuario == "A" %}
+
                 <li class="nav-item">
-                    <a href="#calificacionesSubmenu" class="nav-link" data-bs-toggle="collapse" aria-expanded="false">
-                        <i class="bi bi-star-fill nav-icon"></i>
-                        <span class="nav-text">Calificaciones</span>
+                    <a href="#catalogosSubmenu" class="nav-link" data-bs-toggle="collapse" aria-expanded="false">
+                        <i class="bi bi-list-task nav-icon"></i>
+                        <span class="nav-text">Catálogos</span>
                         <i class="bi bi-chevron-right nav-chevron ms-1"></i>
                     </a>
-                    <div class="submenu collapse" id="calificacionesSubmenu">
-                        <a href="#" class="submenu-link">Ver Calificaciones</a>
-                        <a href="#" class="submenu-link">Reportes de Estrellas</a>
+                    <div class="submenu collapse" id="catalogosSubmenu">
+                        <a href="{% url 'lista_aplicaciones' %}" class="submenu-link">Aplicaciones</a>
+                    </div>
+                    <div class="submenu collapse" id="catalogosSubmenu">
+                        <a href="{% url 'lista_clasificaciones' %}" class="submenu-link">Clasificaciones</a>
                     </div>
                 </li>
-                -->
-                {% if tipo_usuario == "A" %}
 
                 <li class="nav-item">
                     <a href="#reportesSubmenu" class="nav-link" data-bs-toggle="collapse" aria-expanded="false">
@@ -186,29 +188,34 @@
                 <div style="max-height: 300px; overflow-y: auto;">
                     {% if notificaciones %}
                         {% for n in notificaciones %}
-                            <li class="px-3 py-2 border-bottom 
-                                    {% if not n.leida %}bg-light{% endif %}">
-                                <div class="d-flex">
-                                    {% if n.tipo == "success" %}
-                                        <i class="bi bi-check-circle text-success me-2"></i>
-                                    {% elif n.tipo == "warning" %}
-                                        <i class="bi bi-exclamation-triangle text-warning me-2"></i>
-                                    {% elif n.tipo == "alert" %}
-                                        <i class="bi bi-exclamation-octagon text-danger me-2"></i>
-                                    {% elif n.tipo == "task" %}
-                                        <i class="bi bi-person-check-fill text-primary me-2"></i>
-                                    {% elif n.tipo == "message" %}
-                                        <i class="bi bi-chat-left-text text-info me-2"></i>
-                                    {% else %}
-                                        <i class="bi bi-info-circle text-primary me-2"></i>
-                                    {% endif %}
+                        <li class="px-3 py-2 border-bottom notification-item
+                                {% if not n.leida %}bg-light{% endif %}"
+                            data-id="{{ n.id }}"
+                            role="button"
+                            style="cursor: pointer;">
 
-                                    <div>
-                                        <span class="small d-block">{{ n.mensaje }}</span>
-                                        <small class="text-muted">{{ n.fecha|date:"d/m/Y H:i" }}</small>
-                                    </div>
+                            <div class="d-flex align-items-start">
+                                {% if n.tipo == "success" %}
+                                    <i class="bi bi-check-circle text-success me-2"></i>
+                                {% elif n.tipo == "warning" %}
+                                    <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                                {% elif n.tipo == "alert" %}
+                                    <i class="bi bi-exclamation-octagon text-danger me-2"></i>
+                                {% elif n.tipo == "task" %}
+                                    <i class="bi bi-person-check-fill text-primary me-2"></i>
+                                {% elif n.tipo == "message" %}
+                                    <i class="bi bi-chat-left-text text-info me-2"></i>
+                                {% else %}
+                                    <i class="bi bi-info-circle text-primary me-2"></i>
+                                {% endif %}
+
+                                <div>
+                                    <span class="small d-block">{{ n.mensaje }}</span>
+                                    <small class="text-muted">{{ n.fecha|date:"d/m/Y H:i" }}</small>
                                 </div>
-                            </li>
+                            </div>
+                        </li>
+
                         {% endfor %}
                     {% else %}
                         <li class="text-center text-muted py-3">No hay notificaciones</li>
@@ -217,13 +224,10 @@
 
                 <!-- Footer: "Ver todas" -->
                 <li class="text-center py-2">
-                    <a href="" class="small text-decoration-none">
-                        Ver todas las notificaciones
-                    </a>
+                    
                 </li>
             </ul>
         </div>
-
 
         <div class="dropdown">
             <a class="d-flex align-items-center text-decoration-none dropdown-toggle" href="#" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">

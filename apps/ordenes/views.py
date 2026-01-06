@@ -492,20 +492,35 @@ class OrdenesPorUsuarioView(ListView):
 def eliminar_orden(request, pk):
     orden = get_object_or_404(Orden, orden=pk)
 
+    if orden.estatus == 'T':
+        messages.warning(
+            request,
+            f'La orden #{pk} está terminada y no puede ser eliminada.'
+        )
+        return redirect('lista_ordenes')
+
     try:
         with transaction.atomic():
-            # Eliminar dependientes si no hay cascada definida
             orden.solicitantes.all().delete()
             orden.equipos.all().delete()
             orden.usuarios_orden.all().delete()
-            # Eliminar la orden
             orden.delete()
 
-        messages.success(request, f'La orden #{pk} ha sido eliminada correctamente.')
+        messages.success(
+            request,
+            f'La orden #{pk} ha sido eliminada correctamente.'
+        )
+
     except IntegrityError:
-        messages.error(request, f'No se pudo eliminar la orden #{pk}. Por favor, inténtelo de nuevo.')
+        messages.error(
+            request,
+            f'No se pudo eliminar la orden #{pk}.'
+        )
     except Exception as e:
-        messages.error(request, f'Error inesperado: {str(e)}')
+        messages.error(
+            request,
+            f'Error inesperado: {str(e)}'
+        )
 
     return redirect('lista_ordenes')
 
@@ -1038,7 +1053,7 @@ def reasignar_orden(request: HttpRequest):
 
                 Notificar.correo_html(
                     usuario.email,
-                    "Has sido asignado a una nueva orden",
+                    "Has sido reasignado a una nueva orden",
                     "correos/orden_asignada.html",
                     contexto={
                         "usuario": usuario.get_full_name() or usuario.username,

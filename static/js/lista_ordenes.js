@@ -7,42 +7,6 @@ function getCookie(name) {
     if (parts.length === 2) return parts.pop().split(";").shift();
 }
 
-// --- Cambiar estatus de la orden ---
-function cambiarEstatus(ordenId, nuevoEstatus) {
-    const csrftoken = getCookie("csrftoken");
-    let datos = { orden_id: ordenId, estatus: nuevoEstatus };
-
-    if (nuevoEstatus === "T") {
-        datos.solucion = document.getElementById("solucion")?.value || "";
-    }
-
-    fetch('/ordenes/actualizar_estatus/proceso/', {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': csrftoken,
-            'X-Requested-With': 'XMLHttpRequest',
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: new URLSearchParams(datos)
-    })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showModal('Estatus actualizado correctamente.', 'success', function (){
-                    location.reload();
-                });
-            } else {
-                showModal(data.error || 'Error al actualizar estatus', 'error');
-            }
-        })
-        .catch(err => console.error(err));
-}
-
-// --- Abrir modal para imprimir orden ---
-function imprimirOrden(ordenId) {
-    window.open(`/ordenes/imprimir/${ordenId}/`, '_blank');
-}
-
 // --- Funciones de búsqueda de empleados (si las necesitas) ---
 function buscarEmpleado(inputTextId, inputHiddenId, resultsId, prefix) {
     clearTimeout(timer);
@@ -91,158 +55,61 @@ function seleccionarEmpleado(emp, inputTextId, inputHiddenId, resultsId, prefix)
     document.getElementById(resultsId).style.display = "none";
 }
 
-document.addEventListener("DOMContentLoaded", function () {
+function cargarUsuariosReasignacion(ordenId) {
+    fetch(`/ordenes/usuarios_disponibles/${ordenId}/`)
+        .then(res => res.json())
+        .then(data => {
 
-    const modalProcesar = document.getElementById("procesarOrdenModal");
-    modalProcesar.addEventListener("show.bs.modal", function (event) {
-        const button = event.relatedTarget;
-        const ordenId = button.getAttribute("data-orden-id");
-        const modalBody = document.getElementById("modal-procesar-contenido");
+            const contenedor = document.getElementById("contenedor-reasignacion");
 
-        modalBody.innerHTML = `<div class="text-center text-muted py-5">
-            <div class="spinner-border text-primary mb-3"></div>
-            <p>Cargando datos...</p>
-        </div>`;
+            if (!data.usuarios || data.usuarios.length === 0) {
+                contenedor.innerHTML =
+                    `<p class="text-center text-muted">No hay usuarios disponibles.</p>`;
+                return;
+            }
 
-        fetch(`/ordenes/cargar_detalles/proceso/${ordenId}/`)
-            .then(res => res.json())
-            .then(data => {
+            let opciones = data.usuarios.map(u =>
+                `<option value="${u.id}">
+                    ${u.nombre} (${u.tipo}) | ${u.ordenes_asignadas} órdenes
+                </option>`
+            ).join('');
 
-                const progreso = obtenerProgreso(data.estatus);
-                console.log(data.estatus);
+            contenedor.innerHTML = `
+                <div class="mb-3">
+                    <label class="form-label">Usuarios</label>
+                    <select id="usuarioReasignar" class="form-select" multiple>
+                        ${opciones}
+                    </select>
+                </div>
 
-                modalBody.innerHTML = `
-                    <div class="p-3 border rounded mb-4">
+                <div class="mb-3">
+                    <label class="form-label">Comentario</label>
+                    <textarea id="comentarioReasignar" class="form-control" rows="3"></textarea>
+                </div>
 
-                        <h5 class="title-secondary mb-3">Información general</h5>
+                <button class="btn btn-primary w-100" id="btn-confirmar-reasignacion">
+                    Confirmar reasignación
+                </button>
+            `;
 
-                        <!-- Datos principales -->
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <p class="mb-1"><strong>Orden:</strong> ${data.orden}</p>
-                                <p class="mb-1"><strong>Oficio:</strong> ${data.oficio}</p>
-                                <p class="mb-1"><strong>Aplicación:</strong> ${data.aplicacion}</p>
-                            </div>
-
-                            <div class="col-md-6">
-                                <p class="mb-1"><strong>Clasificación:</strong> ${data.clasificacion}</p>
-                                <p class="mb-1">
-                                    <strong>Prioridad:</strong>
-                                    <span class="badge bg-warning text-dark">
-                                        ${data.prioridad}
-                                    </span>
-                                </p>
-                            </div>
-                        </div>
-
-                        <!-- Descripción -->
-                        <div class="mb-3">
-                            <strong>Descripción</strong>
-                            <div class="border rounded p-2 bg-light">
-                                ${data.descripcion}
-                            </div>
-                        </div>
-
-                        <!-- Estatus + progreso -->
-                        <div class="mt-3">
-                            <div class="d-flex justify-content-between mb-1">
-                                <strong>Estatus:</strong>
-                                <span class="fw-semibold">${progreso.texto}</span>
-                            </div>
-
-                            <div class="progress" style="height: 22px;">
-                                <div class="progress-bar ${progreso.color} ${progreso.porcentaje < 100 ? 'progress-bar-striped progress-bar-animated' : ''}"
-                                    role="progressbar"
-                                    style="width: ${progreso.porcentaje}%;">
-                                    ${progreso.porcentaje}%
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-
-                    ${data.equipo === "true" ? `
-                        <div class="p-3 border rounded mb-4">
-                            <h6 class="title-secondary">Equipo asignado</h6>
-                            <p><strong>Equipo:</strong> ${data.detalle_equipo?.equipo || "N/A"}</p>
-                            <p><strong>Marca:</strong> ${data.detalle_equipo?.marca || "N/A"}</p>
-                            <p><strong>Color:</strong> ${data.detalle_equipo?.color || "N/A"}</p>
-                            <p><strong>Número de serie:</strong> ${data.detalle_equipo?.serie || "N/A"}</p>
-                            <p><strong>Patrimonio:</strong> ${data.detalle_equipo?.patrimonio || "N/A"}</p>
-                            <p><strong>Descripción:</strong> ${data.detalle_equipo?.descripcion || "N/A"}</p>
-                        </div>` : ""}
-
-                    <div class="p-3 border rounded mb-4">
-                        <h6 class="title-secondary">Solicitante</h6>
-                        <p><strong>Nombre:</strong> ${data.solicitante.nombre}</p>
-                        <p><strong>Puesto:</strong> ${data.solicitante.puesto}</p>
-                        <p><strong>Dependencia:</strong> ${data.solicitante.dependencia}</p>
-                        <p><strong>Correo:</strong> ${data.solicitante.correo}</p>
-                        <p><strong>Teléfono:</strong> ${data.solicitante.telefono}</p>
-                    </div>
-
-                    <div class="p-3 border rounded mb-4">
-                        <h6 class="title-secondary">Beneficiado</h6>
-                        <p><strong>Nombre:</strong> ${data.beneficiado.nombre}</p>
-                        <p><strong>Puesto:</strong> ${data.beneficiado.puesto}</p>
-                        <p><strong>Dependencia:</strong> ${data.beneficiado.dependencia}</p>
-                        <p><strong>Correo:</strong> ${data.beneficiado.correo}</p>
-                        <p><strong>Teléfono:</strong> ${data.beneficiado.telefono}</p>
-                    </div>
-                    
-                    ${data.estatus === 'Terminada' ? `
-    
-                        <div class="p-3 border rounded mb-4">
-                            <h6 class="title-secondary">Solución</h6>
-
-                            ${data.solucion
-                                ? `
-                                    <p>${data.solucion}</p>
-                                `
-                                : `
-                                    <p class="text-muted">No se registró solución.</p>
-                                `
-                            }
-                        </div>
-
-                        <div class="p-3 border rounded mb-4">
-                            <h6 class="title-secondary">Calificación del usuario</h6>
-
-                            ${data.comentario?.comentario
-                                ? `
-                                    <p><strong>Comentario:</strong> ${data.comentario.comentario}</p>
-                                    <p><strong>Calificación:</strong> ${renderStars(data.comentario.calificacion)}</p>
-                                `
-                                : `
-                                    <p class="text-muted">Aún no hay comentarios.</p>
-                                `
-                            }
-                        </div>
-
-                    ` : ""}
-
-                    ${data.estatus === 'Asignada' ? `
-                        <button class="btn btn-primary w-100" onclick="cambiarEstatus(${data.orden}, 'E')">Iniciar orden</button>
-                    ` : data.estatus === 'En proceso' ? `
-                        <div class="mb-2">
-                            <label class="form-label"><strong>Solución / Observación</strong></label>
-                            <textarea id="solucion" class="form-control" rows="3" placeholder="Describe la solución..."></textarea>
-                        </div>
-                        <button class="btn btn-success w-100" onclick="cambiarEstatus(${data.orden}, 'T')">Terminar orden</button>
-                    ` : ""}
-
-                    <div class="text-end mt-3">
-                        <button class="btn btn-secondary" onclick="imprimirOrden(${data.orden})">Imprimir orden</button>
-                    </div>
-                `;
-            })
-            .catch(err => {
-                modalBody.innerHTML = `<div class="alert alert-danger">Error al cargar los datos de la orden.</div>`;
-                console.error(err);
+            $('#usuarioReasignar').select2({
+                placeholder: "Selecciona los usuarios...",
+                dropdownParent: $('#reasignarOrdenModal'),
+                width: '100%',
             });
-    });
-    
+
+            document.getElementById("btn-confirmar-reasignacion").onclick =
+                () => confirmarReasignacionMultiple(ordenId);
+        })
+        .catch(err => {
+            document.getElementById("contenedor-reasignacion").innerHTML =
+                `<div class="alert alert-danger">Error al cargar usuarios.</div>`;
+            console.error(err);
+        });
+}
+
+// --- Evento principal cuando carga el DOM ---
+document.addEventListener("DOMContentLoaded", function () {
     const modalReasignar = document.getElementById("reasignarOrdenModal");
 
     modalReasignar.addEventListener("show.bs.modal", function (event) {
@@ -391,7 +258,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 `;
             });
     }
-
 
     document.addEventListener("click", function (event) {
         const btn = event.target.closest("#btn-confirmar-reasignacion");

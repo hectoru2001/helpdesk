@@ -54,6 +54,7 @@
                     <th>#</th>
                     <th>Fecha Captura</th>
                     <th>Beneficiado</th>
+                    <th>Dependencia</th>
                     <th>Estatus General</th>
                     <th>Mi Avance </th>
                     <th>Asignado a</th>
@@ -64,10 +65,17 @@
             <tbody>
                 {% if ordenes %}
                     {% for orden in ordenes %}
-                        <tr>
+                        <tr class="
+                            {% if orden.estatus == 'E' %}fila-proceso
+                            {% elif orden.estatus == 'A' %}fila-asignada
+                            {% elif orden.estatus == 'T' %}fila-terminada
+                            {% elif orden.estatus == 'C' %}fila-cancelada
+                            {% endif %}
+                        ">
                             <td>{{ orden.orden }}</td>
                             <td>{{ orden.fecha_captura|date:"d/m/Y H:i" }}</td>
                             <td>{{ orden.solicitantes.first.nombre_beneficiado }}</td>
+                            <td>{{ orden.solicitantes.first.dependencia_beneficiado }}</td>
                             <td>
                                 {% if orden.estatus == "T" %}
                                     <span class="badge bg-success">Terminada</span>
@@ -252,25 +260,25 @@
 
     <!-- Modal Reasignar Orden -->
     <div class="modal fade" id="reasignarOrdenModal" tabindex="-1" aria-labelledby="reasignarOrdenModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-        
-        <!-- Header -->
-        <div class="modal-header">
-            <h5 class="modal-title" id="reasignarOrdenModalLabel">Reasignar Orden</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>
-        
-        <!-- Body -->
-        <div class="modal-body" id="modal-reasignar-contenido">
-            <div class="text-center text-muted py-5">
-            <div class="spinner-border text-primary mb-3"></div>
-            <p>Cargando datos...</p>
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+            
+            <!-- Header -->
+            <div class="modal-header">
+                <h5 class="modal-title" id="reasignarOrdenModalLabel">Reasignar Orden</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            
+            <!-- Body -->
+            <div class="modal-body" id="modal-reasignar-contenido">
+                <div class="text-center text-muted py-5">
+                <div class="spinner-border text-primary mb-3"></div>
+                <p>Cargando datos...</p>
+                </div>
+            </div>
+            
             </div>
         </div>
-        
-        </div>
-    </div>
     </div>
 
     <script defer src="{% static 'js/asignar_detalles.js' %}"></script>
