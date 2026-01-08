@@ -484,7 +484,19 @@
                     <div class="mb-3">
                         <div>
                             <span class="h4 fw-bold me-2">{{ estrellas }}/5</span>
-                            <span class="badge bg-warning text-dark">Excelente</span>
+                            {% if estrellas == "★★★★★" %}
+                                <span class="badge bg-warning text-dark">Excelente</span>
+                            {% elif estrellas == "★★★★☆" or estrellas == "★★★★" %}
+                                <span class="badge bg-success">Bueno</span>
+                            {% elif estrellas == "★★★☆☆" or estrellas == "★★★" %}
+                                <span class="badge bg-info">Regular</span>
+                            {% elif estrellas == "★★☆☆☆" or estrellas == "★★" %}
+                                <span class="badge bg-warning">Aceptable</span>
+                            {% elif estrellas == "★☆☆☆☆" or estrellas == "★" %}
+                                <span class="badge bg-danger">Deficiente</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ estrellas }}</span>
+                            {% endif %}
                         </div>
                     </div>
                     
