@@ -31,6 +31,9 @@
                         <a href="{% url 'editar_orden' orden.orden %}" class="btn btn-light btn-sm">
                             <i class="bi bi-pencil me-1"></i> Editar
                         </a>
+                        <a href="{% url 'imprimir_orden' orden.orden %}" target="_blank" class="btn btn-secondary btn-sm">
+                            <i class="bi bi-printer me-1"></i> Imprimir
+                        </a>
                         {% endif %}
                     </div>
                 </div>

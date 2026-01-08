@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %} <h5 class="title-secondary"> Listado de órdenes </h5> {% endblock %}
 {% block content %}
 {% include 'mensajes.html' %}
@@ -6,7 +7,6 @@
 
     <!-- Filtros -->
     <form method="get" class="row g-3 align-items-end mb-3">
-
         <div class="col-md-3">
             <label class="form-label">Fecha inicio</label>
             <input type="date"
@@ -45,47 +45,213 @@
                 PDF
             </a>
         </div>
-
     </form>
 
-    <!-- Tabla -->
-    <div class="table-container">
-        <table class="custom-table">
-            <thead>
-                <tr>
-                    <th>Usuario</th>
-                    <th>Total</th>
-                    <th>Asignadas</th>
-                    <th>En Proceso</th>
-                    <th>Terminadas</th>
-                    <th>Canceladas</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in reporte %}
-                <tr>
-                    <td class="text-start">
-                        {% if row.realiza__first_name %}
-                            {{ row.realiza__first_name }} {{ row.realiza__last_name|default:"" }}<br>
-                        {% endif %}
-                        <small class="text-muted">
-                            {{ row.realiza__username|default:"Sin usuario" }}
-                        </small>
-                    </td>
-                    <td><strong>{{ row.total }}</strong></td>
-                    <td>{{ row.asignadas }}</td>
-                    <td>{{ row.en_proceso }}</td>
-                    <td class="text-success fw-bold">{{ row.terminadas }}</td>
-                    <td class="text-danger">{{ row.canceladas }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6" class="text-center">Aún no hay usuarios con órdenes</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+
+                    <div class="row align-items-center">
+
+                        <!-- Título -->
+                        <div class="col-md-6 col-12">
+                            <h6 class="card-title mb-0">
+                                Vista de reporte
+                            </h6>
+                        </div>
+
+                        <!-- Controles -->
+                        <div class="col-md-6 col-12 d-flex justify-content-md-end justify-content-between align-items-center gap-3 mt-3 mt-md-0">
+
+                            <!-- Toggle vista -->
+                            <div class="form-check form-switch mb-0">
+                                <input 
+                                    class="form-check-input" 
+                                    type="checkbox" 
+                                    id="viewToggle" 
+                                    checked
+                                >
+                                <label class="form-check-label" for="viewToggle">
+                                    <span id="viewModeLabel">Tabla</span>
+                                </label>
+                            </div>
+
+                            <!-- Botón imprimir -->
+                            <button 
+                                type="button" 
+                                id="printGraphButton" 
+                                class="btn btn-secondary no-print"
+                            >
+                                <i class="fas fa-print"></i> Imprimir gráfica
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Contenedor para la gráfica (oculto por defecto) -->
+    <div id="chartContainer" class="d-none">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Distribución de estados por usuario</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="position: relative; height: 400px;">
+                            <canvas id="statusDistributionChart"></canvas>
+                        </div>
+                        <!-- Leyenda de estados -->
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="d-flex flex-wrap gap-3">
+                                    <div class="d-flex align-items-center">
+                                        <span class="legend-color" style="background-color: rgba(255, 206, 86, 0.7); width: 20px; height: 20px; display: inline-block; margin-right: 8px;"></span>
+                                        <span>Asignadas</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="legend-color" style="background-color: rgba(75, 192, 192, 0.7); width: 20px; height: 20px; display: inline-block; margin-right: 8px;"></span>
+                                        <span>En Proceso</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="legend-color" style="background-color: rgba(75, 192, 75, 0.7); width: 20px; height: 20px; display: inline-block; margin-right: 8px;"></span>
+                                        <span>Terminadas</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="legend-color" style="background-color: rgba(255, 99, 132, 0.7); width: 20px; height: 20px; display: inline-block; margin-right: 8px;"></span>
+                                        <span>Canceladas</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla (visible por defecto) -->
+    <div id="tableContainer">
+        <div class="table-container">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Total</th>
+                        <th>Asignadas</th>
+                        <th>En Proceso</th>
+                        <th>Terminadas</th>
+                        <th>Canceladas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in reporte %}
+                    <tr>
+                        <td class="text-start">
+                            {% if row.realiza__first_name %}
+                                {{ row.realiza__first_name }} {{ row.realiza__last_name|default:"" }}<br>
+                            {% endif %}
+                            <small class="text-muted">
+                                {{ row.realiza__username|default:"Sin usuario" }}
+                            </small>
+                        </td>
+                        <td><strong>{{ row.total }}</strong></td>
+                        <td>{{ row.asignadas }}</td>
+                        <td>{{ row.en_proceso }}</td>
+                        <td class="text-success fw-bold">{{ row.terminadas }}</td>
+                        <td class="text-danger">{{ row.canceladas }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">Aún no hay usuarios con órdenes</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 
 </div>
+
+<!-- Incluir nuestro script externo -->
+<script src="{%static 'js/ordenes_usuario.js' %}"></script>
+
+<script>
+
+// Pasar datos de Django a JavaScript de forma segura
+const reportData = [
+    {% for row in reporte %}
+    {
+        usuario: `{{ row.realiza__first_name|default:"" }} {{ row.realiza__last_name|default:"" }}`.trim() || 
+                `{{ row.realiza__username|default:"Sin usuario" }}`,
+        total: {{ row.total|default:0 }},
+        asignadas: {{ row.asignadas|default:0 }},
+        enProceso: {{ row.en_proceso|default:0 }},
+        terminadas: {{ row.terminadas|default:0 }},
+        canceladas: {{ row.canceladas|default:0 }}
+    },
+    {% endfor %}
+];
+
+// Variable global para acceder a los datos desde el archivo externo
+window.reporteOrdenesData = reportData;
+</script>
+
+<style>
+/* Estilos adicionales para la gráfica */
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid #e0e0e0;
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 1rem 1.25rem;
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+
+.form-switch {
+    padding-left: 3.5em;
+}
+
+.form-switch .form-check-input {
+    width: 3em;
+    height: 1.5em;
+    margin-left: -3.5em;
+}
+
+.legend-color {
+    border-radius: 3px;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+/* Mejorar la visibilidad de las barras */
+canvas {
+    max-height: 400px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .chart-container {
+        height: 300px !important;
+    }
+    
+    .legend-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+</style>
 {% endblock %}

@@ -379,9 +379,10 @@ class OrdenesView(TemplateView):
             extra = ExtraUsuarios.objects.get(usuario_id=user)
             tipo_usuario = extra.tipo
         except ExtraUsuarios.DoesNotExist:
-            tipo_usuario = "T" 
+            tipo_usuario = "T"
 
-        ordenes = Orden.objects.all().order_by('-fecha_captura')
+        # ⬇️ OMITIR estatus = 'T'
+        ordenes = Orden.objects.exclude(estatus__in=['C', 'T']).order_by('-fecha_captura')
 
         fecha_inicio = self.request.GET.get('fecha_inicio')
         fecha_fin = self.request.GET.get('fecha_fin')
@@ -391,16 +392,15 @@ class OrdenesView(TemplateView):
                 fecha_captura__date__range=[fecha_inicio, fecha_fin]
             )
 
-        estatus_filtro = self.request.GET.get('estatus')
-        if estatus_filtro:
-            ordenes = ordenes.filter(estatus=estatus_filtro)
-
         mostrar_todas = self.request.GET.get('todas')
-        ordenes_a_mostrar = ordenes.filter(usuarios_orden__realiza=user).distinct()
+
+        ordenes_a_mostrar = ordenes.filter(
+            usuarios_orden__realiza=user
+        ).distinct()
 
         if mostrar_todas == 'no':
             ordenes_a_mostrar = ordenes
-        
+
         paginator = Paginator(ordenes_a_mostrar, self.paginate_by)
         page_number = self.request.GET.get('page')
         page_obj = paginator.get_page(page_number)
@@ -409,13 +409,13 @@ class OrdenesView(TemplateView):
         context["page_obj"] = page_obj
         context["paginator"] = paginator
         context["is_paginated"] = page_obj.has_other_pages()
-        
+
         context['fecha_inicio'] = fecha_inicio
         context['fecha_fin'] = fecha_fin
-        context['estatus_seleccionado'] = estatus_filtro
         context['mostrar_todas'] = mostrar_todas
 
         return context
+
 
 @method_decorator(administrador_required(True), name='dispatch')
 class EstadoUsuariosView(TemplateView):
@@ -763,9 +763,8 @@ def imprimir_orden(request, orden_id):
     p = canvas.Canvas(response, pagesize=letter)
     width, height = letter  # 612 x 792 puntos
     
-    # -------- LOGO ----------
-    # Opción 2: STATICFILES_DIRS (para desarrollo)
-    logo_path = os.path.join(settings.STATICFILES_DIRS[0], "img", "LogMuni.png")
+
+    logo_path = os.path.join(settings.STATICFILES_DIRS[0], "img", "logo_dgic.png")
     
     # DEBUG: Verificar imagen
     print(f"Buscando imagen en: {logo_path}")
@@ -773,11 +772,11 @@ def imprimir_orden(request, orden_id):
     
     if os.path.exists(logo_path):
         try:
-            logo_width = 80 
+            logo_width = 135 
             logo_height = (837 * logo_width) / 1007
             
             x_pos = 40
-            y_pos = height - 15
+            y_pos = height
             
             print(f"Dibujando logo en: ({x_pos}, {y_pos}) tamaño: {logo_width}x{logo_height}")
             
@@ -851,7 +850,7 @@ def imprimir_orden(request, orden_id):
                 y_base - (i * 16),
                 lbl,
                 val,
-                max_width=200
+                max_width=300
             )
         else:
             h1 = 1
@@ -914,7 +913,7 @@ def imprimir_orden(request, orden_id):
             y_base - (i * 16),
             label,
             value,
-            max_width=250
+            max_width=300
         )
         lineas_izq.append(h)
 
@@ -927,7 +926,7 @@ def imprimir_orden(request, orden_id):
                 y_base - (i * 16),
                 label,
                 value,
-                max_width=200
+                max_width=300
             )
             lineas_der.append(h)
 

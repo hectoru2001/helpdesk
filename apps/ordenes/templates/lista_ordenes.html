@@ -188,13 +188,18 @@
 <script defer src="{% static 'js/lista_ordenes.js' %}"></script>
 
 
+{% with request.GET.copy as params %}
+{% if params.page %}{% endif %}
+{% with params.urlencode as query %}
+
 {% if is_paginated %}
 <nav>
     <ul class="pagination justify-content-center">
 
         {% if page_obj.has_previous %}
         <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">«</a>
+            <a class="page-link"
+               href="?{% if query %}{{ query }}&{% endif %}page={{ page_obj.previous_page_number }}">«</a>
         </li>
         {% else %}
         <li class="page-item disabled">
@@ -204,27 +209,32 @@
 
         {% for num in paginator.page_range %}
             {% if num == 1 or num == paginator.num_pages %}
-                {# siempre mostrar primera y última #}
                 <li class="page-item {% if num == page_obj.number %}active{% endif %}">
-                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    <a class="page-link"
+                       href="?{% if query %}{{ query }}&{% endif %}page={{ num }}">
+                        {{ num }}
+                    </a>
                 </li>
 
             {% elif num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
-                {# mostrar páginas cercanas a la actual #}
                 <li class="page-item {% if num == page_obj.number %}active{% endif %}">
-                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    <a class="page-link"
+                       href="?{% if query %}{{ query }}&{% endif %}page={{ num }}">
+                        {{ num }}
+                    </a>
                 </li>
 
             {% elif num == page_obj.number|add:"-3" or num == page_obj.number|add:"3" %}
-                {# mostrar puntos suspensivos solo una vez #}
-                <li class="page-item disabled"><span class="page-link">…</span></li>
+                <li class="page-item disabled">
+                    <span class="page-link">…</span>
+                </li>
             {% endif %}
         {% endfor %}
 
-
         {% if page_obj.has_next %}
         <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.next_page_number }}">»</a>
+            <a class="page-link"
+               href="?{% if query %}{{ query }}&{% endif %}page={{ page_obj.next_page_number }}">»</a>
         </li>
         {% else %}
         <li class="page-item disabled">
@@ -234,6 +244,9 @@
 
     </ul>
 </nav>
-
 {% endif %}
+
+{% endwith %}
+{% endwith %}
+
 {% endblock %}

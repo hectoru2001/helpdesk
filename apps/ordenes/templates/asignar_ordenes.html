@@ -8,27 +8,16 @@
     <!-- FILTRO POR FECHAS -->
     <form method="get" class="row g-3 mb-4">
 
-        <div class="col-md-3">
+        <div class="col-md-4">
             <label for="fecha_inicio" class="form-label">Fecha Inicio</label>
             <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio"
                 value="{{ request.GET.fecha_inicio }}">
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-4">
             <label for="fecha_fin" class="form-label">Fecha Fin</label>
             <input type="date" class="form-control" id="fecha_fin" name="fecha_fin"
                 value="{{ request.GET.fecha_fin }}">
-        </div>
-
-        <div class="col-md-2">
-            <label for="estatus" class="form-label">Estatus</label>
-            <select id="estatus" name="estatus" class="form-control">
-                <option value="">-- Todos --</option>
-                <option value="E"  {% if request.GET.estatus == "E" %}selected{% endif %}>En Proceso</option>
-                <option value="A"    {% if request.GET.estatus == "A" %}selected{% endif %}>Asignadas</option>
-                <option value="C" {% if request.GET.estatus == "C" %}selected{% endif %}>Canceladas</option>
-                <option value="T"  {% if request.GET.estatus == "T" %}selected{% endif %}>Terminadas</option>
-            </select>
         </div>
 
         {% if tipo_usuario == "A" %}
@@ -193,15 +182,19 @@
         </table>
     </div>
 
+    {% with request.GET.copy as params %}
+    {% if params.page %}{% endif %}
+    {% with params.urlencode as query %}
+
     {% if ordenes.paginator.num_pages > 1 %}
     <nav aria-label="Page navigation" class="mt-4">
         <ul class="pagination justify-content-center">
 
             {% if ordenes.has_previous %}
                 <li class="page-item">
-                    <a class="page-link" 
-                    href="?page={{ ordenes.previous_page_number }}{% if request.GET.fecha_inicio %}&fecha_inicio={{ request.GET.fecha_inicio }}{% endif %}{% if request.GET.fecha_fin %}&fecha_fin={{ request.GET.fecha_fin }}{% endif %}{% if request.GET.estatus %}&estatus={{ request.GET.estatus }}{% endif %}">
-                        <
+                    <a class="page-link"
+                    href="?{% if query %}{{ query }}&{% endif %}page={{ ordenes.previous_page_number }}">
+                        &lt;
                     </a>
                 </li>
             {% endif %}
@@ -213,8 +206,8 @@
                     </li>
                 {% else %}
                     <li class="page-item">
-                        <a class="page-link" 
-                        href="?page={{ num }}{% if request.GET.fecha_inicio %}&fecha_inicio={{ request.GET.fecha_inicio }}{% endif %}{% if request.GET.fecha_fin %}&fecha_fin={{ request.GET.fecha_fin }}{% endif %}{% if request.GET.estatus %}&estatus={{ request.GET.estatus }}{% endif %}">
+                        <a class="page-link"
+                        href="?{% if query %}{{ query }}&{% endif %}page={{ num }}">
                             {{ num }}
                         </a>
                     </li>
@@ -223,9 +216,9 @@
 
             {% if ordenes.has_next %}
                 <li class="page-item">
-                    <a class="page-link" 
-                    href="?page={{ ordenes.next_page_number }}{% if request.GET.fecha_inicio %}&fecha_inicio={{ request.GET.fecha_inicio }}{% endif %}{% if request.GET.fecha_fin %}&fecha_fin={{ request.GET.fecha_fin }}{% endif %}{% if request.GET.estatus %}&estatus={{ request.GET.estatus }}{% endif %}">
-                        >
+                    <a class="page-link"
+                    href="?{% if query %}{{ query }}&{% endif %}page={{ ordenes.next_page_number }}">
+                        &gt;
                     </a>
                 </li>
             {% endif %}
@@ -233,6 +226,10 @@
         </ul>
     </nav>
     {% endif %}
+
+    {% endwith %}
+    {% endwith %}
+
 
 
 
