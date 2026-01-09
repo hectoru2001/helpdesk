@@ -10,6 +10,7 @@ ESTATUS = [
     ('E', 'En proceso'),
     ('C', 'Cancelada'),
     ('T', 'Terminada'),
+    ('P', 'Aprobada'),
 ]
 
 PRIORIDADES = [

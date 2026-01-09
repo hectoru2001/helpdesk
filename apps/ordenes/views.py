@@ -416,7 +416,6 @@ class OrdenesView(TemplateView):
 
         return context
 
-
 @method_decorator(administrador_required(True), name='dispatch')
 class EstadoUsuariosView(TemplateView):
     template_name = 'estados/estado_usuarios.html'
@@ -616,7 +615,6 @@ def detalle_orden_api(request, pk):
     }
 
     return JsonResponse(data)
-
 
 def actualizar_estatus_api(request):
     orden_id = request.POST.get("orden_id")
@@ -920,7 +918,7 @@ def imprimir_orden(request, orden_id):
         h = draw_label_value(
             p,
             40,
-            y_base - (i * 16),
+            y_base - (i * 18),
             label,
             value,
             max_width=300
@@ -933,10 +931,10 @@ def imprimir_orden(request, orden_id):
             h = draw_label_value(
                 p,
                 350,
-                y_base - (i * 16),
+                y_base - (i * 25),
                 label,
                 value,
-                max_width=300
+                max_width=250
             )
             lineas_der.append(h)
 

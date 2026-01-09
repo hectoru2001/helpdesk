@@ -305,7 +305,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    {% if orden.archivos.all %}
+                    {% if not orden.archivos.all %}
                     <div class="list-group list-group-flush">
                         {% for archivo in orden.archivos.all %}
                         <div class="list-group-item px-0 py-3 border-bottom">
