@@ -100,6 +100,9 @@
                                         
                                         <dt class="col-sm-5 text-muted">Dependencia:</dt>
                                         <dd class="col-sm-7">{{ orden.solicitantes.first.dependencia_solicitante|default:"Sin oficio" }}</dd>
+
+                                        <dt class="col-sm-5 text-muted">Puesto:</dt>
+                                        <dd class="col-sm-7">{{ orden.solicitantes.first.puesto_solicitante }}</dd>
                                         
                                         <dt class="col-sm-5 text-muted">Contacto:</dt>
                                         <dd class="col-sm-7">
@@ -129,6 +132,9 @@
                                         
                                         <dt class="col-sm-5 text-muted">Dependencia:</dt>
                                         <dd class="col-sm-7">{{ orden.solicitantes.first.dependencia_beneficiado|default:"-" }}</dd>
+
+                                        <dt class="col-sm-5 text-muted">Puesto:</dt>
+                                        <dd class="col-sm-7">{{ orden.solicitantes.first.puesto_beneficiado }}</dd>
                                         
                                         <dt class="col-sm-5 text-muted">Contacto:</dt>
                                         <dd class="col-sm-7">
@@ -412,8 +418,8 @@
                                     <div class="d-flex justify-content-between w-100 me-2">
                                         <span class="fw-bold">{{ equipo.equipo }}</span>
                                         {% if equipo.entregado_foraneo == 1 %}
-                                        <span class="badge bg-warning text-dark">
-                                            <i class="bi bi-truck me-1"></i>Foráneo
+                                        <span class="badge bg-success">
+                                            Entregado
                                         </span>
                                         {% endif %}
                                     </div>
@@ -434,6 +440,20 @@
                                         
                                         <dt class="col-5 text-muted">Color:</dt>
                                         <dd class="col-7">{{ equipo.color|default:"-" }}</dd>
+
+                                        <dt class="col-5 text-muted">Entregada:</dt>
+                                        <dd class="col-7">
+                                            {% if equipo.entregado_foraneo %}
+                                                <span class="badge bg-warning text-dark">
+                                                    Sí
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">
+                                                    No
+                                                </span>
+                                            {% endif %}
+                                        </dd>
+
                                     </dl>
                                     
                                     {% if equipo.descripcion %}
@@ -462,6 +482,17 @@
                                             </div>
                                         </div>
                                     </div>
+
+                                    {% if not equipo.entregado_foraneo %}
+                                    <div class="d-flex justify-content-end mt-3 pt-2 border-top">
+                                        <form method="post" action="{% url 'entregar_equipo' equipo.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-success btn-sm">
+                                                <i class="bi bi-check-circle me-1"></i> Entregar
+                                            </button>
+                                        </form>
+                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>

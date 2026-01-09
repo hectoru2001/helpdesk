@@ -88,13 +88,13 @@ class SolicitantexOrden(models.Model):
     puesto_beneficiado = models.CharField(max_length=100)
     dependencia_beneficiado = models.CharField(max_length=100, **vacios)
     correo_beneficiado = models.CharField(max_length=100, **vacios)
-    telefono_beneficiado = models.CharField(max_length=15, **vacios) 
+    telefono_beneficiado = models.CharField(max_length=50, **vacios) 
     usuario_solicita = models.IntegerField()
     nombre_solicitante = models.CharField(max_length=100, **vacios)
     puesto_solicitante = models.CharField(max_length=100, **vacios)
     dependencia_solicitante = models.CharField(max_length=100, **vacios)
     correo_solicitante = models.CharField(max_length=100, **vacios)
-    telefono_solicitante = models.CharField(max_length=15, **vacios)  
+    telefono_solicitante = models.CharField(max_length=50, **vacios)  
 
 
 # Modelos auxiliares

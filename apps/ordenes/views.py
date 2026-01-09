@@ -1000,7 +1000,7 @@ def imprimir_orden(request, orden_id):
     return response
 
 def usuarios_disponibles(request, orden_id):
-    extras = ExtraUsuarios.objects.filter(estatus='A').exclude(tipo='A').order_by('tipo')
+    extras = ExtraUsuarios.objects.filter(estatus='A').order_by('tipo')
 
     lista = []
     for extra in extras:
@@ -1153,3 +1153,12 @@ def duplicar_orden(orden):
         a.save()
 
     return nueva_orden
+
+def entregar_equipo(request, equipo_id):
+    equipo = get_object_or_404(EquipoXOrden, pk=equipo_id)
+    equipo.entregado_foraneo = True
+    equipo.fecha_entrega = timezone.now()
+    equipo.save()
+
+    messages.success(request, f'El equipo "{equipo.equipo}" ha sido marcado como entregado.')
+    return redirect('detalle_orden', pk=equipo.orden.orden)
