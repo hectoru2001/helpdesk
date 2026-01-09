@@ -66,6 +66,7 @@ class UsuariosxOrden(models.Model):
     causa = models.CharField(max_length=100, **vacios)
     etiquetas = models.CharField(max_length=100, **vacios)
     comentarios = models.TextField(**vacios)
+    solucion = models.TextField(**vacios)
     
 class EquipoXOrden(models.Model):
     orden = models.ForeignKey('Orden', on_delete=models.CASCADE, related_name='equipos')

@@ -562,6 +562,12 @@ def detalle_orden_api(request, pk):
     equipo = orden.equipos.first()
     comentario = orden.comentario.first()
 
+    # 🔹 AGREGADO: obtener estatus del usuario actual en la orden
+    usuario_orden = UsuariosxOrden.objects.filter(
+        orden=orden,
+        realiza=request.user,
+    ).first()
+
     data = {
         "orden": orden.orden,
         "oficio": getattr(orden, "oficio", ""),
@@ -571,6 +577,10 @@ def detalle_orden_api(request, pk):
         "descripcion": orden.descripcion,
         "estatus": orden.get_estatus_display(),
         "solucion": orden.solucion if orden.solucion else "",
+
+        # 🔹 AGREGADO (NO se cambia nada existente)
+        "estatus_usuario": usuario_orden.estatus if usuario_orden else None,
+        "usuario_solucion": usuario_orden.solucion if usuario_orden else "",
 
         "equipo": "true" if equipo else "false",
 
@@ -599,14 +609,14 @@ def detalle_orden_api(request, pk):
             "telefono": solicitante.telefono_beneficiado if solicitante else "",
         },
 
-        "comentario":{
+        "comentario": {
             "calificacion": comentario.calificacion if comentario else "",
             "comentario": comentario.comentario if comentario else "",
-
         }
     }
 
     return JsonResponse(data)
+
 
 def actualizar_estatus_api(request):
     orden_id = request.POST.get("orden_id")

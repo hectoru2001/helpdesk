@@ -222,15 +222,40 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     ` : ""}
 
-                    ${data.estatus === 'Asignada' ? `
-                        <button class="btn btn-primary w-100" onclick="cambiarEstatus(${data.orden}, 'E')">Iniciar orden</button>
-                    ` : data.estatus === 'En proceso' ? `
+                    ${data.estatus_usuario === 'A' ? `
+                        <button class="btn btn-primary w-100"
+                            onclick="cambiarEstatus(${data.orden}, 'E')">
+                            Iniciar orden
+                        </button>
+                    ` : data.estatus_usuario === 'E' ? `
                         <div class="mb-2">
                             <label class="form-label"><strong>Solución / Observación</strong></label>
-                            <textarea id="solucion" class="form-control" rows="3" placeholder="Describe la solución..."></textarea>
+                            <textarea id="solucion" class="form-control" rows="3"
+                                placeholder="Describe la solución..."></textarea>
                         </div>
-                        <button class="btn btn-success w-100" onclick="cambiarEstatus(${data.orden}, 'T')">Terminar orden</button>
+                        <button class="btn btn-success w-100"
+                            onclick="cambiarEstatus(${data.orden}, 'T')">
+                            Terminar orden
+                        </button>
+                    `: data.estatus_usuario === 'T' ? `
+                        <div class="alert alert-success mb-2">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Has concluido tu participación en esta orden.
+                            <br>
+                            <small class="text-muted">
+                                La orden se cerrará automáticamente cuando todos los usuarios asignados hayan finalizado.
+                            </small>
+                        </div>
+                        ${data.estatus_usuario ? `
+                            <div class="mb-2">
+                                <label class="form-label"><strong>Solución</strong></label>
+                                <div class="form-control bg-light">
+                                    ${data.usuario_solucion || 'N/A'}
+                                </div>
+                            </div>
+                        ` : ''}
                     ` : ""}
+
 
                     <div class="text-end mt-3">
                         <button class="btn btn-secondary" onclick="imprimirOrden(${data.orden})">Imprimir orden</button>
