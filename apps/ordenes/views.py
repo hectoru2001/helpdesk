@@ -561,11 +561,17 @@ def detalle_orden_api(request, pk):
     equipo = orden.equipos.first()
     comentario = orden.comentario.first()
 
-    # 🔹 AGREGADO: obtener estatus del usuario actual en la orden
-    usuario_orden = UsuariosxOrden.objects.filter(
-        orden=orden,
-        realiza=request.user,
-    ).first()
+    # 🔹 CAMBIO: Obtener todos los usuarios asignados a esta orden
+    asignaciones = UsuariosxOrden.objects.filter(orden=orden).select_related('realiza')
+
+    # Creamos una lista con los detalles de cada solución/técnico
+    soluciones_detalladas = []
+    for asig in asignaciones:
+        soluciones_detalladas.append({
+            "usuario": asig.realiza.get_full_name() or asig.realiza.username,
+            "estatus": asig.estatus,
+            "solucion": asig.solucion if asig.solucion else ""
+        })
 
     data = {
         "orden": orden.orden,
@@ -575,14 +581,12 @@ def detalle_orden_api(request, pk):
         "clasificacion": str(orden.clasificacion) if hasattr(orden, "clasificacion") else "",
         "descripcion": orden.descripcion,
         "estatus": orden.get_estatus_display(),
-        "solucion": orden.solucion if orden.solucion else "",
+        "solucion_general": orden.solucion if orden.solucion else "",
 
-        # 🔹 AGREGADO (NO se cambia nada existente)
-        "estatus_usuario": usuario_orden.estatus if usuario_orden else None,
-        "usuario_solucion": usuario_orden.solucion if usuario_orden else "",
+        # 🔹 NUEVA ESTRUCTURA: Lista de soluciones de todos los usuarios
+        "todas_las_soluciones": soluciones_detalladas,
 
         "equipo": "true" if equipo else "false",
-
         "detalle_equipo": {
             "equipo": equipo.equipo if equipo else "",
             "marca": str(equipo.marca) if equipo else "",
@@ -591,7 +595,6 @@ def detalle_orden_api(request, pk):
             "descripcion": equipo.descripcion if equipo else "",
             "patrimonio": equipo.patrimonio if equipo else "",
         },
-
         "solicitante": {
             "nombre": solicitante.nombre_solicitante if solicitante else "",
             "puesto": solicitante.puesto_solicitante if solicitante else "",
@@ -599,7 +602,6 @@ def detalle_orden_api(request, pk):
             "correo": solicitante.correo_solicitante if solicitante else "",
             "telefono": solicitante.telefono_solicitante if solicitante else "",
         },
-
         "beneficiado": {
             "nombre": solicitante.nombre_beneficiado if solicitante else "",
             "puesto": solicitante.puesto_beneficiado if solicitante else "",
@@ -607,7 +609,6 @@ def detalle_orden_api(request, pk):
             "correo": solicitante.correo_beneficiado if solicitante else "",
             "telefono": solicitante.telefono_beneficiado if solicitante else "",
         },
-
         "comentario": {
             "calificacion": comentario.calificacion if comentario else "",
             "comentario": comentario.comentario if comentario else "",
@@ -729,8 +730,9 @@ def imprimir_orden(request, orden_id):
     num_emp = getattr(request.user.extra, "empleado", "N/A")
     username_usuario = request.user.username
     nombre_usuario = request.user.get_full_name()
+    soluciones_tecnicos = UsuariosxOrden.objects.filter(orden=orden).select_related('realiza')
 
-    # --- función auxiliar mejorada ---
+    # --- funciones auxiliares ---
     def draw_label_value(p, x, y, label, value, max_width=None):
         p.setFont("Helvetica-Bold", 9)
         label_width = p.stringWidth(label, "Helvetica-Bold", 9)
@@ -738,7 +740,6 @@ def imprimir_orden(request, orden_id):
         p.setFont("Helvetica", 9)
         
         if max_width:
-            # Manejo de texto largo con ajuste de línea
             available_width = max_width - label_width - 10
             lines = []
             words = str(value).split()
@@ -757,7 +758,6 @@ def imprimir_orden(request, orden_id):
             if current_line:
                 lines.append(" ".join(current_line))
             
-            # Dibujar múltiples líneas si es necesario
             for i, line in enumerate(lines):
                 p.drawString(x + label_width + 5, y - (i * 12), line)
             return len(lines)
@@ -765,30 +765,40 @@ def imprimir_orden(request, orden_id):
             p.drawString(x + label_width + 5, y, str(value))
             return 1
 
+    def draw_text_wrapped(p, text, x, y, width, height):
+        p.setFont("Helvetica", 9)
+        words = str(text).split()
+        lines = []
+        current_line = []
+        for word in words:
+            if p.stringWidth(" ".join(current_line + [word]), "Helvetica", 9) < width:
+                current_line.append(word)
+            else:
+                lines.append(" ".join(current_line))
+                current_line = [word]
+        lines.append(" ".join(current_line))
+        
+        for i, line in enumerate(lines):
+            if y - (i * 12) > 40:
+                p.drawString(x, y - (i * 12), line)
+
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename=orden_{orden.orden}.pdf'
 
     p = canvas.Canvas(response, pagesize=letter)
-    width, height = letter  # 612 x 792 puntos
-    
+    width, height = letter 
 
+    # --- BLOQUE DE LOGO REINTEGRADO ---
     logo_path = os.path.join(settings.STATICFILES_DIRS[0], "img", "logo_dgic.png")
-    
-    # DEBUG: Verificar imagen
     print(f"Buscando imagen en: {logo_path}")
-    print(f"¿Existe el archivo?: {os.path.exists(logo_path)}")
     
     if os.path.exists(logo_path):
         try:
             logo_width = 135 
             logo_height = (837 * logo_width) / 1007
-            
             x_pos = 40
             y_pos = height
             
-            print(f"Dibujando logo en: ({x_pos}, {y_pos}) tamaño: {logo_width}x{logo_height}")
-            
-            # Dibujar imagen
             p.drawImage(
                 logo_path,
                 x_pos,
@@ -798,7 +808,6 @@ def imprimir_orden(request, orden_id):
                 preserveAspectRatio=True,
                 mask='auto'
             )
-        
         except Exception as e:
             print(f"Error al dibujar logo: {e}")
             p.setFillColorRGB(0.9, 0.9, 0.9)
@@ -807,15 +816,15 @@ def imprimir_orden(request, orden_id):
             p.setFont("Helvetica", 8)
             p.drawCentredString(80, height - 115, "LOGO")
     else:
-        print("Logo no encontrado, usando placeholder")
         p.setFillColorRGB(0.9, 0.9, 0.9)
         p.rect(40, height - 80, 80, 67, fill=1, stroke=0)
         p.setFillColorRGB(0.5, 0.5, 0.5)
         p.setFont("Helvetica", 8)
         p.drawCentredString(80, height - 115, "LOGO")
     
+    p.setFillColorRGB(0, 0, 0)
     p.setFont("Helvetica-Bold", 14)
-    p.drawCentredString(width/2, height - 50, "DIRECCIÓN DE INFORMÁTICA")  # Centrado
+    p.drawCentredString(width/2, height - 50, "DIRECCIÓN DE INFORMÁTICA")
     p.setFont("Helvetica-Bold", 12)
     p.drawCentredString(width/2, height - 70, "ORDEN DE TRABAJO")
     
@@ -824,6 +833,7 @@ def imprimir_orden(request, orden_id):
     
     y = height - 105  
 
+    # --- Información General ---
     p.setFont("Helvetica-Bold", 10)
     p.drawString(40, y, "INFORMACIÓN GENERAL")
     y -= 20
@@ -835,7 +845,6 @@ def imprimir_orden(request, orden_id):
         ("RESPONSABLE:", f"({num_emp}) {username_usuario}"),
         ("CLASIFICACIÓN:", orden.clasificacion),
     ]
-    
     datos_derecha = [
         ("PRIORIDAD:", orden.prioridad.capitalize()),
         ("ESTADO:", orden.get_estatus_display()),
@@ -846,154 +855,79 @@ def imprimir_orden(request, orden_id):
     
     y_base = y
     lineas = []
-    columna_derecha_x = width/2 + 43  
-
     for i in range(max(len(datos_izquierda), len(datos_derecha))):
-        # Izquierda
-        if i < len(datos_izquierda):
-            lbl, val = datos_izquierda[i]
-            h1 = draw_label_value(
-                p,
-                40,
-                y_base - (i * 16),
-                lbl,
-                val,
-                max_width=300
-            )
-        else:
-            h1 = 1
-
-        # Derecha
-        if i < len(datos_derecha):
-            lbl, val = datos_derecha[i]
-            h2 = draw_label_value(
-                p,
-                columna_derecha_x,
-                y_base - (i * 16),
-                lbl,
-                val,
-                max_width=200
-            )
-        else:
-            h2 = 1
-
+        h1 = draw_label_value(p, 40, y_base - (i * 16), datos_izquierda[i][0], datos_izquierda[i][1], 300) if i < len(datos_izquierda) else 1
+        h2 = draw_label_value(p, width/2 + 43, y_base - (i * 16), datos_derecha[i][0], datos_derecha[i][1], 200) if i < len(datos_derecha) else 1
         lineas.append(max(h1, h2))
 
-    # Bajar y solo una vez
     y = y_base - (sum(lineas) * 12) - 20
 
+    # --- Datos Solicitante ---
     p.setFont("Helvetica-Bold", 10)
     p.drawString(40, y, "DATOS DEL SOLICITANTE")
     p.drawString(350, y, "DATOS DEL SERVICIO")
     y -= 20
-
     sol = orden.solicitantes.first()
 
-    datos_izquierda = [
+    datos_izq_sol = [
         ("SOLICITA:", f"({getattr(orden,'usuario_solicita','')}) {sol.nombre_solicitante}"),
         ("BENEFICIADO:", f"({getattr(orden,'usuario_beneficiado','')}) {sol.nombre_beneficiado}"),
         ("DEPENDENCIA:", sol.dependencia_beneficiado),
         ("PUESTO:", sol.puesto_beneficiado),
         ("TELÉFONO:", sol.telefono_beneficiado),
-        ("EXTENSIÓN:", getattr(sol, 'extension', 'N/A')),
     ]
-
-    datos_derecha = [
+    datos_der_ser = [
         ("APLICACIÓN:", orden.aplicacion),
         ("TIPO SERVICIO:", getattr(orden, 'tipo_servicio', 'N/A')),
         ("UBICACIÓN:", getattr(orden, 'ubicacion', 'N/A')),
         ("EQUIPO:", "Sí" if orden.equipo else "No"),
-
-        ("", ""),  
-        ("", ""),  
     ]
 
-    y_base = y  # 🔒 referencia fija
+    y_start = y
+    for i in range(max(len(datos_izq_sol), len(datos_der_ser))):
+        if i < len(datos_izq_sol):
+            draw_label_value(p, 40, y_start - (i * 18), datos_izq_sol[i][0], datos_izq_sol[i][1], 300)
+        if i < len(datos_der_ser):
+            draw_label_value(p, 350, y_start - (i * 18), datos_der_ser[i][0], datos_der_ser[i][1], 250)
 
-    lineas_izq = []
-    lineas_der = []
-
-    # Columna izquierda
-    for i, (label, value) in enumerate(datos_izquierda):
-        h = draw_label_value(
-            p,
-            40,
-            y_base - (i * 18),
-            label,
-            value,
-            max_width=300
-        )
-        lineas_izq.append(h)
-
-    # Columna derecha
-    for i, (label, value) in enumerate(datos_derecha):
-        if label:
-            h = draw_label_value(
-                p,
-                350,
-                y_base - (i * 25),
-                label,
-                value,
-                max_width=250
-            )
-            lineas_der.append(h)
-
-    # Calcular cuánto bajamos realmente
-    max_lineas = max(
-        sum(lineas_izq),
-        sum(lineas_der)
-    )
-
-    y = y_base - (max_lineas * 12) - 70
-
+    # --- SECCIÓN: DESCRIPCIÓN (FILA PROPIA) ---
+    y = y_start - 100
     p.setFont("Helvetica-Bold", 10)
     p.drawString(40, y, "DESCRIPCIÓN DEL PROBLEMA")
-    p.drawString(width/2 + 20, y, "SOLUCIÓN / OBSERVACIONES")
     y -= 15
+    alto_desc = 60
+    p.setStrokeColorRGB(0.8, 0.8, 0.8)
+    p.rect(40, y - alto_desc, width - 80, alto_desc, stroke=1, fill=0)
+    draw_text_wrapped(p, orden.descripcion, 45, y - 12, width - 90, alto_desc)
     
-    box_height = 120
+    y -= (alto_desc + 20)
 
-    left_box_width = width/2 - 50
-    right_box_width = width/2 - 60
+    # --- SECCIÓN: SOLUCIONES POR TÉCNICO (FILAS PROPIAS) ---
+    p.setFont("Helvetica-Bold", 10)
+    p.drawString(40, y, "SOLUCIONES / OBSERVACIONES POR TÉCNICO")
+    y -= 15
+    alto_fila_tec = 40
 
-    p.setFillColorRGB(0.95, 0.95, 0.95)
-    p.rect(40, y - box_height, left_box_width, box_height, fill=1, stroke=0)
-    p.rect(width/2 + 20, y - box_height, right_box_width, box_height, fill=1, stroke=0)
+    for asig in soluciones_tecnicos:
+        if y < 150:
+            p.showPage()
+            y = height - 70
+        
+        p.setStrokeColorRGB(0.8, 0.8, 0.8)
+        p.rect(40, y - alto_fila_tec, width - 80, alto_fila_tec, stroke=1, fill=0)
+        
+        nombre = asig.realiza.get_full_name() or asig.realiza.username
+        texto = f"{nombre}: {asig.solucion if asig.solucion else 'Sin reporte.'}"
+        draw_text_wrapped(p, texto, 45, y - 12, width - 90, alto_fila_tec)
+        y -= (alto_fila_tec + 5)
 
-    p.setFillColorRGB(0, 0, 0)
-    p.rect(40, y - box_height, left_box_width, box_height)
-    p.rect(width/2 + 20, y - box_height, right_box_width, box_height)
-
-    draw_text_in_box(
-        p,
-        orden.descripcion,
-        x=45,
-        y=y - 20,
-        width=left_box_width - 10,
-        height=box_height - 20
-    )
-
-    draw_text_in_box(
-        p,
-        orden.solucion,
-        x=width/2 + 25,
-        y=y - 20,
-        width=right_box_width - 10,
-        height=box_height - 20
-    )
-
-    y = y - box_height - 40
-
+    # --- Firmas y Pie ---
     firma_y = 100
-    
+    p.setStrokeColorRGB(0, 0, 0)
     p.line(60, firma_y, 260, firma_y)
     p.setFont("Helvetica-Bold", 9)
     p.drawCentredString(160, firma_y - 15, "FIRMA DE CONFORMIDAD")
-    p.setFont("Helvetica", 8)
-    p.drawCentredString(160, firma_y - 30, "SOLICITANTE O BENEFICIADO")
-    
     p.line(330, firma_y, 530, firma_y)
-    p.setFont("Helvetica-Bold", 9)
     p.drawCentredString(430, firma_y - 15, "FIRMA DEL RESPONSABLE")
     p.setFont("Helvetica", 8)
     p.drawCentredString(430, firma_y - 30, f"({num_emp}) {nombre_usuario}")

@@ -190,36 +190,48 @@ document.addEventListener("DOMContentLoaded", function () {
                         <p><strong>Correo:</strong> ${data.beneficiado.correo}</p>
                         <p><strong>Teléfono:</strong> ${data.beneficiado.telefono}</p>
                     </div>
+
+                    <div class="p-3 border rounded mb-4">
+                        <h6 class="title-secondary">Soluciones registradas</h6>
+                        <div class="list-group list-group-flush">
+                            ${data.todas_las_soluciones && data.todas_las_soluciones.length > 0 
+                                ? data.todas_las_soluciones.map(s => `
+                                    <div class="list-group-item px-0">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <strong>${s.usuario}</strong>
+                                            <span class="badge ${s.estatus === 'T' ? 'bg-success' : 'bg-warning text-dark'}">
+                                                ${s.estatus === 'T' ? 'Terminado' : 'En proceso'}
+                                            </span>
+                                        </div>
+                                        <p class="mb-0 text-secondary" style="font-size: 0.9rem;">
+                                            ${s.solucion ? s.solucion : '<em class="text-muted">Sin comentarios registrados</em>'}
+                                        </p>
+                                    </div>
+                                `).join('')
+                                : '<p class="text-muted">No hay técnicos asignados con reporte aún.</p>'
+                            }
+                        </div>
+                    </div>
                     
                     ${data.estatus === 'Terminada' ? `
-    
-                        <div class="p-3 border rounded mb-4">
-                            <h6 class="title-secondary">Solución</h6>
-
-                            ${data.solucion
-                                ? `
-                                    <p>${data.solucion}</p>
-                                `
-                                : `
-                                    <p class="text-muted">No se registró solución.</p>
-                                `
+                        <div class="p-3 border rounded mb-4 bg-light">
+                            <h6 class="title-secondary">Solución General</h6>
+                            ${data.solucion_general
+                                ? `<p>${data.solucion_general}</p>`
+                                : `<p class="text-muted">No se registró una solución global.</p>`
                             }
                         </div>
 
                         <div class="p-3 border rounded mb-4">
                             <h6 class="title-secondary">Calificación del usuario</h6>
-
                             ${data.comentario?.comentario
                                 ? `
                                     <p><strong>Comentario:</strong> ${data.comentario.comentario}</p>
                                     <p><strong>Calificación:</strong> ${renderStars(data.comentario.calificacion)}</p>
                                 `
-                                : `
-                                    <p class="text-muted">Aún no hay comentarios.</p>
-                                `
+                                : `<p class="text-muted">Aún no hay comentarios.</p>`
                             }
                         </div>
-
                     ` : ""}
 
                     ${data.estatus_usuario === 'A' ? `
@@ -229,33 +241,20 @@ document.addEventListener("DOMContentLoaded", function () {
                         </button>
                     ` : data.estatus_usuario === 'E' ? `
                         <div class="mb-2">
-                            <label class="form-label"><strong>Solución / Observación</strong></label>
+                            <label class="form-label"><strong>Escribir mi Solución / Observación</strong></label>
                             <textarea id="solucion" class="form-control" rows="3"
-                                placeholder="Describe la solución..."></textarea>
+                                placeholder="Describe tu avance o solución..."></textarea>
                         </div>
                         <button class="btn btn-success w-100"
                             onclick="cambiarEstatus(${data.orden}, 'T')">
-                            Terminar orden
+                            Terminar mi participación
                         </button>
                     `: data.estatus_usuario === 'T' ? `
                         <div class="alert alert-success mb-2">
                             <i class="bi bi-check-circle me-1"></i>
                             Has concluido tu participación en esta orden.
-                            <br>
-                            <small class="text-muted">
-                                La orden se cerrará automáticamente cuando todos los usuarios asignados hayan finalizado.
-                            </small>
                         </div>
-                        ${data.estatus_usuario ? `
-                            <div class="mb-2">
-                                <label class="form-label"><strong>Solución</strong></label>
-                                <div class="form-control bg-light">
-                                    ${data.usuario_solucion || 'N/A'}
-                                </div>
-                            </div>
-                        ` : ''}
                     ` : ""}
-
 
                     <div class="text-end mt-3">
                         <button class="btn btn-secondary" onclick="imprimirOrden(${data.orden})">Imprimir orden</button>

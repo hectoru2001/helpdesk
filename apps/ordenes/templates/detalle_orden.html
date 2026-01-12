@@ -232,6 +232,7 @@
                                     <th>Estatus</th>
                                     <th>Inicio</th>
                                     <th class="pe-4">Término</th>
+                                    <th>Solución</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -270,6 +271,15 @@
                                         <div class="text-success">
                                             <i class="bi bi-flag-fill me-1"></i>
                                             {{ u.termina|date:"d/m/Y H:i" }}
+                                        </div>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if u.solucion %}
+                                        <div class="p-2 rounded" style="background-color: #e9e9e9;">
+                                            {{ u.solucion|linebreaks }}
                                         </div>
                                         {% else %}
                                         <span class="text-muted">-</span>
