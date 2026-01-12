@@ -27,7 +27,6 @@
             <label class="form-label">Tipo de usuario</label>
             <select name="clasificacion" class="form-select">
                 <option value="">-- Todos --</option>
-                <option value="A" {% if request.GET.clasificacion == 'A' %}selected{% endif %}>Administrador</option>
                 <option value="P" {% if request.GET.clasificacion == 'P' %}selected{% endif %}>Programadores</option>
                 <option value="T" {% if request.GET.clasificacion == 'T' %}selected{% endif %}>Técnicos</option>
             </select>

@@ -11,6 +11,11 @@ from django.contrib.auth.models import User
 from datetime import timedelta
 from django.conf import settings
 
+USUARIOS_EXTRA_POR_CLASIFICACION = {
+        'T': [554, 545],   # Técnicos (admins incluidos)
+        'P': [549],       # Programadores (admins incluidos)
+    }
+
 class ReporteOrdenesPorUsuario(TemplateView):
     template_name = 'ordenes_usuario.html'
 
@@ -39,9 +44,12 @@ class ReporteOrdenesPorUsuario(TemplateView):
         if usuario_id:
             qs = qs.filter(realiza_id=usuario_id)
 
-        # 🔥 FILTRO REAL Y ÚNICO POR TIPO DE USUARIO
         if clasificacion:
-            qs = qs.filter(realiza__extra__tipo=clasificacion)
+            qs = qs.filter(
+                Q(realiza__extra__tipo=clasificacion) |
+                Q(realiza__id__in=USUARIOS_EXTRA_POR_CLASIFICACION.get(clasificacion, []))
+            )
+
 
         context['reporte'] = (
             qs.values(
