@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}
+<h5 class="title-secondary">Listado de aplicaciones</h5>
+{% endblock %}
+
+{% block content %}
+{% include 'mensajes.html' %}
+
+<div class="mb-3">
+    <form method="get" class="row g-2">
+        <div class="col-md-7">
+            <input
+                type="text"
+                name="q"
+                class="form-control"
+                placeholder="Buscar por nombre de marca"
+                value="{{ request.GET.q }}"
+            >
+        </div>
+
+        <div class="col-md-3">
+            <select name="estatus" class="form-select">
+                <option value="">-- Todos los estatus --</option>
+                <option value="1" {% if request.GET.estatus == '1' %}selected{% endif %}>Activa</option>
+                <option value="0" {% if request.GET.estatus == '0' %}selected{% endif %}>Inactiva</option>
+            </select>
+        </div>
+
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary w-100">
+                Filtrar
+            </button>
+            <a href="?" class="btn btn-outline-secondary w-100">
+                Limpiar
+            </a>
+            <a href="{% url 'crear_marca' %}" class="btn btn-success w-100">
+                Nuevo
+            </a>
+        </div>
+    </form>
+</div>
+
+<div class="table-container">
+    <table class="custom-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Descripción</th>
+                <th>Estatus</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% if marcas %}
+                {% for app in marcas %}
+                <tr>
+                    <td>{{ app.id }}</td>
+                    <td>{{ app.marca }}</td>
+                    <td>
+                        {% if app.estatus == 0 %}
+                            Inactiva
+                        {% else %}
+                            Activa
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display:flex; gap:6px;">
+                            <a href="{% url 'editar_marca' app.id%}" aria-label="Editar">
+                                <i class="btn btn-sm btn-outline-secondary bi bi-pencil"></i>
+                            </a>
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-outline-danger bi bi-trash"
+                                data-bs-toggle="modal"
+                                data-bs-target="#confirmDeleteModal{{ app.id }}"
+                                aria-label="Eliminar">
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Modal eliminar -->
+                <div class="modal fade"
+                     id="confirmDeleteModal{{ app.id }}"
+                     tabindex="-1"
+                     aria-labelledby="confirmDeleteLabel{{ app.id }}"
+                     aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="confirmDeleteLabel{{ app.id }}">
+                                    Confirmar eliminación
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                ¿Deseas eliminar la aplicación <strong>{{ app.nombre }}</strong>?
+                            </div>
+                            <div class="modal-footer">
+                                <a href="{% url 'eliminar_marca' app.id %}"
+                                   class="btn btn-sm btn-danger bi bi-trash">
+                                    Sí, eliminar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="7" class="text-center">
+                        No hay aplicaciones registradas.
+                    </td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+{% if is_paginated %}
+<nav>
+    <ul class="pagination justify-content-center">
+
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">«</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link">«</span>
+        </li>
+        {% endif %}
+
+        {% for num in paginator.page_range %}
+            {% if num == 1 or num == paginator.num_pages %}
+                <li class="page-item {% if num == page_obj.number %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+            {% elif num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+                <li class="page-item {% if num == page_obj.number %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+            {% elif num == page_obj.number|add:"-3" or num == page_obj.number|add:"3" %}
+                <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">»</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link">»</span>
+        </li>
+        {% endif %}
+
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

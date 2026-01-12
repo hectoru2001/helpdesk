@@ -99,7 +99,10 @@ def reporte_ordenes_por_usuario_pdf(request):
         qs = qs.filter(realiza_id=usuario_id)
 
     if clasificacion:
-        qs = qs.filter(realiza__extra__tipo=clasificacion)
+                qs = qs.filter(
+                    Q(realiza__extra__tipo=clasificacion) |
+                    Q(realiza__id__in=USUARIOS_EXTRA_POR_CLASIFICACION.get(clasificacion, []))
+            )
 
     reporte = (
         qs.values(
@@ -239,6 +242,7 @@ class ReporteCalificaciones(TemplateView):
         # filtros GET
         fecha_inicio = self.request.GET.get('fecha_inicio')
         fecha_fin = self.request.GET.get('fecha_fin')
+        calificacion = self.request.GET.get('calificacion')
 
         # queryset base
         ordenes = (
@@ -261,6 +265,12 @@ class ReporteCalificaciones(TemplateView):
             ordenes = ordenes.filter(
                 fecha_terminado__date__lte=fecha_fin
             )
+
+        # filtro por calificación
+        if calificacion:
+            ordenes = ordenes.filter(
+                comentario__calificacion=calificacion
+            ).distinct()
 
         # solo órdenes terminadas (tiene sentido para calificación)
         ordenes = ordenes.filter(estatus='T')

@@ -29,15 +29,14 @@
         </div>
 
         <div class="col-md-3">
-            <label class="form-label">Aplicación</label>
-            <select name="aplicacion" class="form-select">
-                <option value="">-- Todas --</option>
-                {% for a in aplicaciones %}
-                    <option value="{{ a.id }}"
-                        {% if request.GET.aplicacion == a.id|stringformat:"s" %}selected{% endif %}>
-                        {{ a.nombre }}
-                    </option>
-                {% endfor %}
+            <label class="form-label">Calificación</label>
+            <select name="calificacion" class="form-select">
+            <option value="">-- Todas --</option>
+            <option value="1" {% if request.GET.calificacion == "1" %}selected{% endif %}>⭐ 1/5</option>
+            <option value="2" {% if request.GET.calificacion == "2" %}selected{% endif %}>⭐ 2/5</option>
+            <option value="3" {% if request.GET.calificacion == "3" %}selected{% endif %}>⭐ 3/5</option>
+            <option value="4" {% if request.GET.calificacion == "4" %}selected{% endif %}>⭐ 4/5</option>
+            <option value="5" {% if request.GET.calificacion == "5" %}selected{% endif %}>⭐ 5/5</option>
             </select>
         </div>
 

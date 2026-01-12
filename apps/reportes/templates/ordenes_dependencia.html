@@ -32,12 +32,13 @@
             <select name="dependencia" class="form-select">
                 <option value="">-- Todas --</option>
                 {% for d in dependencias %}
-                    <option value="{{ d.id }}"
-                        {% if request.GET.dependencia == d.id|stringformat:"s" %}selected{% endif %}>
-                        {{ d.nombre }}
+                    <option value="{{ d }}"
+                        {% if request.GET.dependencia == d %}selected{% endif %}>
+                        {{ d }}
                     </option>
                 {% endfor %}
             </select>
+
         </div>
 
         <div class="col-md-2">
