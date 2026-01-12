@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %} <h5 class="title-secondary"> Actualizar contraseña </h5> {% endblock %}
+{% block content %}
+<form method="post" action="{% url 'cambiar_contrasena' %}">
+    {% csrf_token %}
+    <div>
+        <label for="old_password">Contraseña Actual:</label>
+        <input type="password" id="old_password" name="old_password" required>
+    </div>
+    <div>
+        <label for="new_password">Nueva Contraseña:</label>
+        <input type="password" id="new_password" name="new_password" required>
+    </div>
+    <div>
+        <label for="confirm_password">Confirmar Nueva Contraseña:</label>
+        <input type="password" id="confirm_password" name="confirm_password" required>
+    </div>
+    <button type="submit">Cambiar Contraseña</button>
+</form>
+{% endblock %}
