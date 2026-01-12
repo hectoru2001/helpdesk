@@ -561,6 +561,12 @@ def detalle_orden_api(request, pk):
     equipo = orden.equipos.first()
     comentario = orden.comentario.first()
 
+    usuario_orden = UsuariosxOrden.objects.filter(
+        orden=orden,
+        realiza=request.user,
+    ).first()
+
+
     # 🔹 CAMBIO: Obtener todos los usuarios asignados a esta orden
     asignaciones = UsuariosxOrden.objects.filter(orden=orden).select_related('realiza')
 
@@ -585,7 +591,7 @@ def detalle_orden_api(request, pk):
 
         # 🔹 NUEVA ESTRUCTURA: Lista de soluciones de todos los usuarios
         "todas_las_soluciones": soluciones_detalladas,
-
+        "estatus_usuario": usuario_orden.estatus if usuario_orden else None,
         "equipo": "true" if equipo else "false",
         "detalle_equipo": {
             "equipo": equipo.equipo if equipo else "",
