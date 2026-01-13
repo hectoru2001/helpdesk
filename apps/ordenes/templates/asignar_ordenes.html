@@ -8,24 +8,32 @@
     <!-- FILTRO POR FECHAS -->
     <form method="get" class="row g-3 mb-4">
 
-        <div class="col-md-4">
+        <div class="col-md-3">
             <label for="fecha_inicio" class="form-label">Fecha Inicio</label>
             <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio"
                 value="{{ request.GET.fecha_inicio }}">
         </div>
 
-        <div class="col-md-4">
+        <div class="col-md-3">
             <label for="fecha_fin" class="form-label">Fecha Fin</label>
             <input type="date" class="form-control" id="fecha_fin" name="fecha_fin"
                 value="{{ request.GET.fecha_fin }}">
+        </div>
+
+        <div class="col-md-2">
+            <label for="estatus" class="form-label">¿Mostrar terminadas?</label>
+            <select name="estatus" id="estatus" class="form-control">
+                <option value="no" {% if request.GET.estatus == "no" %}selected{% endif %}>No</option>
+                <option value="si" {% if request.GET.estatus == "si" %}selected{% endif %}>Si</option>
+            </select>
         </div>
 
         {% if tipo_usuario == "A" %}
         <div class="col-md-2">
             <label for="todas" class="form-label">¿Mostrar solo mis órdenes?</label>
             <select name="todas" id="todas" class="form-control">
-                <option value="si" {% if request.GET.estatus == "si" %}selected{% endif %}>Si</option>
-                <option value="no" {% if request.GET.estatus == "no" %}selected{% endif %}>No</option>
+                <option value="si" {% if request.GET.todas == "si" %}selected{% endif %}>Si</option>
+                <option value="no" {% if request.GET.todas == "no" %}selected{% endif %}>No</option>
             </select>
         </div>
         {% endif %}
@@ -61,7 +69,7 @@
                             {% elif orden.estatus == 'T' %}fila-terminada
                             {% elif orden.estatus == 'C' %}fila-cancelada
                             {% endif %}
-                        ">
+                        " onclick="window.location.href='{% url 'detalle_orden' orden.orden %}'" style="cursor: pointer;">
                             <td>{{ orden.orden }}</td>
                             <td>{{ orden.fecha_captura|date:"d/m/Y H:i" }}</td>
                             <td>{{ orden.solicitantes.first.nombre_beneficiado }}</td>
@@ -147,29 +155,31 @@
                                         </div>
                                     </div>
                                 {% endif %}
-                            </td>                         
+                            </td>
                             <td class="text-center">
                                 <button type="button"
                                     class="btn btn-sm btn-outline-primary btn-procesar-orden"
                                     data-bs-toggle="modal"
                                     data-bs-target="#procesarOrdenModal"
                                     data-orden-id="{{ orden.orden }}"
-                                    title="Trabajar orden">
+                                    title="Trabajar orden"
+                                    onclick="event.stopPropagation();">
                                     <i class="bi bi-arrow-up-right-square"></i>
                                 </button>
-                                
-                                {% if tipo_usuario == "A" and orden.estatus != "T"%}
-                                    <button type="button"
-                                        class="btn btn-sm btn-outline-warning btn-reasignar-orden"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#reasignarOrdenModal"
-                                        data-orden-id="{{ orden.orden }}"
-                                        title="Reasignar orden">
-                                        <i class="bi bi-arrow-repeat"></i>
-                                    </button>
-                                {% endif %}
 
+                                {% if tipo_usuario == "A" and orden.estatus != "T" %}
+                                <button type="button"
+                                    class="btn btn-sm btn-outline-warning btn-reasignar-orden"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#reasignarOrdenModal"
+                                    data-orden-id="{{ orden.orden }}"
+                                    title="Reasignar orden"
+                                    onclick="event.stopPropagation();">
+                                    <i class="bi bi-arrow-repeat"></i>
+                                </button>
+                                {% endif %}
                             </td>
+
 
 
                         </tr>

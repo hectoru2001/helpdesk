@@ -26,21 +26,22 @@ class DashboardView(TemplateView):
             .distinct()
         )
 
-        context['ordenes'] = ordenes_qs.order_by('-fecha_captura')[:5]
+        context['ordenes'] = ordenes_qs.filter(estatus__in=['E', 'A']).order_by('-fecha_captura')[:5]
 
         hoy = timezone.now().date()
+        print(hoy)
 
         context['estadisticas'] = {
             'ordenes_hoy': ordenes_qs.filter(fecha_captura__date=hoy).count(),
             'ordenes_completadas': ordenes_qs.filter(fecha_captura__date=hoy, estatus='T').count(),
             'ordenes_pendientes': ordenes_qs.filter(fecha_captura__date=hoy, estatus__in=['E', 'En Proceso']).count(),
-            'ordenes_proceso': ordenes_qs.filter(fecha_captura__date=hoy, estatus__in=['A', 'En Proceso']).count(),
+            'ordenes_proceso': ordenes_qs.filter(fecha_captura__date=hoy, estatus__in=['A', 'Asignada']).count(),
         }
 
         queryset = Notificacion.objects.filter(usuario=user).order_by('-creada')
 
         context['notificaciones_count'] = queryset.filter(leida=False).count()
-        context['notificaciones'] = queryset[:5]
+        context['notificaciones'] = queryset.filter(leida=False)[:5]
 
         return context
     

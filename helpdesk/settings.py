@@ -71,17 +71,30 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'helpdesk.wsgi.application'
+BD_TEST = False
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'helpdesk',
-        'USER': 'postgres',
-        'PASSWORD': '123456',
-        'HOST': '10.236.62.93',
-        'PORT': '5433',
+if BD_TEST:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'helpdesk',
+            'USER': 'postgres',
+            'PASSWORD': '123456',
+            'HOST': '10.236.62.93',
+            'PORT': '5433',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'HelpDesk',
+            'USER': 'usr_helpdesk',
+            'PASSWORD': 'H31D5k_YrsP',
+            'HOST': '10.236.62.59',
+            'PORT': '5432',
+        }
+    }
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 

@@ -114,7 +114,17 @@
                 <td>{{ o.solicitantes.first.dependencia_solicitante }}</td>
                 <td>{{ o.solicitantes.first.nombre_solicitante }}</td>
                 <td>{{ o.fecha_captura|date:"d/m/Y H:i" }}</td>
-                <td>{{ o.get_estatus_display }}</td>
+                <td>
+                    {% if o.estatus == "T" %}
+                        <span class="badge bg-success">Terminada</span>
+                    {% elif o.estatus in "E" %}
+                        <span class="badge bg-warning text-dark">Pendiente</span>
+                    {% elif o.estatus in "A" %}
+                        <span class="badge bg-primary">Asignada</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Cancelada</span>
+                    {% endif %}
+                </td>
                 <td>
                     <div class="" style="gap: 6px; display: flex;">
                         <a href="{% url 'detalle_orden' o.orden %}" aria-label="Ver"><i class="btn btn-sm btn-outline-primary bi bi-eye"></i></a>

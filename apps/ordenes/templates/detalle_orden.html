@@ -46,6 +46,15 @@
                             </a>
                         {% endif %}
 
+                        <button type="button"
+                            class="btn btn-sm btn-outline-light btn-procesar-orden"
+                            data-bs-toggle="modal"
+                            data-bs-target="#procesarOrdenModal"
+                            data-orden-id="{{ orden.orden }}"
+                            title="Trabajar orden">
+                            <i class="bi bi-arrow-up-right-square"></i> Procesar
+                        </button>
+
                         <!-- Reasignar -->
                         {% if tipo_usuario == "A" and o.get_estatus_display != "Terminada" and o.get_estatus_display != "Cancelada" %}
                             <button type="button"
@@ -333,34 +342,39 @@
                             <i class="bi bi-paperclip me-2"></i>Archivos Adjuntos
                         </h5>
                         <span class="badge bg-light text-dark" id="archivos-count">
-                            {{ orden.archivos.count|default:0 }}
+                            {{ archivos_count|default:0 }}
                         </span>
                     </div>
                 </div>
+
                 <div class="card-body">
-                    {% if orden.archivos.all %}
+                    {% if archivos_validos %}
                     <div class="list-group list-group-flush">
-                        {% for archivo in orden.archivos.all %}
+
+                        {% for archivo in archivos_validos %}
                         <div class="list-group-item px-0 py-3 border-bottom">
                             <div class="d-flex align-items-start">
-                                <!-- Icono según tipo de archivo -->
+
+                                <!-- Icono según extensión -->
                                 <div class="flex-shrink-0 me-3">
-                                    {% if archivo.archivo.name|lower|slice:"-4:" == ".pdf" %}
-                                    <i class="bi bi-file-pdf fs-3 text-danger"></i>
-                                    {% elif archivo.archivo.name|lower|slice:"-4:" == ".doc" or archivo.archivo.name|lower|slice:"-5:" == ".docx" %}
-                                    <i class="bi bi-file-word fs-3 text-primary"></i>
-                                    {% elif archivo.archivo.name|lower|slice:"-4:" == ".xls" or archivo.archivo.name|lower|slice:"-5:" == ".xlsx" %}
-                                    <i class="bi bi-file-excel fs-3 text-success"></i>
-                                    {% elif archivo.archivo.name|lower|slice:"-4:" == ".jpg" or archivo.archivo.name|lower|slice:"-5:" == ".jpeg" or archivo.archivo.name|lower|slice:"-4:" == ".png" or archivo.archivo.name|lower|slice:"-4:" == ".gif" %}
-                                    <i class="bi bi-file-image fs-3 text-info"></i>
-                                    {% elif archivo.archivo.name|lower|slice:"-4:" == ".zip" or archivo.archivo.name|lower|slice:"-4:" == ".rar" %}
-                                    <i class="bi bi-file-zip fs-3 text-warning"></i>
-                                    {% else %}
-                                    <i class="bi bi-file-earmark fs-3 text-secondary"></i>
-                                    {% endif %}
+                                    {% with nombre=archivo.archivo.name|lower %}
+                                        {% if nombre|slice:"-4:" == ".pdf" %}
+                                            <i class="bi bi-file-pdf fs-3 text-danger"></i>
+                                        {% elif nombre|slice:"-4:" == ".doc" or nombre|slice:"-5:" == ".docx" %}
+                                            <i class="bi bi-file-word fs-3 text-primary"></i>
+                                        {% elif nombre|slice:"-4:" == ".xls" or nombre|slice:"-5:" == ".xlsx" %}
+                                            <i class="bi bi-file-excel fs-3 text-success"></i>
+                                        {% elif nombre|slice:"-4:" == ".jpg" or nombre|slice:"-5:" == ".jpeg" or nombre|slice:"-4:" == ".png" or nombre|slice:"-4:" == ".gif" %}
+                                            <i class="bi bi-file-image fs-3 text-info"></i>
+                                        {% elif nombre|slice:"-4:" == ".zip" or nombre|slice:"-4:" == ".rar" %}
+                                            <i class="bi bi-file-zip fs-3 text-warning"></i>
+                                        {% else %}
+                                            <i class="bi bi-file-earmark fs-3 text-secondary"></i>
+                                        {% endif %}
+                                    {% endwith %}
                                 </div>
-                                
-                                <!-- Información del archivo -->
+
+                                <!-- Información -->
                                 <div class="flex-grow-1">
                                     <div class="d-flex justify-content-between align-items-start mb-1">
                                         <h6 class="mb-0 fw-bold text-truncate" style="max-width: 200px;">
@@ -370,58 +384,62 @@
                                             {{ archivo.archivo.size|filesizeformat }}
                                         </span>
                                     </div>
-                                    
+
                                     {% if archivo.descripcion %}
                                     <p class="small mb-2">{{ archivo.descripcion }}</p>
                                     {% endif %}
-                                    
-                                    <!-- Botones de acción -->
+
+                                    <!-- Acciones -->
                                     <div class="d-flex gap-2">
-                                        <a href="{{ archivo.archivo.url }}" 
-                                           download 
-                                           class="btn btn-sm btn-outline-primary">
+                                        <a href="{{ archivo.archivo.url }}"
+                                        download
+                                        class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-download me-1"></i>Descargar
                                         </a>
-                                        <a href="{{ archivo.archivo.url }}" 
-                                           target="_blank" 
-                                           class="btn btn-sm btn-outline-secondary">
+                                        <a href="{{ archivo.archivo.url }}"
+                                        target="_blank"
+                                        class="btn btn-sm btn-outline-secondary">
                                             <i class="bi bi-eye me-1"></i>Ver
                                         </a>
                                     </div>
                                 </div>
+
                             </div>
                         </div>
                         {% endfor %}
                     </div>
-                    
+
                     <!-- Estadísticas -->
                     <div class="mt-3 pt-3 border-top">
                         <div class="row text-center">
                             <div class="col-6">
                                 <small class="text-muted">Total archivos</small>
-                                <p class="h5 mb-0">{{ orden.archivos.count }}</p>
+                                <p class="h5 mb-0">{{ archivos_count }}</p>
                             </div>
                             <div class="col-6">
                                 <small class="text-muted">Tamaño total</small>
                                 <p class="h5 mb-0">
-                                    {% with total_size=0 %}
-                                        {% for archivo in orden.archivos.all %}
-                                            {% widthratio archivo.archivo.size 1 1 as size %}
-                                            {% with total_size=total_size|add:size %}
-                                            {% endwith %}
+                                    {% with total=0 %}
+                                        {% for archivo in archivos_validos %}
+                                            {% widthratio archivo.archivo.size 1 1 as s %}
+                                            {% with total=total|add:s %}{% endwith %}
                                         {% endfor %}
-                                        {{ total_size|filesizeformat }}
+                                        {{ total|filesizeformat }}
                                     {% endwith %}
                                 </p>
                             </div>
                         </div>
                     </div>
+
                     {% else %}
+                    <!-- Sin archivos -->
                     <div class="text-center py-4">
                         <i class="bi bi-paperclip display-5 text-muted mb-3"></i>
                         <p class="text-muted mb-0">No hay archivos adjuntos</p>
+
                         {% if tipo_usuario == "A" %}
-                        <a href="{% url 'editar_orden' orden.orden %}" class="btn btn-sm btn-outline-primary mt-2">
+                        <a href="{% url 'editar_orden' orden.orden %}"
+                        class="btn btn-sm btn-outline-primary mt-2">
                             <i class="bi bi-plus-circle me-1"></i>Agregar archivos
                         </a>
                         {% endif %}
@@ -429,6 +447,7 @@
                     {% endif %}
                 </div>
             </div>
+
 
             <!-- Equipos asociados -->
             {% if orden.equipos.all %}
@@ -609,7 +628,30 @@
     </div>
 </div>
 
+<div class="modal fade" id="procesarOrdenModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable"> 
+            <div class="modal-content">
+                <div class="modal-header bg-primario text-white">
+                    <h5 class="modal-title">Procesar orden</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body" id="modal-procesar-contenido">
+                    <div class="text-center text-muted py-5">
+                        <div class="spinner-border text-primary mb-3"></div>
+                        <p>Cargando datos...</p>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+</div>
+
 <script defer src="{% static 'js/detalle_orden.js' %}"></script>
+<script defer src="{% static 'js/asignar_detalles.js' %}"></script>
 
 <style>
     /* Estilos adicionales para los archivos adjuntos */

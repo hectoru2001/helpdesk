@@ -175,9 +175,10 @@ class DetallesOrdenes(DetailView):
         context = super().get_context_data(**kwargs)
         orden = self.get_object()
 
+        # 🔹 Comentario
         comentario = TokenComentario.objects.filter(
             orden=orden,
-            usado=True 
+            usado=True
         ).order_by('-creado').first()
 
         context['comentario'] = comentario
@@ -187,6 +188,17 @@ class DetallesOrdenes(DetailView):
             context['estrellas'] = estrellas
         else:
             context['estrellas'] = None
+
+        archivos_validos = []
+        for a in orden.archivos.all():
+            try:
+                if a.archivo and os.path.exists(a.archivo.path):
+                    archivos_validos.append(a)
+            except Exception:
+                continue
+
+        context['archivos_validos'] = archivos_validos
+        context['archivos_count'] = len(archivos_validos)
 
         return context
 
@@ -381,8 +393,17 @@ class OrdenesView(TemplateView):
         except ExtraUsuarios.DoesNotExist:
             tipo_usuario = "T"
 
-        # ⬇️ OMITIR estatus = 'T'
-        ordenes = Orden.objects.exclude(estatus__in=['C', 'T']).order_by('-fecha_captura')
+        # 🔹 NUEVO: filtro para mostrar terminadas
+        mostrar_terminadas = self.request.GET.get('estatus', 'no')
+
+        # 🔹 Base: nunca mostrar canceladas
+        ordenes = Orden.objects.exclude(estatus='C')
+
+        # 🔹 Solo excluir terminadas si el usuario dice NO
+        if mostrar_terminadas == 'no':
+            ordenes = ordenes.exclude(estatus='T')
+
+        ordenes = ordenes.order_by('-fecha_captura')
 
         fecha_inicio = self.request.GET.get('fecha_inicio')
         fecha_fin = self.request.GET.get('fecha_fin')
@@ -413,6 +434,7 @@ class OrdenesView(TemplateView):
         context['fecha_inicio'] = fecha_inicio
         context['fecha_fin'] = fecha_fin
         context['mostrar_todas'] = mostrar_todas
+        context['mostrar_terminadas'] = mostrar_terminadas
 
         return context
 

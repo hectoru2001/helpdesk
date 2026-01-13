@@ -52,7 +52,7 @@
                             </thead>
                             <tbody>
                                 {% for orden in ordenes|slice:":10" %}
-                                <tr class="clickable-row" onclick="" style="cursor: pointer;">
+                                <tr class="clickable-row" onclick="window.location.href='{% url 'detalle_orden' orden.orden %}'" style="cursor: pointer;">
                                     <td class="fw-bold">#{{ orden.orden }}</td>
                                     <td>{{ orden.solicitantes.first.nombre_solicitante }}</td>
                                     <td>{{ orden.solicitantes.first.nombre_beneficiado }}</td>

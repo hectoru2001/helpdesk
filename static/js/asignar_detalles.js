@@ -214,14 +214,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     </div>
                     
                     ${data.estatus === 'Terminada' ? `
-                        <div class="p-3 border rounded mb-4 bg-light">
-                            <h6 class="title-secondary">Solución General</h6>
-                            ${data.solucion_general
-                                ? `<p>${data.solucion_general}</p>`
-                                : `<p class="text-muted">No se registró una solución global.</p>`
-                            }
-                        </div>
-
                         <div class="p-3 border rounded mb-4">
                             <h6 class="title-secondary">Calificación del usuario</h6>
                             ${data.comentario?.comentario
