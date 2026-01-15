@@ -37,15 +37,15 @@
                             class="btn btn-outline-light btn-sm">
                                 <i class="bi bi-pencil me-1"></i> Editar
                             </a>
-
-                            <!-- Imprimir -->
-                            <a href="{% url 'imprimir_orden' orden.orden %}"
-                            target="_blank"
-                            class="btn btn-outline-light btn-sm">
-                                <i class="bi bi-printer me-1"></i> Imprimir
-                            </a>
                         {% endif %}
 
+                        <!-- Imprimir -->
+                        <a href="{% url 'imprimir_orden' orden.orden %}"
+                        target="_blank"
+                        class="btn btn-outline-light btn-sm">
+                            <i class="bi bi-printer me-1"></i> Imprimir
+                        </a>
+                        
                         <button type="button"
                             class="btn btn-sm btn-outline-light btn-procesar-orden"
                             data-bs-toggle="modal"
@@ -635,22 +635,16 @@
                     <h5 class="modal-title">Procesar orden</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-
                 <div class="modal-body" id="modal-procesar-contenido">
                     <div class="text-center text-muted py-5">
                         <div class="spinner-border text-primary mb-3"></div>
                         <p>Cargando datos...</p>
                     </div>
                 </div>
-
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                </div>
             </div>
         </div>
 </div>
 
-<script defer src="{% static 'js/detalle_orden.js' %}"></script>
 <script defer src="{% static 'js/asignar_detalles.js' %}"></script>
 
 <style>

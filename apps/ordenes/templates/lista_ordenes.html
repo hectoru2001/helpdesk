@@ -89,6 +89,7 @@
                 <th>Dependencia</th>
                 <th>Solicitante</th>
                 <th>Fecha Recepcion</th>
+                <th>Asignado a</th>
                 <th>Estatus</th>
                 <th>Acciones</th>
             </tr>
@@ -114,6 +115,14 @@
                 <td>{{ o.solicitantes.first.dependencia_solicitante }}</td>
                 <td>{{ o.solicitantes.first.nombre_solicitante }}</td>
                 <td>{{ o.fecha_captura|date:"d/m/Y H:i" }}</td>
+                <td title="{% for ux_o in o.usuarios_orden.all %}{{ ux_o.realiza.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+                                {% for ux_o in o.usuarios_orden.all|slice:":2" %}
+                                    {{ ux_o.realiza.get_full_name }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                                {% if o.usuarios_orden.count > 2 %}
+                                    <span class="text-primary"> (+{{ o.usuarios_orden.count|add:"-2" }})</span>
+                                {% endif %}
+                            </td>
                 <td>
                     {% if o.estatus == "T" %}
                         <span class="badge bg-success">Terminada</span>

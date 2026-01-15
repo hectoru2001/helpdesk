@@ -29,7 +29,6 @@
 
 body {
     font-family: 'Inter', sans-serif;
-    background: url('{% static "img/" %}') no-repeat center center;
     background-size: cover; /* Ajusta la imagen al tamaño de la ventana */
     color: white;
     min-height: 100vh;

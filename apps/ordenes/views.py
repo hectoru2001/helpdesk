@@ -598,7 +598,8 @@ def detalle_orden_api(request, pk):
         soluciones_detalladas.append({
             "usuario": asig.realiza.get_full_name() or asig.realiza.username,
             "estatus": asig.estatus,
-            "solucion": asig.solucion if asig.solucion else ""
+            "solucion": asig.solucion if asig.solucion else "",
+            "comentarie": asig.comentarios if hasattr(asig, 'comentarios') else ""
         })
 
     data = {
@@ -658,28 +659,38 @@ def actualizar_estatus_api(request):
     except Orden.DoesNotExist:
         return JsonResponse({"success": False, "error": "Orden no encontrada"})
 
-    try:
-        usuario_orden = UsuariosxOrden.objects.get(
-            orden_id=orden,
-            realiza_id=request.user,
+    usuario_orden = (
+        UsuariosxOrden.objects
+        .filter(
+            orden=orden,
+            realiza=request.user
         )
-    except UsuariosxOrden.DoesNotExist:
+        .order_by('-inicia')   # el más reciente
+        .first()
+    )
+
+    if not usuario_orden:
         return JsonResponse({
             "success": False,
             "error": "No estás asignado activo a esta orden"
         })
 
+    # =======================
+    # INICIAR
+    # =======================
     if estatus == "E":
         usuario_orden.inicia = timezone.now()
         usuario_orden.estatus = "E"
-        usuario_orden.save()
-
+        usuario_orden.save(update_fields=['inicia', 'estatus'])
 
         orden.estatus = "E"
-        orden.save()
+        orden.save(update_fields=['estatus'])
 
         return JsonResponse({"success": True, "estatus": "E"})
 
+    # =======================
+    # TERMINAR
+    # =======================
     if estatus == "T":
         if not solucion:
             return JsonResponse({
@@ -690,9 +701,9 @@ def actualizar_estatus_api(request):
         usuario_orden.termina = timezone.now()
         usuario_orden.estatus = "T"
         usuario_orden.solucion = solucion
-        usuario_orden.save()
+        usuario_orden.save(update_fields=['termina', 'estatus', 'solucion'])
 
-        # Verificar si TODOS los usuarios ya terminaron
+        # ---- VALIDACIÓN GLOBAL ----
         total_asignados = UsuariosxOrden.objects.filter(
             orden=orden, estatus='A'
         ).count()
@@ -711,26 +722,31 @@ def actualizar_estatus_api(request):
 
             correos = obtener_correos_orden(orden_id)
             url_comentario = generar_url_comentario(request, orden)
-            contexto = {
-                "orden_id": orden_id,
-                "fecha_terminado": orden.fecha_terminado,
-                "solucion": solucion,
-                "url": url_comentario
-            }
 
             Notificar.enviar_notificacion_orden(
                 orden_id,
                 correos,
                 "terminada",
-                contexto=contexto
+                contexto={
+                    "orden_id": orden_id,
+                    "fecha_terminado": orden.fecha_terminado,
+                    "solucion": solucion,
+                    "url": url_comentario
+                }
             )
 
-            return JsonResponse({"success": True, "estatus": "T", "msg": "Orden finalizada por todos"})
+            return JsonResponse({
+                "success": True,
+                "estatus": "T",
+                "msg": "Orden finalizada por todos"
+            })
 
-        # Faltan usuarios por terminar
-        return JsonResponse({"success": True, "estatus": "PT", "msg": "Tú terminaste, otros usuarios siguen"})
+        return JsonResponse({
+            "success": True,
+            "estatus": "PT",
+            "msg": "Tú terminaste, otros usuarios siguen"
+        })
 
-    # ⭐ Cualquier otro estatus no permitido
     return JsonResponse({"success": False, "error": "Estatus no válido"})
 
 def formatear(fecha):
@@ -1024,7 +1040,7 @@ def reasignar_orden(request: HttpRequest):
             )
 
         UsuariosxOrden.objects.filter(orden=orden).delete()
-
+        timestamp = timezone.localtime().strftime('%d/%m/%Y %H:%M')
         registros = []
         for usuario in usuarios_nuevos:
             registros.append(
@@ -1034,7 +1050,11 @@ def reasignar_orden(request: HttpRequest):
                     asigna=usuario_que_asigna,
                     estatus="A",
                     estatus_orden="A",
-                    comentarios=f"Reasignación: {comentario}" if comentario else "Reasignación"
+                    comentarios=(
+                        f"[{timestamp}] Reasignación: {comentario}"
+                        if comentario
+                        else f"[{timestamp}] Reasignación"
+                    )
                 )
             )
 
@@ -1132,3 +1152,39 @@ def entregar_equipo(request, equipo_id):
 
     messages.success(request, f'El equipo "{equipo.equipo}" ha sido marcado como entregado.')
     return redirect('detalle_orden', pk=equipo.orden.orden)
+
+@require_POST
+def guardar_comentario(request):
+    data = json.loads(request.body)
+
+    orden_id = data.get('orden')
+    comentario = data.get('comentario', '').strip()
+
+    if not comentario:
+        return JsonResponse(
+            {'ok': False, 'error': 'Comentario vacío'},
+            status=400
+        )
+
+    uxo = UsuariosxOrden.objects.filter(
+        orden_id=orden_id,
+        realiza=request.user,
+    ).first()
+
+    if not uxo:
+        return JsonResponse(
+            {'ok': False, 'error': 'Registro no encontrado'},
+            status=404
+        )
+
+    hora_local = timezone.localtime(timezone.now())
+    
+    if uxo.comentarios:
+        uxo.comentarios += f'\n[{hora_local.strftime("%Y-%m-%d %H:%M")}] {comentario}'
+    else:
+        uxo.comentarios = comentario
+
+    uxo.save(update_fields=['comentarios'])
+
+    return JsonResponse({'ok': True})
+        

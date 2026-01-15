@@ -28,6 +28,7 @@ urlpatterns = [
     path('usuarios_disponibles/<int:orden_id>/', usuarios_disponibles, name='usuarios_disponibles'),
     path('reasignar/', reasignar_orden, name='reasignar_orden'),
     path('entregar_equipo/<int:equipo_id>/', entregar_equipo, name='entregar_equipo'),
+    path('guardar_comentario/', guardar_comentario, name='guardar_comentario'),
 
     # === Endpoint Empleados === #
     path("empleados/buscar/", BuscarEmpleadoAPI.as_view(), name="buscar_empleado"),
