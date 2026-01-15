@@ -154,6 +154,8 @@ class ListaOrdenes(ListView):
         if q:
             if tipo == 'oficio':
                 qs = qs.filter(oficio__icontains=q)
+            elif tipo == 'dependencia':
+                qs = qs.filter(solicitantes__dependencia_solicitante__icontains=q)
             else:
                 qs = qs.filter(orden__icontains=q)
 

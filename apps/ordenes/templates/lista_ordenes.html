@@ -9,7 +9,7 @@
         <div class="row g-3 align-items-end">
 
             <!-- Tipo de búsqueda -->
-            <div class="col-md-1">
+            <div class="col-md-2">
                 <label class="form-label fw-semibold">
                     Buscar por
                 </label>
@@ -20,11 +20,14 @@
                     <option value="oficio" {% if request.GET.tipo == "oficio" %}selected{% endif %}>
                         Oficio
                     </option>
+                    <option value="dependencia" {% if request.GET.tipo == "dependencia" %}selected{% endif %}>
+                        Dependencia
+                    </option>
                 </select>
             </div>
 
             <!-- Texto de búsqueda -->
-            <div class="col-md-5">
+            <div class="col-md-4">
                 <label class="form-label fw-semibold">
                     Valor
                 </label>
