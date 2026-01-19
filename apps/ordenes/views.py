@@ -649,6 +649,7 @@ def detalle_orden_api(request, pk):
     return JsonResponse(data)
 
 def actualizar_estatus_api(request):
+    #Obtenemos los parámetros de la petición POST
     orden_id = request.POST.get("orden_id")
     estatus = request.POST.get("estatus")
     solucion = request.POST.get("solucion", "").strip()
@@ -661,15 +662,11 @@ def actualizar_estatus_api(request):
     except Orden.DoesNotExist:
         return JsonResponse({"success": False, "error": "Orden no encontrada"})
 
-    usuario_orden = (
-        UsuariosxOrden.objects
-        .filter(
-            orden=orden,
-            realiza=request.user
-        )
-        .order_by('-inicia')   # el más reciente
-        .first()
-    )
+    # Obtenemos el registro de UsuariosxOrden para el usuario actual
+    usuario_orden = (UsuariosxOrden.objects.filter(
+        orden=orden, 
+        realiza=request.user)
+    .order_by('-inicia').first())
 
     if not usuario_orden:
         return JsonResponse({
@@ -677,9 +674,8 @@ def actualizar_estatus_api(request):
             "error": "No estás asignado activo a esta orden"
         })
 
-    # =======================
-    # INICIAR
-    # =======================
+
+    # Validamos si el estatus recibido es en proceso ('E') para actualizar modelo UsuariosxOrden y Orden 'En proceso')
     if estatus == "E":
         usuario_orden.inicia = timezone.now()
         usuario_orden.estatus = "E"
@@ -690,9 +686,7 @@ def actualizar_estatus_api(request):
 
         return JsonResponse({"success": True, "estatus": "E"})
 
-    # =======================
-    # TERMINAR
-    # =======================
+    # Validamos si el estatus recibido es terminado ('T') para actualizar modelo UsuariosxOrden y Orden 'Terminado')
     if estatus == "T":
         if not solucion:
             return JsonResponse({
@@ -705,17 +699,18 @@ def actualizar_estatus_api(request):
         usuario_orden.solucion = solucion
         usuario_orden.save(update_fields=['termina', 'estatus', 'solucion'])
 
-        # ---- VALIDACIÓN GLOBAL ----
+        # Obtenemos el número de todos los usuarios asignados a la orden
         total_asignados = UsuariosxOrden.objects.filter(
-            orden=orden, estatus='A'
-        ).count()
+            orden=orden
+        ).exclude(estatus='C').count()
 
+        # Obtenemos el número de usuarios que han terminado la orden
         total_terminados = UsuariosxOrden.objects.filter(
             orden=orden,
-            estatus='A',
-            estatus_orden="T"
-        ).count()
+            estatus='T'
+        ).exclude(estatus='C').count()
 
+        # Si todos los usuarios han terminado, actualizamos la orden a 'T' de Terminado
         if total_asignados == total_terminados:
             orden.estatus = "T"
             orden.solucion = solucion

@@ -354,7 +354,12 @@ document.addEventListener("DOMContentLoaded", function () {
                                                         </div>
                                                         <span class="badge ${s.estatus === 'T' ? 'bg-success' : 'bg-warning text-dark'} status-badge">
                                                             <i class="bi ${s.estatus === 'T' ? 'bi-check-circle' : 'bi-clock'} me-1"></i>
-                                                            ${s.estatus === 'T' ? 'Terminado' : 'En proceso'}
+                                                            ${s.estatus === 'T' ? 
+                                                                'Terminado' :
+                                                            s.estatus === 'A' ?
+                                                                'Asignada' : 'En Proceso'
+                                                            }
+                                                            
                                                         </span>
                                                     </div>
 
