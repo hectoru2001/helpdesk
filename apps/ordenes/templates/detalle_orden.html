@@ -419,13 +419,7 @@
                             <div class="col-6">
                                 <small class="text-muted">Tamaño total</small>
                                 <p class="h5 mb-0">
-                                    {% with total=0 %}
-                                        {% for archivo in archivos_validos %}
-                                            {% widthratio archivo.archivo.size 1 1 as s %}
-                                            {% with total=total|add:s %}{% endwith %}
-                                        {% endfor %}
-                                        {{ total|filesizeformat }}
-                                    {% endwith %}
+                                    {{ total_bytes|filesizeformat }}
                                 </p>
                             </div>
                         </div>

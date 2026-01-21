@@ -192,15 +192,19 @@ class DetallesOrdenes(DetailView):
             context['estrellas'] = None
 
         archivos_validos = []
+        total_bytes = 0
+
         for a in orden.archivos.all():
             try:
                 if a.archivo and os.path.exists(a.archivo.path):
                     archivos_validos.append(a)
+                    total_bytes += a.archivo.size
             except Exception:
                 continue
 
         context['archivos_validos'] = archivos_validos
         context['archivos_count'] = len(archivos_validos)
+        context['total_bytes'] = total_bytes
 
         return context
 

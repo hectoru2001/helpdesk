@@ -45,7 +45,7 @@ class Orden(models.Model):
 class OrdenxArchivo(models.Model):
     orden = models.ForeignKey('Orden', on_delete=models.CASCADE, related_name='archivos')
     archivo = models.FileField(upload_to='archivos_ordenes/')
-    descripcion = models.CharField(max_length=100, **vacios)
+    descripcion = models.CharField(**vacios)
 
     def save(self, *args, **kwargs):
         if not self.descripcion:
