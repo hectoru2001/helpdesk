@@ -10,12 +10,15 @@ from django.views.generic import TemplateView
 from django.contrib.auth.models import User
 from datetime import timedelta
 from django.conf import settings
+from core.decorators.permisos import administrador_required
+from django.utils.decorators import method_decorator
 
 USUARIOS_EXTRA_POR_CLASIFICACION = {
         'T': [554, 545],   # Técnicos (admins incluidos)
         'P': [549],       # Programadores (admins incluidos)
     }
 
+@method_decorator(administrador_required(True), name='dispatch')
 class ReporteOrdenesPorUsuario(TemplateView):
     template_name = 'ordenes_usuario.html'
 
@@ -135,6 +138,7 @@ def reporte_ordenes_por_usuario_pdf(request):
     pisa.CreatePDF(html, dest=response)
     return response
 
+@method_decorator(administrador_required(True), name='dispatch')
 class ReporteOrdenesPorDependencia(TemplateView):
     template_name = 'ordenes_dependencia.html'
 
@@ -233,6 +237,7 @@ def reporte_ordenes_por_dependencia_pdf(request):
     pisa.CreatePDF(html, dest=response)
     return response
 
+@method_decorator(administrador_required(True), name='dispatch')
 class ReporteCalificaciones(TemplateView):
     template_name = 'ordenes_comentarios.html'
 
