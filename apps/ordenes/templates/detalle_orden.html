@@ -125,7 +125,7 @@
                                 <div class="card-body">
                                     <dl class="row mb-0">
                                         <dt class="col-sm-5 text-muted">Usuario:</dt>
-                                        <dd class="col-sm-7 fw-semibold">{{ orden.usuario_solicita }}</dd>
+                                        <dd class="col-sm-7 fw-semibold">{{ orden.solicitantes.first.usuario_solicita }}</dd>
                                         
                                         <dt class="col-sm-5 text-muted">Nombre:</dt>
                                         <dd class="col-sm-7">{{ orden.solicitantes.first.nombre_solicitante|default:"-" }}</dd>
@@ -157,7 +157,7 @@
                                 <div class="card-body">
                                     <dl class="row mb-0">
                                         <dt class="col-sm-5 text-muted">Usuario:</dt>
-                                        <dd class="col-sm-7 fw-semibold">{{ orden.usuario_beneficiado|default:"-" }}</dd>
+                                        <dd class="col-sm-7 fw-semibold">{{ orden.solicitantes.first.usuario_beneficiado }}</dd>
                                         
                                         <dt class="col-sm-5 text-muted">Nombre:</dt>
                                         <dd class="col-sm-7">{{ orden.solicitantes.first.nombre_beneficiado|default:"-" }}</dd>
