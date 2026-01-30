@@ -75,11 +75,21 @@
                         <i class="bi bi-chevron-right nav-chevron ms-1"></i>
                     </a>
 
-                    <div class="collapse submenu" id="soporteMenu">
+                    <div class="collapse submenu" id="soporteMenu" >
                         <div class="submenu-scroll">
 
+                            <!-- Administradores -->
+                            <h6 class="submenu-title px-3 mt-3 pt-2 text-light border-top small">Administradores</h6>
+                            {% for a in menu_administradores %}
+                                <a href="{% url 'ordenes_usuario' a.usuario_id %}" class="submenu-link d-block px-4 py-1">
+                                    {{ a.usuario.get_full_name|default:a.usuario.username }}
+                                </a>
+                            {% empty %}
+                                <span class="px-4 text-muted badge bg-warning">No hay administradores</span>
+                            {% endfor %} 
+
                             <!-- Técnicos -->
-                            <h6 class="submenu-title px-3 pt-2 text-light small">Técnicos</h6>
+                            <h6 class="submenu-title px-3 pt-2 text-light border-top small">Técnicos</h6>
                             {% for t in menu_tecnicos %}
                                 <a href="{% url 'ordenes_usuario' t.usuario_id %}" class="submenu-link d-block px-4 py-1">
                                     {{ t.usuario.get_full_name|default:t.usuario.username }}
@@ -89,14 +99,14 @@
                             {% endfor %}
 
                             <!-- Programadores -->
-                            <h6 class="submenu-title px-3 mt-3 pt-2 border-top text-light small">Programadores</h6>
+                            <h6 class="submenu-title px-3 mt-3 pt-2 border-top text-light ">Programadores</h6>
                             {% for p in menu_programadores %}
                                 <a href="{% url 'ordenes_usuario' p.usuario_id %}" class="submenu-link d-block px-4 py-1">
                                     {{ p.usuario.get_full_name|default:p.usuario.username }}
                                 </a>
                             {% empty %}
                                 <span class="px-4 text-muted badge bg-warning">No hay programadores</span>
-                            {% endfor %}
+                            {% endfor %}   
 
                         </div>
                     </div>

@@ -4,10 +4,12 @@ from apps.usuarios.models import ExtraUsuarios
 def soporte_usuarios(request):
     tecnicos = ExtraUsuarios.objects.filter(tipo="T", estatus="A")
     programadores = ExtraUsuarios.objects.filter(tipo="P", estatus="A")
+    administradores = ExtraUsuarios.objects.filter(tipo="A", estatus="A")
 
     return {
         "menu_tecnicos": tecnicos,
         "menu_programadores": programadores,
+        "menu_administradores": administradores,
     }
 
 def notificaciones_context(request):
