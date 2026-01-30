@@ -27,3 +27,12 @@ class BuscarFuncionarioAPI(APIView):
         funcionarios = EmpleadoServicio.buscar_funcionario(q)
 
         return Response({"resultados": funcionarios}, status=200)
+    
+class BuscarPatrimonioAPI(APIView):
+
+    def get(self, request):
+        q = request.GET.get("q", "").strip()
+
+        patrimonios = EmpleadoServicio.buscar_numpatrimonio(q)
+
+        return Response({"resultados": patrimonios}, status=200)

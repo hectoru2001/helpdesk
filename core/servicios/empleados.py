@@ -40,3 +40,8 @@ class EmpleadoServicio:
 
         return query_sybase(sql, [int(empleado)])
     
+    def buscar_numpatrimonio(empleado):
+        sql = """ SELECT codigo, serie, descripcion, marca, color FROM patr_mob_articulos WHERE codigo = ? """
+
+        return query_sybase(sql, [empleado], database="activos")
+    

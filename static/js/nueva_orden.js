@@ -102,7 +102,6 @@ function buscarEmpleado(inputTextId, inputHiddenId, resultsId, prefix) {
     }, 400);
 }
 
-
 function buscarPorID(inputId, inputTextId, resultsId, prefix) {
     buscarEmpleado(inputId, inputTextId, resultsId, prefix);
 }
@@ -320,3 +319,46 @@ document.addEventListener("click", (e) => {
         }
     });
 });
+
+function seleccionarSelectPorTexto(selectId, texto) {
+    if (!texto) return;
+
+    const select = document.getElementById(selectId);
+    if (!select) return;
+
+    const buscado = texto.trim().toLowerCase();
+
+    for (let opt of select.options) {
+        if (opt.text.trim().toLowerCase() === buscado) {
+            select.value = opt.value;
+            return;
+        }
+    }
+
+    console.warn(`No se encontró opción "${texto}" en ${selectId}`);
+}
+
+
+function llenarPatrimonio(e) {
+    e.preventDefault(); 
+    const patrimonioInput = document.getElementById("patrimonio");
+
+    fetch(`/ordenes/patrimonio/buscar/?q=${encodeURIComponent(patrimonioInput.value.trim())}`)
+        .then(res => res.json())
+        .then(data => {
+            if (!data.resultados || data.resultados.length === 0) {
+                alert("Patrimonio no encontrado");
+                return;
+            }
+
+            const patrimonio = data.resultados[0];
+            patrimonioInput.value = patrimonio.codigo;
+            document.getElementById("serie").value = patrimonio.serie;
+            document.getElementById("equipo").value = patrimonio.descripcion;
+
+            seleccionarSelectPorTexto("id_marca", patrimonio.marca);
+            seleccionarSelectPorTexto("id_color", patrimonio.color);
+        })
+        .catch(console.error);
+}
+

@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import *
-from .utils import BuscarEmpleadoAPI, BuscarFuncionarioAPI
+from .utils import BuscarEmpleadoAPI, BuscarFuncionarioAPI, BuscarPatrimonioAPI
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -33,6 +33,7 @@ urlpatterns = [
     # === Endpoint Empleados === #
     path("empleados/buscar/", BuscarEmpleadoAPI.as_view(), name="buscar_empleado"),
     path("funcionarios/buscar/", BuscarFuncionarioAPI.as_view(), name="buscar_funcionario"),
+    path("patrimonio/buscar/", BuscarPatrimonioAPI.as_view()),
 
 ]
 

@@ -12,8 +12,23 @@ def get_sybase_connection(database="rhumanos"):
         "CHARSET=UTF8;"
     )
 
+def get_sybase_connection_extra(database="activos"):
+    return pyodbc.connect(
+        "DRIVER=FreeTDS;"
+        "SERVER=10.236.0.8;"
+        "PORT=5000;"
+        "TDS_Version=5.0;"
+        "UID=helpDesk_usr;"
+        "PWD=helpDesk_DBv1!2026;"
+        "DATABASE=activos;"
+        "CHARSET=UTF8;"
+    )
+
 def query_sybase(sql, params=None, database="rhumanos"):
-    conn = get_sybase_connection(database)
+    if database == "activos":
+        conn = get_sybase_connection_extra(database)
+    else:
+        conn = get_sybase_connection(database)
     cursor = conn.cursor()
 
     if params:
@@ -26,4 +41,3 @@ def query_sybase(sql, params=None, database="rhumanos"):
 
     conn.close()
     return results
-

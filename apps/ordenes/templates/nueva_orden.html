@@ -334,8 +334,9 @@
 
                                     <div class="col-md-5">
                                         <label for="patrimonio" class="form-label"># Patrimonio</label>
-                                        <input type="text" class="form-control" id="patrimonio" name="patrimonio"
-                                            disabled>
+                                        <input type="text" class="form-control" id="patrimonio" name="patrimonio" disabled
+                                            onkeydown="if (event.key === 'Enter') llenarPatrimonio(event);"
+                                        >
                                     </div>
 
                                     <div class="col-md-5">
