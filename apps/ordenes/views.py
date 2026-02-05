@@ -91,43 +91,34 @@ class OrdenCreateTicket(CreateView):
                 )
 
                 if notificaciones_activadas(user.id):
+                    mensaje = f"Has sido asignado a la orden #{orden.orden}."
+
                     Notificar.crear(
                         usuario=user,
-                        mensaje=f"Has sido asignado a la orden #{orden.orden}.",
+                        mensaje=mensaje,
                         tipo="task"
                     )
 
+                    email_user = obtener_correos_orden(orden.orden)
+                    print(f"Emails para nueva orden: {email_user}")
+                    contexto_email = {
+                        "orden_id": orden.orden,
+                        "nombre_usuario": (
+                            form_solici.cleaned_data.get("nombre_beneficiado", "Usuario")
+                            if form_solici.is_valid()
+                            else "Usuario"
+                        ),
+                        "resumen": orden.descripcion,
+                        "fecha_creacion": orden.fecha_captura,
+                    }
+
                     Notificar.correo_html(
-                        obtener_correo_usuario(user.id),
-                        "Has sido asignado a una nueva orden",
-                        "correos/orden_asignada.html",
-                        contexto={
-                            "usuario": user.get_full_name(),
-                            "orden_id": orden.orden,
-                            "resumen": orden.descripcion,
-                            "url": request.build_absolute_uri(f"/ordenes/ordenes/"),
-                        }
+                        email_user,
+                        "Nueva orden creada",
+                        "correos/orden_nueva.html",
+                        contexto_email
                     )
 
-                email_user = obtener_correos_orden(orden.orden)
-                print(f"Emails para nueva orden: {email_user}")
-                contexto_email = {
-                    "orden_id": orden.orden,
-                    "nombre_usuario": (
-                        form_solici.cleaned_data.get("nombre_beneficiado", "Usuario")
-                        if form_solici.is_valid()
-                        else "Usuario"
-                    ),
-                    "resumen": orden.descripcion,
-                    "fecha_creacion": orden.fecha_captura,
-                }
-
-                Notificar.correo_html(
-                    email_user,
-                    "Nueva orden creada",
-                    "correos/orden_nueva.html",
-                    contexto_email
-                )
 
             except Exception as e:
                 print(f"Error asignando {user.username}: {e}")
@@ -1131,13 +1122,18 @@ def duplicar_orden(orden):
         e.orden = nueva_orden
         e.save()
 
-    # Usuarios asignados (opcional, tú decides)
+    # Usuarios asignados 
     for u in orden.usuarios_orden.all():
         u.pk = None
         u.orden = nueva_orden
+        u.termina = None
+        u.inicia = None
+        u.estatus = "A"
+        u.comentarios = ""
+        u.solucion = ""
         u.save()
 
-    # Archivos (NO duplica el archivo físico, solo la relación)
+    # Archivos 
     for a in orden.archivos.all():
         a.pk = None
         a.orden = nueva_orden

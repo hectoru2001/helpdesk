@@ -7,10 +7,17 @@
 
     <!-- Formulario agregar archivo -->
     <div class="card mb-4">
-        <div class="card-header bg-light">
+        <div class="card-header bg-light d-flex align-items-center">
             <strong>
                 <i class="fas fa-upload me-1"></i> Agregar archivo
             </strong>
+
+                <a href="{% url 'editar_orden' orden.orden %}"
+                class="btn btn-primary btn-sm ms-auto">
+                    <i class="bi bi-arrow-left me-1"></i> Terminar de editar
+                </a>
+
+
         </div>
 
         <div class="card-body">
@@ -38,9 +45,11 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-success">
-                    <i class="fas fa-save me-1"></i> Guardar archivo
-                </button>
+                <div class="d-flex align-items-center">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-1"></i> Guardar archivo
+                    </button>
+                </div>
             </form>
         </div>
     </div>
