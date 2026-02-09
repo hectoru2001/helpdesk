@@ -16,6 +16,9 @@ media/
 staticfiles/
 *.json
 *.csv
+migraciones.py
+pytest.ini
+datos.json
 
 # Migraciones
 */migrations/*.pyc
