@@ -1,5 +1,6 @@
 <!-- templates/editar_orden.html -->
 {% extends 'base.html' %}
+{% load static %}
 {% block title %} <h5 class="title-secondary">Editar orden</h5> {% endblock %}
 {% load widget_tweaks %}
 
@@ -190,17 +191,15 @@
                                             <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
                                                 <span>
                                                     <i class="fas fa-user me-1"></i>
-                                                    Solicitante #{{ form.instance.pk }}
-                                                    {% if form.instance.equipo %}
-                                                    - {{ form.instance.equipo }}
-                                                    {% endif %}
+                                                    Solicitante
                                                 </span>
-                                                {% if form.can_delete %}
-                                                <label class="form-check-label text-danger ms-2">
-                                                    {{ form.DELETE|add_class:"form-check-input" }} 
-                                                    <span class="ms-1">Eliminar</span>
-                                                </label>
-                                                {% endif %}
+
+                                                <div class="text-center mt-4">
+                                                    <div class="form-check form-switch">
+                                                        <input type="checkbox" class="form-check-input igualar-puesto">
+                                                        <label class="form-check-label">Igual solicitante</label>
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div class="card-body">
                                                 <div class="row">
@@ -211,9 +210,12 @@
                                                                 {{ field.label|title }}
                                                                 {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
                                                             </label>
-                                                            {{ field|add_class:"form-control" }}
-                                                            {% if field.errors %}
-                                                            <div class="text-danger small">{{ field.errors }}</div>
+                                                            {% if "nombre_beneficiado" in field.name %}
+                                                                <div class="autocomplete-container" style="position: relative;">
+                                                                    {{ field|add_class:"form-control" }}
+                                                                    </div>
+                                                            {% else %}
+                                                                {{ field|add_class:"form-control" }}
                                                             {% endif %}
                                                         </div>
                                                         {% endif %}
@@ -372,7 +374,7 @@
     </div>
 </div>
 
-
+<script defer src="{% static 'js/editar_orden.js' %}"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

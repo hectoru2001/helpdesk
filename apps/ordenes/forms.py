@@ -212,19 +212,49 @@ class EquipoXOrdenForm(forms.ModelForm):
         }
         exclude = ['orden', 'observaciones', 'salida', 'nombre_resguardante', 'area_resguardante']
 
+PUESTOS = [
+    ('', '-------'),
+    ('Director General', 'Director General'),
+    ('Director de Área', 'Director de Área'),
+    ('Coordinador Administrativo', 'Coordinador Administrativo'),
+    ('Coordinador de Área', 'Coordinador de Área'),
+    ('Empleado', 'Empleado'),
+    ('Asistente', 'Asistente'),
+    ('Auxiliar', 'Auxiliar'),
+    ('Secretario', 'Secretario'),
+    ('Regidor', 'Regidor'),
+]
+
+
 class SolicitantexOrdenForm(forms.ModelForm):
+    puesto_solicitante = forms.ChoiceField(
+        choices=PUESTOS,
+        widget=forms.Select(attrs={
+            'class': 'form-select solicitante-field'
+        }),
+        required=False
+    )
+
+    puesto_beneficiado = forms.ChoiceField(
+        choices=PUESTOS,
+        widget=forms.Select(attrs={
+            'class': 'form-select beneficiario-field',
+            'id': 'beneficiado_puesto'
+        }),
+        required=False
+    )
     class Meta:
         model = SolicitantexOrden
         fields = '__all__'
         widgets = {
             'nombre_beneficiado': forms.TextInput(attrs={'class': 'form-control'}),
-            'puesto_beneficiado': forms.TextInput(attrs={'class': 'form-control'}),
             'dependencia_beneficiado': forms.TextInput(attrs={'class': 'form-control'}),
+            'puesto_beneficiado': forms.TextInput(attrs={'class': 'form-control'}),
             'correo_beneficiado': forms.EmailInput(attrs={'class': 'form-control'}),
             'telefono_beneficiado': forms.TextInput(attrs={'class': 'form-control'}),
             'nombre_solicitante': forms.TextInput(attrs={'class': 'form-control'}),
-            'puesto_solicitante': forms.TextInput(attrs={'class': 'form-control'}),
             'dependencia_solicitante': forms.TextInput(attrs={'class': 'form-control'}),
+            'puesto_solicitante': forms.TextInput(attrs={'class': 'form-control'}),
             'correo_solicitante': forms.EmailInput(attrs={'class': 'form-control'}),
             'telefono_solicitante': forms.TextInput(attrs={'class': 'form-control'}),
         }

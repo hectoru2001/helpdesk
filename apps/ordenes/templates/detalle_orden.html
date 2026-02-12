@@ -58,7 +58,7 @@
                         <!-- Reasignar -->
                         {% if tipo_usuario == "A" and o.get_estatus_display != "Terminada" and o.get_estatus_display != "Cancelada" %}
                             <button type="button"
-                                class="btn btn-outline-light btn-sm btn-reasignar-orden"
+                                class="btn btn-outline-light btn-success btn-sm btn-reasignar-orden"
                                 data-bs-toggle="modal"
                                 data-bs-target="#reasignarOrdenModal"
                                 data-orden-id="{{ orden.orden }}"
