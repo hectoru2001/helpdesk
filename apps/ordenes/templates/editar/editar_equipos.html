@@ -1,6 +1,7 @@
 
 <!-- templates/editar/editar_equipos.html -->
 {% extends 'base.html' %}
+{% load static %}
 {% block title %} <h5 class="title-secondary">Editar equipos</h5> {% endblock %}
 {% load widget_tweaks %}
 
@@ -43,4 +44,6 @@
         </div>
     </div>
 </div>
+
+<script src="{% static 'js/editar_equipo.js' %}"></script>
 {% endblock %}
