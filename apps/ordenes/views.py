@@ -29,6 +29,7 @@ from apps.notificaciones.views import Notificar, notificaciones_activadas, obten
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import simpleSplit
+from datetime import timedelta
 
 @method_decorator(administrador_required(False), name='dispatch')
 @method_decorator(csrf_exempt, name='dispatch')
@@ -112,10 +113,6 @@ class OrdenCreateTicket(CreateView):
                         }
                     )
 
-
-
-
-
                     email_user = obtener_correos_orden(orden.orden)
                     print(f"Emails para nueva orden: {email_user}")
                     contexto_email = {
@@ -155,26 +152,55 @@ class ListaOrdenes(ListView):
     def get_queryset(self):
         qs = super().get_queryset()
 
-        q = self.request.GET.get('q')
-        tipo = self.request.GET.get('tipo', 'orden')
-        estatus = self.request.GET.get('estatus')
-        prioridad = self.request.GET.get('prioridad')
+        atrasadas = self.request.GET.get('atrasadas')
 
-        if q:
-            if tipo == 'oficio':
-                qs = qs.filter(oficio__icontains=q)
-            elif tipo == 'dependencia':
-                qs = qs.filter(solicitantes__dependencia_solicitante__icontains=q)
-            else:
-                qs = qs.filter(orden__icontains=q)
+        if atrasadas == '1':
+            usuario = self.request.GET.get('usuario')
+            dias = self.request.GET.get('dias', 5)
+            tipo_usuario = self.request.GET.get('tipo_usuario')
 
-        if estatus:
-            qs = qs.filter(estatus=estatus)
+            cuenta = timezone.now() - timedelta(days=int(dias))
 
-        if prioridad:
-            qs = qs.filter(prioridad=prioridad)
+            qs = qs.filter(
+                estatus__in=['A', 'E'],
+                fecha_captura__lte=cuenta
+            )
 
-        return qs.order_by('-fecha_captura')
+            # filtrar por tipo de usuario
+            if tipo_usuario:
+                qs = qs.filter(
+                    usuarios_orden__realiza__extra__tipo=tipo_usuario
+                )
+
+            # filtrar por usuario específico
+            if usuario:
+                qs = qs.filter(
+                    usuarios_orden__realiza_id=usuario
+                )
+
+
+
+        else:
+            q = self.request.GET.get('q')
+            tipo = self.request.GET.get('tipo', 'orden')
+            estatus = self.request.GET.get('estatus')
+            prioridad = self.request.GET.get('prioridad')
+
+            if q:
+                if tipo == 'oficio':
+                    qs = qs.filter(oficio__icontains=q)
+                elif tipo == 'dependencia':
+                    qs = qs.filter(solicitantes__dependencia_solicitante__icontains=q)
+                else:
+                    qs = qs.filter(orden__icontains=q)
+
+            if estatus:
+                qs = qs.filter(estatus=estatus)
+
+            if prioridad:
+                qs = qs.filter(prioridad=prioridad)
+
+        return qs.distinct().order_by('-fecha_captura')
 
 @method_decorator(administrador_required(False), name='dispatch')
 class DetallesOrdenes(DetailView):
