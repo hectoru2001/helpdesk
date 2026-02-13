@@ -78,7 +78,6 @@ class OrdenCreateTicket(CreateView):
             )
 
         usuarios = form_orden.cleaned_data.get("usuarios_asignados", [])
-        breakpoint()
         for user in usuarios:
             try:
                 UsuariosxOrden.objects.create(
