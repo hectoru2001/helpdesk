@@ -37,7 +37,6 @@ class OrdenCreateTicket(CreateView):
     form_class = OrdenForm
     template_name = 'nueva_orden.html'
     success_url = '/inicio/'
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form_equipo'] = EquipoXOrdenForm()
@@ -79,7 +78,7 @@ class OrdenCreateTicket(CreateView):
             )
 
         usuarios = form_orden.cleaned_data.get("usuarios_asignados", [])
-
+        breakpoint()
         for user in usuarios:
             try:
                 UsuariosxOrden.objects.create(
@@ -99,6 +98,25 @@ class OrdenCreateTicket(CreateView):
                         tipo="task"
                     )
 
+
+                    Notificar.correo_html(
+                        user.email,
+                        mensaje,
+                        "correos/orden_asignada.html",
+                        contexto={
+                            "usuario": user.get_full_name() or user.username,
+                            "orden_id": orden.orden,
+                            "resumen": orden.descripcion,
+                            "url": request.build_absolute_uri(
+                                f"/ordenes/ordenes/"
+                            ),
+                        }
+                    )
+
+
+
+
+
                     email_user = obtener_correos_orden(orden.orden)
                     print(f"Emails para nueva orden: {email_user}")
                     contexto_email = {
@@ -111,6 +129,7 @@ class OrdenCreateTicket(CreateView):
                         "resumen": orden.descripcion,
                         "fecha_creacion": orden.fecha_captura,
                     }
+
 
                     Notificar.correo_html(
                         email_user,
