@@ -1,3 +1,4 @@
+import requests
 from django.shortcuts import redirect
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
@@ -55,7 +56,6 @@ class Notificar:
             print("Error al enviar correo:", e)
             return 0
 
-
     @staticmethod
     def enviar_notificacion_orden(orden_id, correos, tipo, contexto=None):
         if not correos:
@@ -78,6 +78,28 @@ class Notificar:
         correo.send(fail_silently=False)
 
         return True
+
+    def enviar_telegram(mensaje):
+        token_id = "8209068064:AAESmEENLeqNs_os3gL2hvMDI5QTqCXE5CE"
+        chat_id = "-1003775219374"
+
+        if not token_id or not chat_id:
+            print("Token de Telegram o chat ID no configurados.")
+            return False
+        
+        url = f"https://api.telegram.org/bot{token_id}/sendMessage"
+
+        try:
+            r = requests.post(url, json={
+                "chat_id": chat_id, 
+                "text": mensaje,
+                "parse_mode": "HTML"
+            })
+            return r.status_code == 200
+
+        except Exception as e:
+            print("Error al enviar mensaje a Telegram:", e)
+            return False
 
 def marcar_notificaciones_leidas(request):
     Notificacion.objects.filter(

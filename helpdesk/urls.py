@@ -13,6 +13,8 @@ urlpatterns = [
     path('notificaciones/', include('apps.notificaciones.urls')),
     path('reportes/', include('apps.reportes.urls')),
     path('inicio/', include('apps.inicio.urls')),
+    path('preordenes/', include('apps.preordenes.urls')),
+    path('configuracion/', include('apps.configuracion.urls')),
 ]
 
 if settings.DEBUG:

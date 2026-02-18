@@ -2,6 +2,8 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
+    path('', ReportesView.as_view(), name='listado_reportes'),
+
     path('ordenes_por_usuario/', ReporteOrdenesPorUsuario.as_view(), name='ordenes_por_usuario'),
     path('ordenes_por_dependencia/', ReporteOrdenesPorDependencia.as_view(), name='ordenes_por_dependencia'),
     path('reporte_ordenes_usuario/', reporte_ordenes_por_usuario_pdf, name='reporte_ordenes_usuario'),

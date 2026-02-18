@@ -18,6 +18,9 @@ USUARIOS_EXTRA_POR_CLASIFICACION = {
         'P': [549],       # Programadores (admins incluidos)
     }
 
+class ReportesView(TemplateView):
+    template_name = 'listado_reportes.html'
+
 @method_decorator(administrador_required(True), name='dispatch')
 class ReporteOrdenesPorUsuario(TemplateView):
     template_name = 'ordenes_usuario.html'

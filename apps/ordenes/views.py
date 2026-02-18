@@ -1119,6 +1119,20 @@ def reasignar_orden(request: HttpRequest):
                     }
                 )
 
+                if 0 > 1:
+                    Notificar.enviar_telegram(
+                        f"""
+                    🔔 <b>Reasignación de Orden</b>
+
+                    👤 <b>Usuario:</b> {usuario.get_full_name() or usuario.username}
+                    📦 <b>Orden:</b> #{orden.orden}
+                    💬 <b>Descripción:</b> {orden.descripcion}
+                    📌 <b>Acción:</b> Usuario reasignado a orden
+
+                    🔗 Ver orden:
+                        {(f"https://hlpdesk.gobjuarez.mpio/ordenes/detalles/{orden.orden}")}""".strip() 
+                    )
+
         return JsonResponse({
             "success": True,
             "message": f"Orden {orden.orden} reasignada correctamente.",

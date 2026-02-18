@@ -112,6 +112,7 @@
                 </div>
                 
                 <!-- Tarjeta 3 -->
+                {% if tipo_usuario == "A" %}
                 <div class="col-md-3 col-sm-6 mb-3">
                     <div class="card h-100 border-0 shadow-sm hover-shadow">
                         <div class="card-body text-center">
@@ -120,11 +121,12 @@
                             </div>
                             <h5 class="card-title">Reportes</h5>
                             <p class="card-text text-muted small">Ver reportes y estadísticas</p>
-                            <button href="" class="btn btn-warning btn-sm stretched-link" disabled>No disponible</button>
+                            <a href="{% url 'listado_reportes' %}" class="btn btn-warning btn-sm stretched-link">Acceder</a>
                         </div>
                     </div>
                 </div>
-                
+                {% endif %}
+
                 <!-- Tarjeta 4 -->
                 <div class="col-md-3 col-sm-6 mb-3">
                     <div class="card h-100 border-0 shadow-sm hover-shadow">
@@ -134,7 +136,7 @@
                             </div>
                             <h5 class="card-title">Configuración</h5>
                             <p class="card-text text-muted small">Ajustes del sistema</p>
-                            <button href="" class="btn btn-info btn-sm stretched-link" disabled>No disponible</button>
+                            <a href="{% url 'configuraciones' %}" class="btn btn-info btn-sm stretched-link">Acceder</a>
                         </div>
                     </div>
                 </div>

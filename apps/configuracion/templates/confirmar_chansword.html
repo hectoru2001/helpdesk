@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %} <h5 class="title-secondary"> Confirmar cambio de contraseña </h5> {% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+
+    <h3 class="mb-4">Cambio de contraseña</h3>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <p class="text-muted">
+                Estás cambiando la contraseña de la siguiente cuenta:
+            </p>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <!-- Mostrar errores generales -->
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <!-- Contraseña actual -->
+                <div class="mb-3">
+                    <label class="form-label">Contraseña actual</label>
+                    {{ form.old_password }}
+                    {% if form.old_password.errors %}
+                        <div class="text-danger small">
+                            {{ form.old_password.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Nueva contraseña -->
+                <div class="mb-3">
+                    <label class="form-label">Nueva contraseña</label>
+                    {{ form.new_password1 }}
+                    {% if form.new_password1.errors %}
+                        <div class="text-danger small">
+                            {{ form.new_password1.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Confirmar contraseña -->
+                <div class="mb-3">
+                    <label class="form-label">Confirmar nueva contraseña</label>
+                    {{ form.new_password2 }}
+                    {% if form.new_password2.errors %}
+                        <div class="text-danger small">
+                            {{ form.new_password2.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        Cambiar contraseña
+                    </button>
+
+                    <a href="{% url 'inicio' %}" class="btn btn-outline-secondary">
+                        Cancelar
+                    </a>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

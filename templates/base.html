@@ -256,8 +256,7 @@
                 <span class="fw-semibold text-dark">{{ request.user.get_full_name|default:request.user.username }}</span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end shadow-lg" aria-labelledby="userDropdown">
-                <li><a class="dropdown-item" href="{% url 'cambiar_contrasena' %}"><i class="fas fa-id-badge me-2 text-primary"></i> Perfil</a></li>
-                <li><a class="dropdown-item" href=""><i class="fas fa-cog me-2 text-secondary"></i> Configuración</a></li>
+                <li><a class="dropdown-item" href="{% url 'configuraciones' %}"><i class="fas fa-cog me-2 text-secondary"></i> Configuración <span class="badge bg-success ms-2">Nuevo</span></a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Cerrar sesión</a></li>
             </ul>

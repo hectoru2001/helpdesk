@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'apps.reportes',
     'apps.inicio',
     'apps.configuracion',
+    'apps.preordenes',
     'widget_tweaks'
 ]
 
@@ -145,6 +146,13 @@ EMAIL_USE_TLS = False
 EMAIL_HOST_USER = "dt.helpdesk@juarez.gob.mx"
 EMAIL_HOST_PASSWORD = "R3P925"
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+IMAP_HOST = "10.236.7.210"
+IMAP_PORT = 143
+IMAP_USER = "dgic.h_uribe@juarez.gob.mx"
+IMAP_PASSWORD = "Urije#44"
+IMAP_USE_SSL = False
+
 
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

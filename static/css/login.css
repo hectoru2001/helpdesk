@@ -360,6 +360,17 @@ body {
     margin-right: 3px;
 }
 
+.forgot-link {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.forgot-link:hover {
+    color: #8d0047;
+    text-decoration: underline;
+}
+
+
 @keyframes spin {
     to { transform: rotate(360deg); }
 }

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+<h5 class="title-secondary text-center mt-4">Configuraciones del sistema</h5>
+{% endblock %}
+
+{% block content %}
+
+<!-- Tarjeta principal -->
+<div class="card shadow">
+    <div class="card-header bg-white">
+        <h5 class="mb-0">Configuraciones disponibles</h5>
+    </div>
+
+    <div class="card-body">
+
+        <!-- Lista de configuraciones -->
+        <div class="list-group">
+
+            <!-- Cambiar contraseña -->
+            <a href="{% url 'confirmar_cambio' %}"
+                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+
+                <div>
+                    <i class="fas fa-key me-3 text-primario"></i>
+                    <strong>Cambiar contraseña</strong>
+                    <div class="text-muted small">
+                        Actualiza tu contraseña de acceso al sistema
+                    </div>
+                </div>
+
+                <span class="badge bg-primario rounded-pill">
+                    Configurar
+                </span>
+
+            </a>
+
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

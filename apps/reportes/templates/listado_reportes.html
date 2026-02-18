@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+<h5 class="title-secondary text-center mt-4">Reportes del sistema</h5>
+{% endblock %}
+
+{% block content %}
+
+
+
+    <div class="row g-4">
+
+        <!-- Reporte 1 -->
+        <div class="col-md-4">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+
+                    <i class="fas fa-chart-bar fa-3x text-primary mb-3"></i>
+
+                    <h5 class="card-title">
+                        Reporte por Órdenes
+                    </h5>
+
+                    <p class="card-text text-muted">
+                        Consulta el listado de órdenes registradas, su estado, fechas y seguimiento dentro del sistema.
+                    </p>
+
+                    <a href="#" class="btn btn-primary">
+                        Ver reporte
+                    </a>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Reporte 2 -->
+        <div class="col-md-4">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+
+                    <i class="fas fa-clipboard-list fa-3x text-success mb-3"></i>
+
+                    <h5 class="card-title">
+                        Reporte por Dependencia
+                    </h5>
+
+                    <p class="card-text text-muted">
+                        Visualiza las órdenes agrupadas por dependencia y analiza la carga de trabajo por área.
+                    </p>
+
+                    <a href="#" class="btn btn-success">
+                        Ver reporte
+                    </a>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Reporte 3 -->
+        <div class="col-md-4">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+
+                    <i class="fas fa-chart-line fa-3x text-warning mb-3"></i>
+
+                    <h5 class="card-title">
+                        Reporte por Calificación
+                    </h5>
+
+                    <p class="card-text text-muted">
+                        Consulta estadísticas de satisfacción y calificación del servicio proporcionado.
+                    </p>
+
+                    <a href="#" class="btn btn-warning">
+                        Ver reporte
+                    </a>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+{% endblock %}

@@ -15,6 +15,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="{% static 'img/Rescate.ico' %}">
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <!-- Librería de mensaje de alerta de SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 </head>
 
 <body>
@@ -34,13 +40,31 @@
                     </div>
 
                     {% if messages %}
-                    {% for message in messages %}
-                    <div class="alert alert-error">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <div>{{ message }}</div>
-                    </div>
-                    {% endfor %}
+                        <!-- ERRORES -->
+                        {% for message in messages %}
+                            {% if message.tags == "error" %}
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+
+                        <!-- ÉXITO -->
+                        {% for message in messages %}
+                            {% if message.tags == "success" %}
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="fas fa-check-circle"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+
                     {% endif %}
+
+
 
                     <form method="POST" id="loginForm">
                         {% csrf_token %}
@@ -61,6 +85,12 @@
                                 <input type="password" id="contrasena" name="contrasena" class="form-input"
                                     placeholder="Contraseña" required>
                             </div>
+                        </div>
+
+                        <div style="text-align: right; margin-top: 15px; margin-bottom: 15px;">
+                            <a href="{% url 'restablecer_contraseña' %}" class="forgot-link">
+                                ¿Olvidaste tu contraseña?
+                            </a>
                         </div>
 
                         <button class="submit-btn" id="submitBtn">
@@ -106,5 +136,7 @@
         </div>
     </footer>
 </body>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </html>

@@ -1,5 +1,6 @@
 from django.urls import reverse_lazy
 from django.contrib.auth.models import User
+from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
 from django.views.generic import CreateView, ListView, DetailView, UpdateView, DeleteView, TemplateView
 from django.db.models import Q
@@ -93,7 +94,6 @@ class DetalleUsuario(DetailView):
         context['MEDIA_URL'] = settings.MEDIA_URL
         return context
 
-from django.contrib.auth import update_session_auth_hash
 
 @method_decorator(administrador_required(True), name='dispatch')
 class ActualizarUsuario(UpdateView):
@@ -121,7 +121,6 @@ class ActualizarUsuario(UpdateView):
 
         messages.success(self.request, "Usuario actualizado correctamente")
         return response
-
 
 @method_decorator(administrador_required(True), name='dispatch')
 class ListaEmpleados(TemplateView):
