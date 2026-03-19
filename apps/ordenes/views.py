@@ -47,11 +47,13 @@ class OrdenCreateTicket(CreateView):
         return context
 
     def post(self, request, *args, **kwargs):
+        #self.object = None 
+
         form_orden = OrdenForm(request.POST)
         form_equipo = EquipoXOrdenForm(request.POST)
         form_solici = SolicitantexOrdenForm(request.POST)
         archivos = request.FILES.getlist('archivos')
-
+    
         # === VALIDAR ORDEN ===
         if not form_orden.is_valid():
             for campo, errores in form_orden.errors.items():
@@ -72,8 +74,6 @@ class OrdenCreateTicket(CreateView):
             equipo = form_equipo.save(commit=False)
             equipo.orden = orden
             equipo.save()
-
-        orden.save()
 
         for a in archivos:
             OrdenxArchivo.objects.create(
