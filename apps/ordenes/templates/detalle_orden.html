@@ -266,7 +266,7 @@
                                 </div>
                                 <div class="card-body text-center py-3">
                                     <span class="badge bg-primario text-white fs-6 px-3 py-2">
-                                        {% if orden.categoria_id %}
+                                        {% if orden.categoria %}
                                             {{ orden.get_categoria_display|upper }}
                                         {% else %}
                                             <span>SIN CATEGORÍA</span>
