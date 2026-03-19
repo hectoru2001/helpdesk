@@ -21,6 +21,13 @@ PRIORIDADES = [
     ('normal', 'Normal'),
 ]
 
+CATEGORIAS = [
+    ('soporte_técnico', 'Soporte Técnico'),
+    ('redes', 'Redes y Comunicaciones'),
+    ('servidores', 'Servidores e Infraestructura'),
+    ('programadores', 'Programadores y Desarrollo'),
+]
+
 # Modelos para ordenes
 class Orden(models.Model):
     orden = models.AutoField(primary_key=True)
@@ -30,6 +37,7 @@ class Orden(models.Model):
     telefono = models.CharField(max_length=15, **vacios)
     aplicacion = models.ForeignKey('Aplicaciones', on_delete=models.CASCADE)
     clasificacion = models.ForeignKey('Clasificaciones', on_delete=models.CASCADE)
+    categoria = models.CharField(choices=CATEGORIAS, max_length=20, **vacios)
     descripcion = models.TextField()
     solucion = models.TextField(**vacios)
     prioridad = models.CharField(choices=PRIORIDADES, max_length=12)
@@ -41,6 +49,11 @@ class Orden(models.Model):
     fecha_captura = models.DateTimeField(auto_now_add=True, **vacios)
     fecha_inicio = models.DateTimeField(**vacios)
     fecha_terminado = models.DateTimeField(**vacios)
+    fecha_vencimiento = models.DateTimeField(**vacios)
+    nivel_alerta = models.IntegerField(default=0)
+
+
+
 
 class OrdenxArchivo(models.Model):
     orden = models.ForeignKey('Orden', on_delete=models.CASCADE, related_name='archivos')

@@ -45,3 +45,7 @@ class EmpleadoServicio:
 
         return query_sybase(sql, [empleado], database="activos")
     
+    def listar_patrimonios():
+        sql = """ SELECT rfc, usuario, codigo, descr_ssgrupo, descripcion, marca, modelo, serie, direccion, area, depto, familia, status FROM patr_mob_articulos where direccion = '4100' """
+
+        return query_sybase(sql, database="activos")

@@ -27,12 +27,15 @@ class Notificar:
         )
 
     @staticmethod
-    def correo_html(destinatarios, asunto, template, contexto=None):
+    def correo_html(destinatarios, asunto, template, contexto=None, cc=None):
         """
         Envía un correo usando un template HTML y captura errores SMTP.
         """
         if contexto is None:
             contexto = {}
+
+        if isinstance(cc, str):
+            cc = [cc]
 
         if isinstance(destinatarios, str):
             destinatarios = [destinatarios]
@@ -44,6 +47,7 @@ class Notificar:
             body=cuerpo_html,
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=destinatarios,
+            cc=cc or []
         )
         correo.content_subtype = "html"
 

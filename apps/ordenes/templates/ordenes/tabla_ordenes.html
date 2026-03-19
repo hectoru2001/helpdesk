@@ -1,0 +1,268 @@
+{% load static %}
+
+<div class="table-container">
+    <table class="custom-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th><i class="bi bi-calendar3 me-1"></i>F. Vencimiento</th>
+                <th><i class="bi bi-flag me-1"></i>Prioridad</th>
+                <th><i class="bi bi-person me-1"></i>Beneficiado</th>
+                <th><i class="bi bi-building me-1"></i>Dependencia</th>
+                <th>Estatus General</th>
+                <th>Mi Avance</th>
+                <th>Asignado a</th>
+                <th>Progreso</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if ordenes %}
+                {% for orden in ordenes %}
+                    {% with today=view.kwargs.today|default:ordenes.0.fecha_vencimiento|default:'' %}
+                    <tr class="
+                        {% if orden.estatus == 'E' %}fila-proceso
+                        {% elif orden.estatus == 'A' %}fila-asignada
+                        {% elif orden.estatus == 'T' %}fila-terminada
+                        {% elif orden.estatus == 'C' %}fila-cancelada
+                        {% endif %}
+                        
+                        {% if orden.fecha_vencimiento %}
+                            {% if orden.fecha_vencimiento < today and orden.estatus != 'T' %}
+                                fila-vencida
+                            {% elif orden.fecha_vencimiento <= today|add:'2' and orden.estatus != 'T' %}
+                                fila-proximo-vencer
+                            {% else %}
+                                fila-en-plazo
+                            {% endif %}
+                        {% endif %}
+                    " onclick="window.location.href='{% url 'detalle_orden' orden.orden %}'" style="cursor: pointer;">
+                        <td><span class="fw-bold">#{{ orden.orden }}</span></td>
+                        
+                        <!-- Fecha Vencimiento -->
+                        <td>
+                            {% if orden.fecha_vencimiento %}
+                            <div class="d-flex flex-column">
+                        
+                                <span class="contador-tiempo small fw-semibold" data-vencimiento="{{ orden.fecha_vencimiento|date:'c' }}">
+                                    ⏳ calculando...
+                                </span>
+                        
+                            </div>
+                            {% else %}
+                                <span class="text-muted small">Sin Iniciar</span>
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Prioridad -->
+                        <td>
+                            {% if orden.prioridad == "inmediata" %}
+                                <span class="badge bg-danger priority-badge">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>Inmediata
+                                </span>
+                            {% elif orden.prioridad == "urgente" %}
+                                <span class="badge bg-warning text-dark priority-badge">
+                                    <i class="bi bi-exclamation-circle-fill me-1"></i>Urgente
+                                </span>
+                            {% elif orden.prioridad == "normal" %}
+                                <span class="badge bg-success priority-badge">
+                                    <i class="bi bi-check-circle-fill me-1"></i>Normal
+                                </span>
+                            {% elif orden.prioridad == "minima" %}
+                                <span class="badge bg-primary priority-badge">
+                                    <i class="bi bi-check-lg me-1"></i>Minima
+                                </span>
+                            {% elif orden.prioridad == "programada" %}
+                                <span class="badge bg-info text-dark priority-badge">
+                                    <i class="bi bi-calendar-check-fill me-1"></i>PROGRAMADA
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary priority-badge">NO DEFINIDA</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td>{{ orden.solicitantes.first.nombre_beneficiado|default:"-"|truncatechars:25 }}</td>
+                        <td>{{ orden.solicitantes.first.dependencia_beneficiado|default:"-"|truncatechars:25 }}</td>
+                        
+                        <!-- Estatus General -->
+                        <td>
+                            {% if orden.estatus == "T" %}
+                                <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Terminada</span>
+                            {% elif orden.estatus == "E" %}
+                                <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>Pendiente</span>
+                            {% elif orden.estatus == "A" %}
+                                <span class="badge bg-primary"><i class="bi bi-person-check me-1"></i>Asignada</span>
+                            {% elif orden.estatus == "C" %}
+                                <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Cancelada</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Desconocido</span>
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Mi Avance -->
+                        <td>
+                            {% for ux_o in orden.usuarios_orden.all %}
+                                {% if ux_o.realiza_id == request.user.id %}
+                                    {% if ux_o.estatus == "T" %}
+                                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Completada</span>
+                                    {% elif ux_o.estatus == "E" %}
+                                        <span class="badge bg-warning text-dark"><i class="bi bi-arrow-repeat me-1"></i>En proceso</span>
+                                    {% elif ux_o.estatus == "A" %}
+                                        <span class="badge bg-primary"><i class="bi bi-clock me-1"></i>Asignada</span>
+                                    {% elif ux_o.estatus == "C" %}
+                                        <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Cancelada</span>
+                                    {% endif %}
+                                {% endif %}
+                            {% empty %}
+                                <span class="text-muted small">-</span>
+                            {% endfor %}
+                        </td>
+                        
+                        <!-- Asignado a -->
+                        <td>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for ux_o in orden.usuarios_orden.all|slice:":3" %}
+                                    <span class="badge bg-light text-dark border" style="font-size: 0.7rem;">
+                                        <i class="bi bi-person-circle me-1"></i>{{ ux_o.realiza.get_short_name|default:ux_o.realiza.username }}
+                                    </span>
+                                {% endfor %}
+                                {% if orden.usuarios_orden.count > 3 %}
+                                    <span class="badge bg-secondary" style="font-size: 0.7rem;">+{{ orden.usuarios_orden.count|add:"-3" }}</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        
+                        <!-- Progreso -->
+                        <td>
+                            {% if orden.estatus == "A" %}
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-warning" style="width: 25%;"></div>
+                                </div>
+                                <small class="text-muted" style="font-size: 0.7rem;">25%</small>
+                            {% elif orden.estatus == "E" %}
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-primary" style="width: 50%;"></div>
+                                </div>
+                                <small class="text-muted" style="font-size: 0.7rem;">50%</small>
+                            {% elif orden.estatus == "T" %}
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-success" style="width: 100%;"></div>
+                                </div>
+                                <small class="text-success" style="font-size: 0.7rem;">Completado</small>
+                            {% elif orden.estatus == "C" %}
+                                <span class="badge bg-danger" style="font-size: 0.7rem;">Cancelada</span>
+                            {% else %}
+                                <span class="badge bg-secondary" style="font-size: 0.7rem;">Desconocido</span>
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Acciones -->
+                        <td class="text-center">
+                            <div class="btn-group" role="group">
+                                <button type="button"
+                                    class="btn btn-sm btn-outline-primary"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#procesarOrdenModal"
+                                    data-orden-id="{{ orden.orden }}"
+                                    title="Trabajar orden"
+                                    onclick="event.stopPropagation();">
+                                    <i class="bi bi-play-fill"></i>
+                                </button>
+
+                                {% if tipo_usuario == "A" and orden.estatus != "T" %}
+                                <button type="button"
+                                    class="btn btn-sm btn-outline-warning"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#reasignarOrdenModal"
+                                    data-orden-id="{{ orden.orden }}"
+                                    title="Reasignar orden"
+                                    onclick="event.stopPropagation();">
+                                    <i class="bi bi-arrow-repeat"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endwith %}
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="10" class="text-center py-5">
+                        <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
+                        <p class="text-muted mb-0">No hay órdenes que coincidan con los criterios</p>
+                        <a href="?" class="btn btn-sm btn-outline-primary mt-3">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>Limpiar filtros
+                        </a>
+                    </td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+    .contador-tiempo {
+        font-size: 0.85rem;
+        transition: all .3s ease;
+    }
+
+    /* pulso cuando queda poco */
+    @keyframes pulso {
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.08);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .contador-warning {
+        color: #d39e00;
+    }
+
+    .contador-critico {
+        color: #dc3545;
+        font-weight: 700;
+        animation: pulso 1s infinite;
+    }
+
+    .contador-normal {
+        color: #198754;
+    }
+</style>
+
+<script>
+function actualizarContadores() {
+
+    document.querySelectorAll(".contador-tiempo").forEach(el => {
+
+        const vencimiento = new Date(el.dataset.vencimiento)
+        const ahora = new Date()
+
+        let diff = vencimiento - ahora
+
+        if (diff <= 0) {
+            el.innerHTML = "<span class='badge text-white bg-danger fw-bold'>Vencida</span>"
+            return
+        }
+
+        const horas = Math.floor(diff / (1000 * 60 * 60))
+        diff -= horas * (1000 * 60 * 60)
+
+        const minutos = Math.floor(diff / (1000 * 60))
+        diff -= minutos * (1000 * 60)
+
+        const segundos = Math.floor(diff / 1000)
+
+        el.textContent = `${horas}h ${minutos}m ${segundos}s`
+    })
+}
+
+actualizarContadores()
+setInterval(actualizarContadores, 1000)
+</script>

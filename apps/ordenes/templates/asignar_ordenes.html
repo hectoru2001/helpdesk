@@ -1,294 +1,346 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %} <h5 class="title-secondary"> Mis órdenes asignadas </h5> {% endblock %}
+
+{% block title %}
+<div class="d-flex justify-content-between align-items-center">
+    <h5 class="title-secondary mb-0">
+        Mis órdenes asignadas
+    </h5>
+</div>
+{% endblock %}
 
 {% block content %}
+{% csrf_token %}
 
-    {% csrf_token %}
+<!-- FILTROS MEJORADOS -->
+<div class="card shadow-sm mb-4 border-0">
+    <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-semibold">
+            <i class="bi bi-sliders2 me-2"></i>Filtros
+        </h6>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="fecha_inicio" class="form-label fw-semibold small">
+                    <i class="bi bi-calendar-event me-1"></i>Fecha Inicio
+                </label>
+                <input type="date" class="form-control form-control-sm" id="fecha_inicio" name="fecha_inicio"
+                    value="{{ fecha_inicio }}">
+            </div>
 
-    <!-- FILTRO POR FECHAS -->
-    <form method="get" class="row g-3 mb-4">
+            <div class="col-md-3">
+                <label for="fecha_fin" class="form-label fw-semibold small">
+                    <i class="bi bi-calendar-event me-1"></i>Fecha Fin
+                </label>
+                <input type="date" class="form-control form-control-sm" id="fecha_fin" name="fecha_fin"
+                    value="{{ fecha_fin }}">
+            </div>
 
-        <div class="col-md-3">
-            <label for="fecha_inicio" class="form-label">Fecha Inicio</label>
-            <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio"
-                value="{{ request.GET.fecha_inicio }}">
-        </div>
+            <div class="col-md-2">
+                <label for="estatus" class="form-label fw-semibold small">
+                    <i class="bi bi-check-circle me-1"></i>Estado
+                </label>
+                <select name="estatus" id="estatus" class="form-select form-select-sm">
+                    <option value="no" {% if mostrar_terminadas == "no" %}selected{% endif %}>Solo pendientes</option>
+                    <option value="si" {% if mostrar_terminadas == "si" %}selected{% endif %}>Todas (incluye terminadas)</option>
+                </select>
+            </div>
 
-        <div class="col-md-3">
-            <label for="fecha_fin" class="form-label">Fecha Fin</label>
-            <input type="date" class="form-control" id="fecha_fin" name="fecha_fin"
-                value="{{ request.GET.fecha_fin }}">
-        </div>
+            {% if tipo_usuario == "A" %}
+            <div class="col-md-2">
+                <label for="todas" class="form-label fw-semibold small">
+                    <i class="bi bi-people me-1"></i>Ver órdenes
+                </label>
+                <select name="todas" id="todas" class="form-select form-select-sm">
+                    <option value="no" {% if mostrar_todas == "no" %}selected{% endif %}>Solo mis órdenes</option>
+                    <option value="si" {% if mostrar_todas == "si" %}selected{% endif %}>Todas las órdenes</option>
+                </select>
+            </div>
+            {% endif %}
 
-        <div class="col-md-2">
-            <label for="estatus" class="form-label">¿Mostrar terminadas?</label>
-            <select name="estatus" id="estatus" class="form-control">
-                <option value="no" {% if request.GET.estatus == "no" %}selected{% endif %}>No</option>
-                <option value="si" {% if request.GET.estatus == "si" %}selected{% endif %}>Si</option>
-            </select>
-        </div>
+            <div class="col-md-2 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                    <i class="bi bi-funnel me-1"></i>Filtrar
+                </button>
+                <a href="?" class="btn btn-outline-secondary btn-sm" title="Limpiar filtros">
+                    <i class="bi bi-eraser"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
 
-        {% if tipo_usuario == "A" %}
-        <div class="col-md-2">
-            <label for="todas" class="form-label">¿Mostrar solo mis órdenes?</label>
-            <select name="todas" id="todas" class="form-control">
-                <option value="si" {% if request.GET.todas == "si" %}selected{% endif %}>Si</option>
-                <option value="no" {% if request.GET.todas == "no" %}selected{% endif %}>No</option>
-            </select>
-        </div>
+<!-- TABS DE PRIORIDAD -->
+<ul class="nav nav-tabs mb-3" id="priorityTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
+            <i class="bi bi-list-ul me-1"></i>Todas
+            <span class="badge bg-secondary ms-1">{{ ordenes_total }}</span>
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="alta-tab" data-bs-toggle="tab" data-bs-target="#alta" type="button" role="tab">
+            <i class="bi bi-exclamation-triangle-fill text-danger me-1"></i>Inmediata
+            <span class="badge bg-danger ms-1">{{ prioridad_alta_count }}</span>
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="media-tab" data-bs-toggle="tab" data-bs-target="#media" type="button" role="tab">
+            <i class="bi bi-exclamation-circle-fill text-warning me-1"></i>Urgente
+            <span class="badge bg-warning text-dark ms-1">{{ prioridad_media_count }}</span>
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="baja-tab" data-bs-toggle="tab" data-bs-target="#baja" type="button" role="tab">
+            <i class="bi bi-check-circle-fill text-success me-1"></i>Normal
+            <span class="badge bg-success ms-1">{{ prioridad_baja_count }}</span>
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="minima-tab" data-bs-toggle="tab" data-bs-target="#minima" type="button" role="tab">
+            <i class="bi bi-check-lg text-primary me-1"></i>Minima
+            <span class="badge bg-primary ms-1">{{ prioridad_minima_count }}</span>
+        </button>
+    </li>
+</ul>
+
+<!-- CONTENIDO DE TABS -->
+<div class="tab-content" id="priorityTabContent">
+    <!-- TAB TODAS -->
+    <div class="tab-pane fade show active" id="all" role="tabpanel">
+        {% include "ordenes/tabla_ordenes.html" with ordenes=ordenes %}
+    </div>
+    
+    <!-- TAB ALTA PRIORIDAD -->
+    <div class="tab-pane fade" id="alta" role="tabpanel">
+        {% include "ordenes/tabla_ordenes.html" with ordenes=ordenes_alta %}
+    </div>
+    
+    <!-- TAB MEDIA PRIORIDAD -->
+    <div class="tab-pane fade" id="media" role="tabpanel">
+        {% include "ordenes/tabla_ordenes.html" with ordenes=ordenes_media %}
+    </div>
+    
+    <!-- TAB BAJA PRIORIDAD -->
+    <div class="tab-pane fade" id="baja" role="tabpanel">
+        {% include "ordenes/tabla_ordenes.html" with ordenes=ordenes_baja %}
+    </div>
+
+    <!-- TAB MINIMA PRIORIDAD -->
+    <div class="tab-pane fade" id="minima" role="tabpanel">
+        {% include "ordenes/tabla_ordenes.html" with ordenes=ordenes_minima %}
+    </div>
+</div>
+
+<!-- PAGINACIÓN MEJORADA -->
+{% if is_paginated %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ page_obj.previous_page_number }}">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>
         {% endif %}
 
-        <div class="col-md-2 align-self-end">
-            <button type="submit" class="btn btn-primary w-100">Filtrar</button>
-        </div>
-
-    </form>
-
-    <!-- TABLA DE ÓRDENES -->
-    <div class="table-container">
-        <table class="custom-table">
-            <thead class="table-light">
-                <tr>
-                    <th>#</th>
-                    <th>Fecha Captura</th>
-                    <th>Beneficiado</th>
-                    <th>Dependencia</th>
-                    <th>Estatus General</th>
-                    <th>Mi Avance </th>
-                    <th>Asignado a</th>
-                    <th>Progreso</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if ordenes %}
-                    {% for orden in ordenes %}
-                        <tr class="
-                            {% if orden.estatus == 'E' %}fila-proceso
-                            {% elif orden.estatus == 'A' %}fila-asignada
-                            {% elif orden.estatus == 'T' %}fila-terminada
-                            {% elif orden.estatus == 'C' %}fila-cancelada
-                            {% endif %}
-                        " onclick="window.location.href='{% url 'detalle_orden' orden.orden %}'" style="cursor: pointer;">
-                            <td>{{ orden.orden }}</td>
-                            <td>{{ orden.fecha_captura|date:"d/m/Y H:i" }}</td>
-                            <td>{{ orden.solicitantes.first.nombre_beneficiado }}</td>
-                            <td>{{ orden.solicitantes.first.dependencia_beneficiado }}</td>
-                            <td>
-                                {% if orden.estatus == "T" %}
-                                    <span class="badge bg-success">Terminada</span>
-                                {% elif orden.estatus in "E" %}
-                                    <span class="badge bg-warning text-dark">Pendiente</span>
-                                {% elif orden.estatus in "A" %}
-                                    <span class="badge bg-primary">Asignada</span>
-                                {% else %}
-                                    <span class="badge bg-secondary">Desconocido</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% with mi_registro=orden.usuarios_orden.all|dictsort:"id" %}
-                                    {% for ux_o in orden.usuarios_orden.all %}
-                                        {% if ux_o.realiza_id == request.user.id %}
-                                            
-                                            {% if ux_o.estatus == "T" %}
-                                                <span class="badge bg-success">Completada</span>
-
-                                            {% elif ux_o.estatus == "E" %}
-                                                <span class="badge bg-warning text-dark">En proceso</span>
-
-                                            {% elif ux_o.estatus == "A" %}
-                                                <span class="badge bg-primary">Asignada</span>
-
-                                            {% elif ux_o.estatus == "C" %}
-                                                <span class="badge bg-danger">Cancelada</span>
-
-                                            {% else %}
-                                                <span class="badge bg-secondary">Desconocido</span>
-
-                                            {% endif %}
-
-                                        {% endif %}
-                                    {% endfor %}
-                                {% endwith %}
-                            </td>
-                            <td title="{% for ux_o in orden.usuarios_orden.all %}{{ ux_o.realiza.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}">
-                                {% for ux_o in orden.usuarios_orden.all|slice:":2" %}
-                                    {{ ux_o.realiza.get_full_name }}{% if not forloop.last %}, {% endif %}
-                                {% endfor %}
-                                {% if orden.usuarios_orden.count > 2 %}
-                                    <span class="text-primary"> (+{{ orden.usuarios_orden.count|add:"-2" }})</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if orden.estatus == "A" %}
-                                    <div class="progress" style="height: 20px;">
-                                        <div class="progress-bar bg-warning text-dark" style="width: 25%;">
-                                            25%
-                                        </div>
-                                    </div>
-
-                                {% elif orden.estatus == "E" %}
-                                    <div class="progress" style="height: 20px;">
-                                        <div class="progress-bar bg-primary" style="width: 50%;">
-                                            50%
-                                        </div>
-                                    </div>
-
-                                {% elif orden.estatus == "T" %}
-                                    <div class="progress" style="height: 20px;">
-                                        <div class="progress-bar bg-success" style="width: 100%;">
-                                            100%
-                                        </div>
-                                    </div>
-                                
-                                {% elif orden.estatus == "C" %}
-                                    <div class="progress" style="height: 20px;">
-                                        <div class="progress-bar bg-danger" style="width: 0%;">
-                                            Cancelada
-                                        </div>
-                                    </div>
-                                    
-                                {% else %}
-                                    <div class="progress" style="height: 20px;">
-                                        <div class="progress-bar bg-secondary" style="width: 0%;">
-                                            Desconocido
-                                        </div>
-                                    </div>
-                                {% endif %}
-                            </td>
-                            <td class="text-center">
-                                <button type="button"
-                                    class="btn btn-sm btn-outline-primary btn-procesar-orden"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#procesarOrdenModal"
-                                    data-orden-id="{{ orden.orden }}"
-                                    title="Trabajar orden"
-                                    onclick="event.stopPropagation();">
-                                    <i class="bi bi-arrow-up-right-square"></i>
-                                </button>
-
-                                {% if tipo_usuario == "A" and orden.estatus != "T" %}
-                                <button type="button"
-                                    class="btn btn-sm btn-outline-warning btn-reasignar-orden"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#reasignarOrdenModal"
-                                    data-orden-id="{{ orden.orden }}"
-                                    title="Reasignar orden"
-                                    onclick="event.stopPropagation();">
-                                    <i class="bi bi-arrow-repeat"></i>
-                                </button>
-                                {% endif %}
-                            </td>
-
-
-
-                        </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan="7" class="text-center text-muted">No hay órdenes registradas.</td>
-                    </tr>
-                {% endif %}
-            </tbody>
-        </table>
-    </div>
-
-    {% with request.GET.copy as params %}
-    {% if params.page %}{% endif %}
-    {% with params.urlencode as query %}
-
-    {% if ordenes.paginator.num_pages > 1 %}
-    <nav aria-label="Page navigation" class="mt-4">
-        <ul class="pagination justify-content-center">
-
-            {% if ordenes.has_previous %}
+        {% for num in paginator.page_range %}
+            {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
                 <li class="page-item">
-                    <a class="page-link"
-                    href="?{% if query %}{{ query }}&{% endif %}page={{ ordenes.previous_page_number }}">
-                        &lt;
+                    <a class="page-link" href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ num }}">
+                        {{ num }}
                     </a>
                 </li>
             {% endif %}
+        {% endfor %}
 
-            {% for num in ordenes.paginator.page_range %}
-                {% if ordenes.number == num %}
-                    <li class="page-item active">
-                        <span class="page-link">{{ num }}</span>
-                    </li>
-                {% else %}
-                    <li class="page-item">
-                        <a class="page-link"
-                        href="?{% if query %}{{ query }}&{% endif %}page={{ num }}">
-                            {{ num }}
-                        </a>
-                    </li>
-                {% endif %}
-            {% endfor %}
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ page_obj.next_page_number }}">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
 
-            {% if ordenes.has_next %}
-                <li class="page-item">
-                    <a class="page-link"
-                    href="?{% if query %}{{ query }}&{% endif %}page={{ ordenes.next_page_number }}">
-                        &gt;
-                    </a>
-                </li>
-            {% endif %}
-
-        </ul>
-    </nav>
-    {% endif %}
-
-    {% endwith %}
-    {% endwith %}
-
-
-
-
-    <div class="modal fade" id="procesarOrdenModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-scrollable"> 
-            <div class="modal-content">
-                <div class="modal-header bg-primario text-white">
-                    <h5 class="modal-title">Procesar orden</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-
-                <div class="modal-body" id="modal-procesar-contenido">
-                    <div class="text-center text-muted py-5">
-                        <div class="spinner-border text-primary mb-3"></div>
-                        <p>Cargando datos...</p>
+<!-- MODALES -->
+<div class="modal fade" id="procesarOrdenModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-primario text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-pencil-square me-2"></i>Procesar orden
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modal-procesar-contenido">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="visually-hidden">Cargando...</span>
                     </div>
-                </div>
-
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <p class="text-muted">Cargando datos de la orden...</p>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Modal Reasignar Orden -->
-    <div class="modal fade" id="reasignarOrdenModal" tabindex="-1" aria-labelledby="reasignarOrdenModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered">
-            <div class="modal-content">
-            
-            <!-- Header -->
-            <div class="modal-header">
-                <h5 class="modal-title" id="reasignarOrdenModalLabel">Reasignar Orden</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+<div class="modal fade" id="reasignarOrdenModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">
+                    <i class="bi bi-arrow-repeat me-2"></i>Reasignar Orden
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            
-            <!-- Body -->
             <div class="modal-body" id="modal-reasignar-contenido">
-                <div class="text-center text-muted py-5">
-                <div class="spinner-border text-primary mb-3"></div>
-                <p>Cargando datos...</p>
+                <div class="text-center py-5">
+                    <div class="spinner-border text-warning mb-3" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="text-muted">Cargando datos para reasignación...</p>
                 </div>
-            </div>
-            
             </div>
         </div>
     </div>
+</div>
 
-    <script defer src="{% static 'js/asignar_detalles.js' %}"></script>
-{% endblock content %}
+<script defer src="{% static 'js/asignar_detalles.js' %}"></script>
+
+<!-- CSS MEJORADO -->
+<style>
+    .priority-badge {
+        font-size: 0.75rem;
+        padding: 0.35em 0.65em;
+    }
+    
+    .fila-vencida {
+        background-color: rgba(220, 53, 69, 0.05);
+        border-left: 4px solid #dc3545 !important;
+    }
+    
+    .fila-proximo-vencer {
+        background-color: rgba(255, 193, 7, 0.05);
+        border-left: 4px solid #ffc107 !important;
+    }
+    
+    .fila-en-plazo {
+        border-left: 4px solid #28a745 !important;
+    }
+    
+    .table-container {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        background: white;
+    }
+    
+    .custom-table {
+        margin-bottom: 0;
+    }
+    
+    .custom-table thead th {
+        background-color: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+        color: #495057;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .custom-table tbody tr {
+        transition: all 0.2s ease;
+    }
+    
+    .custom-table tbody tr:hover {
+        background-color: rgba(13, 110, 253, 0.05) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+    
+    .badge {
+        font-weight: 500;
+        padding: 0.5em 0.85em;
+    }
+    
+    .progress {
+        border-radius: 20px;
+        background-color: #e9ecef;
+        height: 6px !important;
+    }
+    
+    .progress-bar {
+        border-radius: 20px;
+    }
+    
+    .btn-group .btn {
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .nav-tabs .nav-link {
+        color: #495057;
+        font-weight: 500;
+        border: none;
+        border-bottom: 2px solid transparent;
+        padding: 0.75rem 1rem;
+    }
+    
+    .nav-tabs .nav-link:hover {
+        border-color: transparent;
+        background-color: rgba(13, 110, 253, 0.05);
+    }
+    
+    .nav-tabs .nav-link.active {
+        color: #0d6efd;
+        background-color: transparent;
+        border-bottom: 2px solid #0d6efd;
+    }
+    
+    .card {
+        border-radius: 12px;
+        border: none;
+    }
+    
+    .form-label {
+        margin-bottom: 0.25rem;
+        color: #6c757d;
+    }
+    
+    .page-link {
+        border-radius: 8px;
+        margin: 0 3px;
+        color: #0d6efd;
+        border: none;
+        background-color: #f8f9fa;
+    }
+    
+    .page-link:hover {
+        background-color: #e9ecef;
+        color: #0a58ca;
+    }
+    
+    .page-item.active .page-link {
+        background-color: #0d6efd;
+        color: white;
+    }
+    
+    @media (max-width: 768px) {
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        .custom-table {
+            min-width: 1200px;
+        }
+    }
+</style>
+{% endblock %}

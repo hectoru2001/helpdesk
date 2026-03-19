@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from datetime import datetime
 
 from django.conf import settings
@@ -30,6 +31,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import simpleSplit
 from datetime import timedelta
+from .utils import calcular_vencimiento
 
 @method_decorator(administrador_required(False), name='dispatch')
 @method_decorator(csrf_exempt, name='dispatch')
@@ -70,6 +72,8 @@ class OrdenCreateTicket(CreateView):
             equipo = form_equipo.save(commit=False)
             equipo.orden = orden
             equipo.save()
+
+        orden.save()
 
         for a in archivos:
             OrdenxArchivo.objects.create(
@@ -212,20 +216,84 @@ class DetallesOrdenes(DetailView):
         context = super().get_context_data(**kwargs)
         orden = self.get_object()
 
-        # 🔹 Comentario
-        comentario = TokenComentario.objects.filter(
-            orden=orden,
-            usado=True
-        ).order_by('-creado').first()
+        # 🔹 Obtener todos los registros de usuarios asignados a esta orden
+        usuarios_orden = orden.usuarios_orden.all().select_related('realiza')
+        
+        # 🔹 Recolectar todos los comentarios de todos los usuarios
+        todos_comentarios = []
+        
+        for ux_o in usuarios_orden:
+            # Verificar si tiene comentarios (campo TextField)
+            if ux_o.comentarios and ux_o.comentarios.strip():
+                # Dividir por líneas - cada línea es un comentario
+                lineas = ux_o.comentarios.split('\n')
+                
+                for linea in lineas:
+                    comentario_linea = linea.strip()
 
-        context['comentario'] = comentario
+                    if comentario_linea:
 
-        if comentario and comentario.calificacion:
-            estrellas = "★" * comentario.calificacion + "☆" * (5 - comentario.calificacion)
-            context['estrellas'] = estrellas
-        else:
-            context['estrellas'] = None
+                        match = re.match(
+                            r'^\[?(\d{2}/\d{2}/\d{4}\s+\d{2}:\d{2}|\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2})\]?\s*(.*)$',
+                            comentario_linea
+                        )
 
+                        if match:
+
+                            fecha_str, contenido = match.groups()
+
+                            fecha = None
+
+                            for formato in ("%d/%m/%Y %H:%M", "%Y-%m-%d %H:%M"):
+                                try:
+                                    fecha = datetime.strptime(fecha_str, formato)
+                                    break
+                                except:
+                                    pass
+
+                            if fecha:
+                                if timezone.is_naive(fecha):
+                                    fecha = timezone.make_aware(fecha)
+                            else:
+                                fecha = ux_o.fecha_asigna or timezone.now()
+
+                        else:
+                            fecha = ux_o.fecha_asigna or timezone.now()
+                            contenido = comentario_linea
+
+                        todos_comentarios.append({
+                            'usuario': ux_o.realiza,
+                            'comentario': contenido.strip(),  # ← ya sin fecha
+                            'fecha': fecha,
+                            'fecha_asigna': ux_o.fecha_asigna,
+                            'tipo': 'comentario',
+                            'uxo': ux_o,
+                            'estatus_orden': ux_o.estatus_orden,
+                            'estatus': ux_o.estatus
+                        })
+        
+        context['todos_comentarios'] = todos_comentarios
+        context['comentarios_count'] = len(todos_comentarios)
+        
+        # 🔹 Solución si existe
+        soluciones = []
+        for ux_o in usuarios_orden:
+            if ux_o.solucion and ux_o.solucion.strip():
+                soluciones.append({
+                    'usuario': ux_o.realiza,
+                    'solucion': ux_o.solucion,
+                    'fecha': ux_o.termina or ux_o.fecha_asigna,
+                    'uxo': ux_o
+                })
+        
+        context['soluciones'] = soluciones
+        context['soluciones_count'] = len(soluciones)
+
+        # 🔹 Calificación (si existe en algún modelo)
+        # Si tienes calificación en UsuariosxOrden o en otro modelo, ajústalo aquí
+        context['estrellas'] = None  # Por ahora sin calificación
+
+        # Archivos
         archivos_validos = []
         total_bytes = 0
 
@@ -240,6 +308,19 @@ class DetallesOrdenes(DetailView):
         context['archivos_validos'] = archivos_validos
         context['archivos_count'] = len(archivos_validos)
         context['total_bytes'] = total_bytes
+
+        # Fechas importantes
+        context['fecha_captura'] = orden.fecha_captura
+        # Tomar la fecha de asignación más antigua
+        primera_asignacion = usuarios_orden.order_by('fecha_asigna').first()
+        context['fecha_asignacion'] = primera_asignacion.fecha_asigna if primera_asignacion else None
+        
+        # Fecha de terminación (cuando todos los usuarios terminaron)
+        if usuarios_orden.exists() and all(uxo.estatus == 'T' for uxo in usuarios_orden):
+            ultima_terminacion = usuarios_orden.order_by('-termina').first()
+            context['fecha_terminacion'] = ultima_terminacion.termina if ultima_terminacion else None
+        else:
+            context['fecha_terminacion'] = None
 
         return context
 
@@ -422,11 +503,12 @@ class EliminarArchivoOrden(View):
 @method_decorator(administrador_required(False), name='dispatch')
 class OrdenesView(TemplateView):
     template_name = "asignar_ordenes.html"
-    paginate_by = 10
+    paginate_by = 50
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
+        today = timezone.now().date()
 
         try:
             extra = ExtraUsuarios.objects.get(usuario_id=user)
@@ -434,48 +516,83 @@ class OrdenesView(TemplateView):
         except ExtraUsuarios.DoesNotExist:
             tipo_usuario = "T"
 
-        # 🔹 NUEVO: filtro para mostrar terminadas
+        # Obtener parámetros de filtro
         mostrar_terminadas = self.request.GET.get('estatus', 'no')
+        fecha_inicio = self.request.GET.get('fecha_inicio')
+        fecha_fin = self.request.GET.get('fecha_fin')
+        mostrar_todas = self.request.GET.get('todas')
 
-        # 🔹 Base: nunca mostrar canceladas
+        # Base: excluir canceladas
         ordenes = Orden.objects.exclude(estatus='C')
 
-        # 🔹 Solo excluir terminadas si el usuario dice NO
+        # Filtrar por estatus
         if mostrar_terminadas == 'no':
             ordenes = ordenes.exclude(estatus='T')
 
-        ordenes = ordenes.order_by('-fecha_captura')
-
-        fecha_inicio = self.request.GET.get('fecha_inicio')
-        fecha_fin = self.request.GET.get('fecha_fin')
-
+        # Filtrar por fechas
         if fecha_inicio and fecha_fin:
             ordenes = ordenes.filter(
                 fecha_captura__date__range=[fecha_inicio, fecha_fin]
             )
 
-        mostrar_todas = self.request.GET.get('todas')
+        # Filtrar por usuario
+        if mostrar_todas == 'si' and tipo_usuario == "A":
+            # Admin viendo todas
+            ordenes_a_mostrar = ordenes.distinct()
+        else:
+            # Usuario normal o admin viendo solo sus órdenes
+            ordenes_a_mostrar = ordenes.filter(
+                usuarios_orden__realiza=user
+            ).distinct()
 
-        ordenes_a_mostrar = ordenes.filter(
-            usuarios_orden__realiza=user
-        ).distinct()
+        # ORDENAR POR PRIORIDAD Y FECHA DE VENCIMIENTO
+        from django.db.models import Case, When, IntegerField
+        
+        ordenes_a_mostrar = ordenes_a_mostrar.annotate(
+            prioridad_order=Case(
+                When(prioridad='inmediata', then=1),
+                When(prioridad='urgente', then=2),
+                When(prioridad='normal', then=3),
+                When(prioridad='minima', then=4),
+                When(prioridad='programada', then=5),
+                default=6,
+                output_field=IntegerField(),
+            )
+        ).order_by('prioridad_order', 'fecha_vencimiento', '-fecha_captura')
 
-        if mostrar_todas == 'no':
-            ordenes_a_mostrar = ordenes
+        # SEPARAR POR PRIORIDAD PARA LOS TABS
+        ordenes_alta = ordenes_a_mostrar.filter(prioridad='inmediata').order_by('fecha_vencimiento')
+        ordenes_media = ordenes_a_mostrar.filter(prioridad='urgente').order_by('fecha_vencimiento')
+        ordenes_baja = ordenes_a_mostrar.filter(prioridad='normal').order_by('fecha_vencimiento')
+        ordenes_minima = ordenes_a_mostrar.filter(prioridad='minima').order_by('fecha_vencimiento')
 
+        # Paginación (solo para la vista principal)
         paginator = Paginator(ordenes_a_mostrar, self.paginate_by)
         page_number = self.request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
-        context["ordenes"] = page_obj
-        context["page_obj"] = page_obj
-        context["paginator"] = paginator
-        context["is_paginated"] = page_obj.has_other_pages()
-
-        context['fecha_inicio'] = fecha_inicio
-        context['fecha_fin'] = fecha_fin
-        context['mostrar_todas'] = mostrar_todas
-        context['mostrar_terminadas'] = mostrar_terminadas
+        # Contexto
+        context.update({
+            "ordenes": page_obj,
+            "page_obj": page_obj,
+            "paginator": paginator,
+            "is_paginated": page_obj.has_other_pages(),
+            "ordenes_alta": ordenes_alta,
+            "ordenes_media": ordenes_media,
+            "ordenes_baja": ordenes_baja,
+            "ordenes_minima": ordenes_minima,
+            "prioridad_alta_count": ordenes_alta.count(),
+            "prioridad_media_count": ordenes_media.count(),
+            "prioridad_baja_count": ordenes_baja.count(),
+            "prioridad_minima_count": ordenes_minima.count(),
+            "ordenes_total": ordenes_a_mostrar.count(),
+            "fecha_inicio": fecha_inicio,
+            "fecha_fin": fecha_fin,
+            "mostrar_todas": mostrar_todas,
+            "mostrar_terminadas": mostrar_terminadas,
+            "tipo_usuario": tipo_usuario,
+            "today": today,
+        })
 
         return context
 
@@ -716,9 +833,16 @@ def actualizar_estatus_api(request):
 
     # Validamos si el estatus recibido es en proceso ('E') para actualizar modelo UsuariosxOrden y Orden 'En proceso')
     if estatus == "E":
+        if not orden.fecha_inicio:
+            orden.fecha_inicio = timezone.now()
+            orden.save(update_fields=['fecha_inicio'])
+
         usuario_orden.inicia = timezone.now()
         usuario_orden.estatus = "E"
         usuario_orden.save(update_fields=['inicia', 'estatus'])
+
+        orden.fecha_vencimiento = calcular_vencimiento(timezone.now(), orden.categoria, orden.prioridad)
+        orden.save(update_fields=['fecha_vencimiento'])
 
         orden.estatus = "E"
         orden.save(update_fields=['estatus'])

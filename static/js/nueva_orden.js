@@ -189,6 +189,24 @@ function buscarYSeleccionar(inputId, inputTextId, resultsId, prefix) {
 
 document.addEventListener("DOMContentLoaded", () => {
     const switchIgualSolicitante = document.getElementById("igual_solicitante");
+    const selectPrioridad = document.getElementById("prioridad");
+    const divPrioridad = document.getElementById("divPrioridad");
+    const fechaLimite = document.getElementById("fecha_limite");
+
+    selectPrioridad.addEventListener("change", function() {
+        if (this.value === "programada") {
+            divPrioridad.classList.remove("d-none");
+            fechaLimite.disabled = false;
+            fechaLimite.required = true;
+        }
+        else
+        {
+            divPrioridad.classList.add("d-none");
+            fechaLimite.disabled = true;
+            fechaLimite.required = false;
+            fechaLimite.value = "";
+        }
+    });
 
     if (switchIgualSolicitante) {
         switchIgualSolicitante.addEventListener("change", function() {
