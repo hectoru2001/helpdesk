@@ -60,7 +60,7 @@ WORKING_DAYS = [0, 1, 2, 3, 4]
 # ==============================
 
 TIEMPOS = {
-    'soporte_tecnico': {
+    'soporte_técnico': {
         'inmediata': 120,
         'urgente': 240,
         'normal': 1440,

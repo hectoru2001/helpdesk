@@ -288,8 +288,7 @@
                         </h2>
                     </div>
                 </div>
-                
-                <div class="container-fluid py-4">
+                <div class="container-fluid py-4 disabled">
                     <!-- Timeline principal de estados -->
                     <div class="row mb-5">
                         <div class="col-12">
@@ -297,23 +296,23 @@
                                 <!-- Paso 1: Capturada -->
                                 <div class="timeline-step">
                                     <div class="timeline-content">
-                                        <div class="inner-circle {% if orden.fecha_captura %}active{% endif %}">
-                                            {% if orden.fecha_captura %}
-                                                <i class="fa-solid fa-check text-white"></i>
-                                            {% else %}
-                                                <i class="fa-regular fa-circle bg-primario"></i>
-                                            {% endif %}
+                                        <div class="inner-circle {% if orden.estatus == 'C' or orden.estatus == 'A' or orden.estatus == 'E' or orden.estatus == 'T' %}active{% endif %}">
+                                            <i class="fa-solid fa-check text-white"></i>
                                         </div>
+
                                         <p class="h6 mt-3 mb-1 fw-bold">Capturada</p>
+
                                         {% if orden.fecha_captura %}
                                             <p class="text-muted small mb-0">{{ orden.fecha_captura|date:"d/m/Y" }}</p>
                                             <p class="text-muted small">{{ orden.fecha_captura|date:"H:i" }}</p>
                                         {% else %}
                                             <p class="text-muted small">Pendiente</p>
                                         {% endif %}
+
                                         {% if orden.capturado_por %}
                                             <span class="badge bg-light text-dark mt-1 small">
-                                                <i class="fa-regular fa-user me-1"></i>{{ orden.capturado_por.get_full_name|default:orden.capturado_por.username }}
+                                                <i class="fa-regular fa-user me-1"></i>
+                                                {{ orden.capturado_por.get_full_name|default:orden.capturado_por.username }}
                                             </span>
                                         {% endif %}
                                     </div>
@@ -322,19 +321,21 @@
                                 <!-- Paso 2: Asignada -->
                                 <div class="timeline-step">
                                     <div class="timeline-content">
-                                        <div class="inner-circle {% if orden.usuarios_orden.exists %}active{% else %}pending{% endif %}">
-                                            {% if orden.usuarios_orden.exists %}
+                                        <div class="inner-circle {% if orden.estatus == 'A' or orden.estatus == 'E' or orden.estatus == 'T' %}active{% else %}pending{% endif %}">
+                                            {% if orden.estatus == 'A' or orden.estatus == 'E' or orden.estatus == 'T' %}
                                                 <i class="fa-solid fa-user-check text-white"></i>
                                             {% else %}
                                                 <i class="fa-regular fa-clock"></i>
                                             {% endif %}
                                         </div>
+
                                         <p class="h6 mt-3 mb-1 fw-bold">Asignada</p>
-                                        {% if orden.usuarios_orden.exists %}
-                                            {% with primera_asignacion=orden.usuarios_orden.all|dictsort:"fecha_asigna"|first %}
-                                                <p class="text-muted small mb-0">{{ primera_asignacion.fecha_asigna|date:"d/m/Y" }}</p>
-                                                <p class="text-muted small">{{ primera_asignacion.fecha_asigna|date:"H:i" }}</p>
-                                            {% endwith %}
+
+                                        {% if orden.estatus == 'A' or orden.estatus == 'E' or orden.estatus == 'T' %}
+                                            {% if orden.fecha_asignacion %}
+                                                <p class="text-muted small mb-0">{{ orden.fecha_asignacion|date:"d/m/Y" }}</p>
+                                                <p class="text-muted small">{{ orden.fecha_asignacion|date:"H:i" }}</p>
+                                            {% endif %}
                                         {% else %}
                                             <p class="text-muted small">Pendiente</p>
                                         {% endif %}
@@ -344,21 +345,24 @@
                                 <!-- Paso 3: En Proceso -->
                                 <div class="timeline-step">
                                     <div class="timeline-content">
-                                        <div class="inner-circle {% if orden.usuarios_orden.filter|dictsort:"inicia"|first %}active{% elif orden.estatus == 'E' %}active{% else %}pending{% endif %}">
-                                            {% if orden.usuarios_orden.filter|dictsort:"inicia"|first %}
+                                        <div class="inner-circle {% if orden.estatus == 'E' or orden.estatus == 'T' %}active{% else %}pending{% endif %}">
+                                            {% if orden.estatus == 'E' or orden.estatus == 'T' %}
                                                 <i class="fa-solid fa-play text-white"></i>
                                             {% else %}
                                                 <i class="fa-regular fa-hourglass-half"></i>
                                             {% endif %}
                                         </div>
+
                                         <p class="h6 mt-3 mb-1 fw-bold">En Proceso</p>
-                                        {% with usuarios_en_proceso=orden.usuarios_orden.all %}
-                                            {% if usuarios_en_proceso %}
-                                                <p class="text-muted small">{{ usuarios_en_proceso.count }} en progreso</p>
-                                            {% else %}
-                                                <p class="text-muted small">Sin iniciar</p>
+
+                                        {% if orden.estatus == 'E' or orden.estatus == 'T' %}
+                                            {% if orden.fecha_inicio %}
+                                                <p class="text-muted small mb-0">{{ orden.fecha_inicio|date:"d/m/Y" }}</p>
+                                                <p class="text-muted small">{{ orden.fecha_inicio|date:"H:i" }}</p>
                                             {% endif %}
-                                        {% endwith %}
+                                        {% else %}
+                                            <p class="text-muted small">Pendiente</p>
+                                        {% endif %}
                                     </div>
                                 </div>
 
@@ -372,12 +376,14 @@
                                                 <i class="fa-regular fa-circle-check"></i>
                                             {% endif %}
                                         </div>
+
                                         <p class="h6 mt-3 mb-1 fw-bold">Terminada</p>
+
                                         {% if orden.estatus == 'T' %}
-                                            {% with ultima_terminacion=orden.usuarios_orden.all|dictsort:"termina"|last %}
-                                                <p class="text-muted small mb-0">{{ ultima_terminacion.termina|date:"d/m/Y" }}</p>
-                                                <p class="text-muted small">{{ ultima_terminacion.termina|date:"H:i" }}</p>
-                                            {% endwith %}
+                                            {% if orden.fecha_termino %}
+                                                <p class="text-muted small mb-0">{{ orden.fecha_termino|date:"d/m/Y" }}</p>
+                                                <p class="text-muted small">{{ orden.fecha_termino|date:"H:i" }}</p>
+                                            {% endif %}
                                         {% else %}
                                             <p class="text-muted small">Pendiente</p>
                                         {% endif %}
