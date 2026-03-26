@@ -41,16 +41,17 @@
                         
                         <!-- Fecha Vencimiento -->
                         <td>
-                            {% if orden.fecha_vencimiento %}
-                            <div class="d-flex flex-column">
-                        
-                                <span class="contador-tiempo small fw-semibold" data-vencimiento="{{ orden.fecha_vencimiento|date:'c' }}">
-                                    ⏳ calculando...
+                            {% if orden.estatus == 'T' %}
+                                <span class="text-success small fw-semibold">Finalizada</span>
+
+                            {% elif orden.fecha_vencimiento %}
+                                <span class="contador-tiempo small fw-semibold"
+                                    data-vencimiento="{{ orden.fecha_vencimiento|date:'Y-m-d H:i:s' }}">
+                                    {{ orden.fecha_vencimiento|date:"d/m/Y H:i" }}
                                 </span>
-                        
-                            </div>
+
                             {% else %}
-                                <span class="text-muted small">Sin Iniciar</span>
+                                <span class="text-muted small">No Fecha</span>
                             {% endif %}
                         </td>
                         
