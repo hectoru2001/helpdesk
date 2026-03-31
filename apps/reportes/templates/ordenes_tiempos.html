@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+
+<h5 class="title-secondary">Reporte de tiempos por usuario</h5>
+{% endblock %}
+
+{% block content %}
+{% include 'mensajes.html' %}
+
+<div class="container-fluid">
+
+<!-- 🔍 FILTROS -->
+<form method="get" class="row g-3 align-items-end mb-3">
+    <div class="col-md-3">
+        <label class="form-label">Fecha inicio</label>
+        <input type="date" name="fecha_inicio" class="form-control"
+               value="{{ request.GET.fecha_inicio }}">
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">Fecha fin</label>
+        <input type="date" name="fecha_fin" class="form-control"
+               value="{{ request.GET.fecha_fin }}">
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">Tipo de usuario</label>
+        <select name="clasificacion" class="form-select">
+            <option value="">-- Todos --</option>
+            <option value="P" {% if request.GET.clasificacion == 'P' %}selected{% endif %}>Programadores</option>
+            <option value="T" {% if request.GET.clasificacion == 'T' %}selected{% endif %}>Técnicos</option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">
+            Filtrar
+        </button>
+    </div>
+</form>
+
+<!-- 📊 TABLA -->
+<div class="table-container">
+    <table class="custom-table">
+        <thead>
+            <tr>
+                <th>Usuario</th>
+                <th>Horas</th>
+                <th>Total</th>
+                <th>Asignadas</th>
+                <th>En Proceso</th>
+                <th>Terminadas</th>
+                <th>Canceladas</th>
+                <th>A tiempo</th>
+                <th>Tarde</th>
+                <th>% Cumplimiento</th>
+                <th>🟢 0-50%</th>
+                <th>🟡 50-70%</th>
+                <th>🔴 70-100%</th>
+                <th>⛔ Vencido</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for row in reporte %}
+            <tr>
+                <td class="text-start">
+                    {% if row.realiza__first_name %}
+                        {{ row.realiza__first_name }} {{ row.realiza__last_name|default:"" }}<br>
+                    {% endif %}
+                    <small class="text-muted">
+                        {{ row.realiza__username|default:"Sin usuario" }}
+                    </small>
+                </td>
+
+                <td><strong>{{ row.total }}</strong></td>
+                <td>{{ row.total|default:0 }}</td>
+                <td>{{ row.asignadas }}</td>
+                <td>{{ row.en_proceso }}</td>
+                <td class="text-success fw-bold">{{ row.terminadas }}</td>
+                <td class="text-danger">{{ row.canceladas }}</td>
+
+                <td class="text-success">{{ row.a_tiempo }}</td>
+                <td class="text-danger">{{ row.tarde }}</td>
+                <td><strong>{{ row.cumplimiento }}%</strong></td>
+
+                <td class="text-success fw-bold">{{ row.verde }}</td>
+                <td class="text-warning fw-bold">{{ row.amarillo }}</td>
+                <td class="text-danger fw-bold">{{ row.rojo }}</td>
+                <td class="text-dark fw-bold">{{ row.vencido }}</td>
+            </tr>
+
+            {% empty %}
+            <tr>
+                <td colspan="14" class="text-center">
+                    No hay datos disponibles
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+</div>
+
+
+{% endblock %}

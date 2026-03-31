@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+<h5 class="title-secondary">Reporte de tiempos por orden</h5>
+{% endblock %}
+
+{% block content %}
+{% include 'mensajes.html' %}
+
+<div class="container-fluid">
+
+<!-- 🔍 FILTROS -->
+<form method="get" class="row g-3 align-items-end mb-3 p-3 bg-light rounded shadow-sm">
+
+    <div class="col-md-4">
+        <label class="form-label fw-bold">
+            Orden
+        </label>
+        <input type="text" name="orden" class="form-control" placeholder="Ingresa el valor a buscar" value="{{ request.GET.orden }}">
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label fw-bold">Fecha inicio</label>
+        <input type="date" name="fecha_inicio" class="form-control shadow-sm"
+               value="{{ request.GET.fecha_inicio }}">
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label fw-bold">Fecha fin</label>
+        <input type="date" name="fecha_fin" class="form-control shadow-sm"
+               value="{{ request.GET.fecha_fin }}">
+    </div>
+
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100 shadow-sm">
+            Filtrar
+        </button>
+    </div>
+</form>
+
+<!-- 📊 TABLA -->
+<div class="table-container">
+<table class="custom-table table-hover align-middle text-center mb-0">
+
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Descripción</th>
+            <th>Estatus</th>
+            <th>Usuarios</th>
+            <th>Inicio</th>
+            <th>Terminada</th>
+            <th>Vencimiento</th>
+            <th>Tiempo restante</th>
+            <th>Tiempo empleado</th>
+            <th>Indicador</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for row in reporte %}
+        <tr>
+
+            <td><strong>#{{ row.orden }}</strong></td>
+
+            <td class="text-start">
+                {{ row.descripcion|default:"Sin descripción"|truncatechars:60 }}
+            </td>
+
+            <!-- ESTATUS -->
+            <td>
+                {% if row.estatus == "A" %}
+                    <span class="badge bg-warning text-dark">Asignada</span>
+                {% elif row.estatus == "E" %}
+                    <span class="badge bg-info">En proceso</span>
+                {% elif row.estatus == "T" %}
+                    <span class="badge bg-success">Terminada</span>
+                {% elif row.estatus == "C" %}
+                    <span class="badge bg-danger">Cancelada</span>
+                {% else %}
+                    <span class="badge bg-secondary">-</span>
+                {% endif %}
+            </td>
+
+            <!-- USUARIOS -->
+            <td>
+                {% if row.usuarios %}
+                    {% for u in row.usuarios %}
+                        <span class="badge bg-light text-dark border">{{ u }}</span>
+                    {% endfor %}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+
+            <td>{{ row.fecha_inicio|date:"d/m/Y H:i"|default:"-" }}</td>
+
+            <td>
+                {% if row.fecha_terminado %}
+                    {{ row.fecha_terminado|date:"d/m/Y H:i" }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+
+            <!-- VENCIMIENTO -->
+            <td data-vencimiento="{{ row.fecha_vencimiento|date:'c' }}">
+                {% if row.fecha_vencimiento %}
+                    {{ row.fecha_vencimiento|date:"d/m/Y H:i" }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+
+            <!-- TIEMPO RESTANTE -->
+            {% if row.estatus == "E" %}
+                <td class="tiempo-restante fw-bold">-</td>
+            {% else %}
+                <td>-</td>
+            {% endif %}
+
+            <!-- TIEMPO EMPLEADO -->
+            {% if row.estatus == "T" %}
+                <td class="fw-bold text-primary">
+                    {{ row.tiempo_trabajado }}
+                </td>
+            {% else %}
+                <td>-</td>
+            {% endif %}
+
+            <td>
+                {% if row.bandera == "ok_50" %}
+                    <span class="badge bg-success">Excelente</span>
+                {% elif row.bandera == "ok_30" %}
+                    <span class="badge bg-info">Bien</span>
+                {% elif row.bandera == "ok_10" %}
+                    <span class="badge bg-warning">Justo</span>
+                {% elif row.bandera == "fuera" %}
+                    <span class="badge bg-danger">Tarde</span>
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="9" class="text-center py-4 text-muted">
+                No hay datos disponibles
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+
+</table>
+</div>
+
+</div>
+
+<!-- ⚡ SCRIPT TIEMPO RESTANTE -->
+<script>
+function actualizarTiempos() {
+    const filas = document.querySelectorAll("tbody tr");
+
+    filas.forEach(fila => {
+        const celdaVencimiento = fila.querySelector("td[data-vencimiento]");
+        const celdaTiempo = fila.querySelector(".tiempo-restante");
+
+        if (!celdaVencimiento || !celdaTiempo) return;
+
+        const fechaStr = celdaVencimiento.dataset.vencimiento;
+
+        if (!fechaStr) {
+            celdaTiempo.innerText = "-";
+            return;
+        }
+
+        const vencimiento = new Date(fechaStr);
+        const ahora = new Date();
+
+        let diff = vencimiento - ahora;
+        const esNegativo = diff < 0;
+        diff = Math.abs(diff);
+
+        const horas = Math.floor(diff / (1000 * 60 * 60));
+        const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+        celdaTiempo.innerText = `${horas}h ${minutos}m`;
+
+        // 🔥 estilos dinámicos
+        celdaTiempo.classList.remove("text-danger", "text-warning", "text-success");
+
+        if (esNegativo) {
+            celdaTiempo.classList.add("text-danger");
+        } else if (horas < 4) {
+            celdaTiempo.classList.add("text-warning");
+        } else {
+            celdaTiempo.classList.add("text-success");
+        }
+    });
+}
+
+setInterval(actualizarTiempos, 60000);
+actualizarTiempos();
+</script>
+
+{% endblock %}

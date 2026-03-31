@@ -1,9 +1,8 @@
 from django.http import HttpResponse
 from django.template.loader import get_template
-from django.db.models import Count, Q, Avg
+from django.db.models import Count, Q, Avg, F, ExpressionWrapper, DurationField, Sum
 from datetime import datetime
 from xhtml2pdf import pisa
-
 from apps.ordenes.models import UsuariosxOrden, SolicitantexOrden, Orden
 from apps.usuarios.models import ExtraUsuarios
 from django.views.generic import TemplateView
@@ -12,6 +11,7 @@ from datetime import timedelta
 from django.conf import settings
 from core.decorators.permisos import administrador_required
 from django.utils.decorators import method_decorator
+from django.utils import timezone
 
 USUARIOS_EXTRA_POR_CLASIFICACION = {
         'T': [554, 545],   # Técnicos (admins incluidos)
@@ -291,4 +291,124 @@ class ReporteCalificaciones(TemplateView):
         # contexto
         context['ordenes'] = ordenes
 
+        return context
+      
+from django.utils import timezone
+from datetime import timedelta
+from django.views.generic import TemplateView
+from django.utils.decorators import method_decorator
+
+@method_decorator(administrador_required(True), name='dispatch')
+class ReporteOrdenesTiempoView(TemplateView):
+    template_name = "ordenes_ordenes_tiempos.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        ordenes = Orden.objects.all()
+
+        # 🔍 FILTROS
+        orden = self.request.GET.get('orden')
+        fecha_inicio = self.request.GET.get('fecha_inicio')
+        fecha_fin = self.request.GET.get('fecha_fin')
+
+        if orden:
+            ordenes = ordenes.filter(orden=orden)
+
+        if fecha_inicio and fecha_fin:
+            ordenes = ordenes.filter(
+                fecha_captura__date__range=[fecha_inicio, fecha_fin]
+            )
+
+        reporte = []
+
+        for orden in ordenes:
+
+            inicio = orden.fecha_inicio
+            fin = orden.fecha_terminado
+            vencimiento = orden.fecha_vencimiento
+
+            # -------------------------
+            # ⏱️ TIEMPO TRABAJADO (suma de usuarios)
+            # -------------------------
+            trabajos = orden.usuarios_orden.exclude(
+                inicia__isnull=True,
+                termina__isnull=True
+            )
+
+            tiempo_trabajado = timedelta()
+
+            for t in trabajos:
+                if t.inicia and t.termina:
+                    tiempo_trabajado += (t.termina - t.inicia)
+
+            # 🔢 formateo horas/minutos
+            total_segundos = int(tiempo_trabajado.total_seconds())
+            horas = total_segundos // 3600
+            minutos = (total_segundos % 3600) // 60
+
+            if horas > 0:
+                tiempo_formateado = f"{horas}h {minutos}m"
+            else:
+                tiempo_formateado = f"{minutos}m"
+
+            # -------------------------
+            # 📊 INDICADOR DE EFICIENCIA
+            # -------------------------
+            bandera = None
+
+            if inicio and fin and vencimiento and orden.estatus == "T":
+
+                tiempo_total = (vencimiento - inicio).total_seconds()
+                tiempo_usado = (fin - inicio).total_seconds()
+
+                if tiempo_total > 0:
+                    porcentaje = (tiempo_usado / tiempo_total) * 100
+
+                    if porcentaje <= 50:
+                        bandera = "ok_50"
+                    elif porcentaje <= 70:
+                        bandera = "ok_30"
+                    elif porcentaje <= 90:
+                        bandera = "ok_10"
+                    else:
+                        bandera = "fuera"
+
+            # -------------------------
+            # 👥 USUARIOS
+            # -------------------------
+            usuarios = orden.usuarios_orden.select_related('realiza').all()
+
+            usuarios_nombres = [
+                f"{u.realiza.first_name} {u.realiza.last_name}".strip() or u.realiza.username
+                for u in usuarios
+            ]
+
+            # -------------------------
+            # 📦 ARMAR REPORTE
+            # -------------------------
+            reporte.append({
+                "orden": orden.orden,
+                "descripcion": orden.descripcion,
+                "estatus": orden.estatus,
+                "prioridad": orden.prioridad,
+
+                "fecha_inicio": inicio,
+                "fecha_vencimiento": vencimiento,
+                "fecha_terminado": fin,
+
+                "usuarios": usuarios_nombres,
+
+                "tiempo_trabajado": tiempo_formateado,
+                "bandera": bandera,
+            })
+
+        # 🔥 ORDENAR (más recientes primero)
+        reporte = sorted(
+            reporte,
+            key=lambda x: x['orden'],
+            reverse=True
+        )
+
+        context["reporte"] = reporte
         return context
