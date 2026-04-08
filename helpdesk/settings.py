@@ -72,7 +72,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'helpdesk.wsgi.application'
-BD_TEST = True
+BD_TEST = False
 
 if BD_TEST:
     DATABASES = {
