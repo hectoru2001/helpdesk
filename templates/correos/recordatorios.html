@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="es" style="margin:0; padding:0; background-color:#f0f2f4;">
 <head>
     <meta charset="UTF-8">
@@ -7,83 +8,127 @@
 
 <body style="margin:0; padding:0; background-color:#f0f2f4; font-family:Arial, Helvetica, sans-serif;">
 
-    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="padding: 35px 0;">
-        <tr>
-            <td align="center">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" style="padding: 35px 0;">
+    <tr>
+        <td align="center">
 
-                <table width="600" cellspacing="0" cellpadding="0"
-                       style="background-color:#ffffff; border-radius:8px; padding: 25px;
-                       border:1px solid #d9dce0; box-shadow:0 2px 6px rgba(0,0,0,0.06);">
+            <table width="600" cellspacing="0" cellpadding="0"
+                   style="background-color:#ffffff; border-radius:8px; padding: 25px;
+                   border:1px solid #d9dce0; box-shadow:0 2px 6px rgba(0,0,0,0.06);">
 
-                    <tr>
-                        <td align="center" style="padding-bottom: 22px; border-bottom: 1px solid #e2e2e2;">
-                            
-                            <h1 style="margin:0; color:{% if nivel == 'VENCIDO' %}#D9534F{% elif nivel == '10%' %}#F0AD4E{% else %}#831F46{% endif %}; font-size:24px; font-weight:bold;">
-                                {% if nivel == 'VENCIDO' %}⚠️ ORDEN VENCIDA{% else %}Alerta de Vencimiento ({{ nivel }}){% endif %}
-                            </h1>
+                <!-- HEADER -->
+                <tr>
+                    <td align="center" style="padding-bottom: 22px; border-bottom: 1px solid #e2e2e2;">
+                        
+                        <h1 style="margin:0;
+                            color:{% if nivel == 'VENCIDO' %}#D9534F{% elif nivel == '30%' %}#F0AD4E{% else %}#831F46{% endif %};
+                            font-size:24px; font-weight:bold;">
 
-                            <p style="margin:6px 0 0 0; color:#555555; font-size:14px;">
-                                Sistema de Órdenes • HelpDesk • DGIC
+                            {% if nivel == 'VENCIDO' %}
+                                ⚠️ ORDEN VENCIDA
+                            {% else %}
+                                Alerta de Vencimiento ({{ nivel }})
+                            {% endif %}
+
+                        </h1>
+
+                        <p style="margin:6px 0 0 0; color:#555555; font-size:14px;">
+                            Sistema de Órdenes • HelpDesk • DGIC
+                        </p>
+                    </td>
+                </tr>
+
+                <!-- BODY -->
+                <tr>
+                    <td style="padding: 28px 10px 20px 10px; color:#333333;">
+                        
+                        <!-- ORDEN -->
+                        <h2 style="margin-top:0; color:#2e2e2e; font-size:18px;">
+                            Orden #{{ orden.orden }}
+                        </h2>
+
+                        <p style="font-size:15px; line-height:1.6; margin-bottom:18px;">
+                            Se informa que la orden <strong>#{{ orden.orden }}</strong> 
+                            {% if nivel == 'VENCIDO' %}
+                                ha superado el tiempo límite de atención.
+                            {% else %}
+                                está próxima a vencer.
+                            {% endif %}
+                        </p>
+
+                        <!-- DESCRIPCIÓN -->
+                        <p style="font-size:14px; color:#444;">
+                            <strong>Descripción:</strong><br>
+                            {{ orden.descripcion|default:"Sin descripción" }}
+                        </p>
+
+                        <!-- RESUMEN -->
+                        <div style="background-color:#f8f9fa; border-left:4px solid #831F46; padding:15px; margin-bottom:20px;">
+                            <p style="margin:0; font-size:14px; color:#555;">
+                                <strong>Categoría:</strong> {{ categoria }}<br>
+                                <strong>Vencimiento:</strong> 
+                                <span style="color:#d9534f; font-weight:bold;">
+                                    {{ fecha_vencimiento|date:"d/m/Y H:i" }}
+                                </span>
                             </p>
-                        </td>
-                    </tr>
+                        </div>
 
-                    <tr>
-                        <td style="padding: 28px 10px 20px 10px; color:#333333;">
-                            
-                            <h2 style="margin-top:0; color:#2e2e2e; font-size:18px;">
-                                Estimado(a) {{ usuario }},
-                            </h2>
-
-                            <p style="font-size:15px; line-height:1.6; margin-bottom:18px;">
-                                Se informa que la orden <strong>#{{ orden }}</strong> 
-                                {% if nivel == 'VENCIDO' %}ha superado el tiempo límite de atención.{% else %}está próxima a vencer.{% endif %}
+                        <!-- USUARIOS -->
+                        <div style="margin-bottom:20px;">
+                            <p style="font-size:14px; margin-bottom:8px;">
+                                <strong>Usuarios asignados:</strong>
                             </p>
 
-                            <div style="background-color:#f8f9fa; border-left:4px solid #831F46; padding:15px; margin-bottom:20px;">
-                                <p style="margin:0; font-size:14px; color:#555;">
-                                    <strong>Resumen:</strong> {{ resumen }}<br>
-                                    <strong>Vencimiento:</strong> <span style="color:#d9534f; font-weight:bold;">{{ fecha_vencimiento|date:"d/m/Y H:i" }}</span>
-                                </p>
-                            </div>
+                            <ul style="padding-left:18px; margin:0; font-size:13px;">
+                                {% for u in usuarios %}
+                                    <li>{{ u }}</li>
+                                {% empty %}
+                                    <li>Sin usuarios asignados</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
 
-                            <p style="font-size:14px; color:#666; font-style:italic;">
-                                {% if nivel == '30%' %}
-                                    * Este es un aviso preventivo para los encargados asignados.
-                                {% elif nivel == '10%' %}
-                                    * Aviso crítico enviado al Líder de Área.
-                                {% else %}
-                                    * Aviso de incumplimiento enviado a la Dirección.
-                                {% endif %}
-                            </p>
+                        <!-- MENSAJE SEGÚN NIVEL -->
+                        <p style="font-size:14px; color:#666; font-style:italic;">
+                            {% if nivel == '50%' %}
+                                * Este es un aviso preventivo para los encargados asignados (50% del tiempo restante).
+                            {% elif nivel == '30%' %}
+                                * Aviso crítico: queda menos del 30% del tiempo disponible.
+                            {% elif nivel == 'VENCIDO' %}
+                                * Aviso de incumplimiento enviado a la Dirección.
+                            {% endif %}
+                        </p>
 
-                            <div style="text-align:center; margin: 30px 0 10px 0;">
-                                <a href="{{ url }}"
-                                   style="background-color:#831F46; color:#ffffff; text-decoration:none;
-                                   padding:14px 28px; border-radius:6px; display:inline-block; font-size:15px; font-weight:bold;">
-                                    Revisar Orden #{{ orden }}
-                                </a>
-                            </div>
+                        <!-- BOTÓN -->
+                        <div style="text-align:center; margin: 30px 0 10px 0;">
+                            <a href="{{ url_orden }}"
+                               style="background-color:#831F46; color:#ffffff; text-decoration:none;
+                               padding:14px 28px; border-radius:6px; display:inline-block; font-size:15px; font-weight:bold;">
+                                Revisar Orden #{{ orden.orden }}
+                            </a>
+                        </div>
 
-                        </td>
-                    </tr>
+                    </td>
+                </tr>
 
-                    <tr>
-                        <td style="padding: 18px; border-top: 1px solid #e2e2e2; text-align:center;">
-                            <p style="margin:0; font-size:11px; color:#8a8a8a; line-height:1.5;">
-                                © {{ ahora|default:"2026" }}  
-                                DGIC - Dirección General de Informática y Telecomunicaciones 
-                                <br>
-                                Mensaje generado automáticamente por el sistema de monitoreo SLA.
-                            </p>
-                        </td>
-                    </tr>
+                <!-- FOOTER -->
+                <tr>
+                    <td style="padding: 18px; border-top: 1px solid #e2e2e2; text-align:center;">
+                        <p style="margin:0; font-size:11px; color:#8a8a8a; line-height:1.5;">
+                            © {{ ahora|default:"2026" }}  
+                            DGIC - Dirección General de Informática y Telecomunicaciones 
+                            <br>
+                            Mensaje generado automáticamente por el sistema de monitoreo SLA.
+                        </p>
+                    </td>
+                </tr>
 
-                </table>
+            </table>
 
-            </td>
-        </tr>
-    </table>
+        </td>
+    </tr>
+</table>
+
 
 </body>
 </html>

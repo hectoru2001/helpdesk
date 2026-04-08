@@ -20,7 +20,7 @@ urlpatterns = [
     path('ordenes_usuario/<int:user_id>/', EstadoUsuariosView.as_view(), name='ordenes_usuario'),
     path('estado_usuarios/<int:user_id>/', OrdenesPorUsuarioView.as_view(), name='detalle_usuario_ordenes'),
     path("duplicar_orden/", DuplicarOrden.as_view(), name='duplicar_orden'),
-
+    path("test_checador/enviar_correo/", TestAlertasView.as_view(), name='test_checador_enviar_correo'),
 
     # === Endpint órdenes asignadas === #
     path("actualizar_estatus/proceso/", actualizar_estatus_api),

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h4> Simulador de Alertas</h4>
+
+{% if orden %}
+<div class="card p-3">
+
+    <p><strong>Orden:</strong> #{{ orden.orden }}</p>
+    <p><strong>Inicio:</strong> {{ orden.fecha_inicio }}</p>
+    <p><strong>Vencimiento actual:</strong> <span id="vencimiento">{{ orden.fecha_vencimiento }}</span></p>
+
+    <hr>
+
+    <div class="d-flex gap-2">
+
+        <button class="btn btn-success" onclick="simular(50)">
+            Simular 50%
+        </button>
+
+        <button class="btn btn-warning" onclick="simular(30)">
+            Simular 30%
+        </button>
+
+        <button class="btn btn-danger" onclick="simular(0)">
+            Simular Vencido
+        </button>
+
+    </div>
+{% else %}
+    <p>No hay órdenes en proceso</p>
+{% endif %}
+
+</div>
+
+<script>
+function simular(porcentaje) {
+
+    fetch("", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify({
+            porcentaje: porcentaje
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        location.reload();
+    });
+}
+</script>
+
+{% endblock %}

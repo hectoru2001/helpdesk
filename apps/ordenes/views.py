@@ -1367,3 +1367,73 @@ def guardar_comentario(request):
 
     return JsonResponse({'ok': True})
         
+class TestAlertasView(TemplateView):
+    template_name = "test_alertas.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        orden = Orden.objects.filter(estatus='E').first()
+
+        if orden:
+            ahora = timezone.now()
+
+            #orden.fecha_inicio = ahora
+
+            #orden.fecha_vencimiento = ahora + timezone.timedelta(hours=8)
+
+            #orden.save()
+
+        context["orden"] = orden
+        return context
+
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body or "{}")
+            porcentaje = int(data.get("porcentaje", 50))
+
+            orden = Orden.objects.filter(estatus='E').first()
+
+            if not orden:
+                return JsonResponse({"ok": False, "error": "No hay orden"})
+
+            ahora = timezone.now()
+
+            # 🔥 asegurar fechas válidas
+            if not orden.fecha_inicio:
+                orden.fecha_inicio = ahora
+
+            if not orden.fecha_vencimiento:
+                orden.fecha_vencimiento = ahora + timedelta(hours=8)
+
+            inicio = orden.fecha_inicio
+            vencimiento = orden.fecha_vencimiento
+
+            duracion_total = (vencimiento - inicio).total_seconds()
+
+            if duracion_total <= 0:
+                # fallback seguro
+                duracion_total = 8 * 3600
+
+            # 🎯 calcular nuevo restante
+            nuevo_restante = (porcentaje / 100) * duracion_total
+
+            # 🔥 nuevo vencimiento basado en AHORA
+            nuevo_vencimiento = ahora + timedelta(seconds=nuevo_restante)
+
+            orden.fecha_vencimiento = nuevo_vencimiento
+            orden.save()
+
+            print(f"Simulación {porcentaje}% → nuevo vencimiento: {nuevo_vencimiento}")
+
+            return JsonResponse({
+                "ok": True,
+                "nuevo_vencimiento": str(nuevo_vencimiento)
+            })
+
+        except Exception as e:
+            print("ERROR:", e)
+            return JsonResponse({
+                "ok": False,
+                "error": str(e)
+            })
