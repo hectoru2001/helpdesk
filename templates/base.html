@@ -170,6 +170,17 @@
                     </div>
                 </li>
                 {% endif %}
+
+                <li class="nav-item">
+                    <a href="#reportesSubmenu" class="nav-link" data-bs-toggle="collapse" aria-expanded="false">
+                        <i class="bi bi-file-earmark-bar-graph-fill nav-icon"></i>
+                        <span class="nav-text">Bitácora</span>
+                        <i class="bi bi-chevron-right nav-chevron ms-1"></i>
+                    </a>
+                    <div class="submenu collapse" id="reportesSubmenu">
+                        <a href="{% url 'bitacora_ordenes' %}" class="submenu-link">Generar Bitácora</a>
+                    </div>
+                </li>
             </ul>
         </div>
     </div>

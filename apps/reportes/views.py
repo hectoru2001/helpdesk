@@ -1,17 +1,20 @@
 from django.http import HttpResponse
 from django.template.loader import get_template
-from django.db.models import Count, Q, Avg, F, ExpressionWrapper, DurationField, Sum
-from datetime import datetime
-from xhtml2pdf import pisa
-from apps.ordenes.models import UsuariosxOrden, SolicitantexOrden, Orden
-from apps.usuarios.models import ExtraUsuarios
+from django.db.models import Count, Q, Avg, Prefetch
 from django.views.generic import TemplateView
+from django.views import View
 from django.contrib.auth.models import User
-from datetime import timedelta
 from django.conf import settings
-from core.decorators.permisos import administrador_required
 from django.utils.decorators import method_decorator
 from django.utils import timezone
+from datetime import datetime, timedelta
+from xhtml2pdf import pisa
+from openpyxl import Workbook
+from openpyxl.styles import Font
+
+from apps.ordenes.models import UsuariosxOrden, SolicitantexOrden, Orden
+from apps.usuarios.models import ExtraUsuarios
+from core.decorators.permisos import administrador_required
 
 USUARIOS_EXTRA_POR_CLASIFICACION = {
         'T': [554, 545],   # Técnicos (admins incluidos)
@@ -293,13 +296,9 @@ class ReporteCalificaciones(TemplateView):
 
         return context
       
-from django.utils import timezone
-from datetime import timedelta
-from django.views.generic import TemplateView
-from django.utils.decorators import method_decorator
-
 @method_decorator(administrador_required(True), name='dispatch')
 class ReporteOrdenesTiempoView(TemplateView):
+    
     template_name = "ordenes_ordenes_tiempos.html"
 
     def get_context_data(self, **kwargs):
@@ -412,3 +411,94 @@ class ReporteOrdenesTiempoView(TemplateView):
 
         context["reporte"] = reporte
         return context
+    
+class BitacoraView(TemplateView):
+    template_name = "bitacora.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        fecha_inicio = self.request.GET.get('fecha_inicio')
+        fecha_fin = self.request.GET.get('fecha_fin')
+        user = self.request.user
+
+        ordenes = Orden.objects.select_related('aplicacion').prefetch_related(
+            Prefetch(
+                'usuarios_orden',
+                queryset=UsuariosxOrden.objects.select_related('realiza')
+            )
+        ).filter(
+            Q(usuarios_orden__realiza=user) |
+            Q(usuarios_orden__asigna=user)
+        ).distinct()
+
+        if fecha_inicio and fecha_fin:
+            ordenes = ordenes.filter(
+                fecha_captura__date__range=[fecha_inicio, fecha_fin]
+            )
+
+        context['ordenes'] = ordenes.order_by('-fecha_captura')
+        context['fecha_inicio'] = fecha_inicio
+        context['fecha_fin'] = fecha_fin
+
+        return context
+
+class BitacoraExcelView(View):
+
+    def get(self, request, *args, **kwargs):
+        fecha_inicio = request.GET.get('fecha_inicio')
+        fecha_fin = request.GET.get('fecha_fin')
+        user = request.user
+
+        # 🔍 Query (igual que tu bitácora)
+        ordenes = Orden.objects.select_related('aplicacion').prefetch_related(
+            'usuarios_orden__realiza'
+        ).filter(
+            Q(usuarios_orden__realiza=user) |
+            Q(usuarios_orden__asigna=user)
+        ).distinct()
+
+        if fecha_inicio and fecha_fin:
+            ordenes = ordenes.filter(
+                fecha_captura__date__range=[fecha_inicio, fecha_fin]
+            )
+
+        ordenes = ordenes.order_by('-fecha_captura')
+
+        # 📊 Crear Excel
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Bitácora"
+
+        # 🔥 Encabezados
+        headers = ['Fecha', 'Orden', 'Oficio', 'Aplicación', 'Usuario', 'Descripción']
+        ws.append(headers)
+
+        # Negritas
+        for col in ws[1]:
+            col.font = Font(bold=True)
+
+        # 📌 Datos
+        for orden in ordenes:
+            usuarios = [
+                uo.realiza.get_full_name() or uo.realiza.username
+                for uo in orden.usuarios_orden.all()
+            ]
+
+            ws.append([
+                orden.fecha_captura.strftime('%Y-%m-%d %H:%M'),
+                orden.orden,
+                orden.oficio,
+                orden.aplicacion.descripcion if orden.aplicacion else '',
+                ", ".join(usuarios) if usuarios else 'Sin usuario',
+                orden.descripcion
+            ])
+
+        # 📦 Respuesta HTTP
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename=bitacora.xlsx'
+
+        wb.save(response)
+        return response

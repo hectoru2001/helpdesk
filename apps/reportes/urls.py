@@ -10,4 +10,6 @@ urlpatterns = [
     path('reporte_ordenes_dependencia/', reporte_ordenes_por_dependencia_pdf, name='reporte_dependencia_usuario'),
     path('reporte_calificaciones', ReporteCalificaciones.as_view(), name='reporte_calificaciones'),
     path('reporte_ordenes_tiempo/', ReporteOrdenesTiempoView.as_view(), name='reporte_ordenes_tiempo'),
+    path('bitacora_ordenes/', BitacoraView.as_view(), name='bitacora_ordenes'),
+    path('bitacora_ordenes_excel/', BitacoraExcelView.as_view(), name='bitacora_excel'),
 ]

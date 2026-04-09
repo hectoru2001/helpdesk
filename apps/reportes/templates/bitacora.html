@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} <h5 class="title-secondary"> Bitácora de órdenes </h5> {% endblock %}
+
+{% block content %}
+{% include 'mensajes.html' %}
+
+<div class="container-fluid">
+
+    <!-- Filtros -->
+    <form method="get" class="row g-3 align-items-end mb-3">
+
+        <div class="col-md-3">
+            <label class="form-label">Fecha inicio</label>
+            <input type="date"
+                   name="fecha_inicio"
+                   class="form-control"
+                   value="{{ request.GET.fecha_inicio }}"
+                   autofocus>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Fecha fin</label>
+            <input type="date"
+                   name="fecha_fin"
+                   class="form-control"
+                   value="{{ request.GET.fecha_fin }}">
+        </div>
+
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">
+                Filtrar
+            </button>
+        </div>
+
+        <div class="col-md-2 text-end">
+            <a href="{% url 'bitacora_excel' %}?{{ request.GET.urlencode }}"
+               class="btn btn-success w-100">
+                Generar Excel
+            </a>
+        </div>
+
+    </form>
+
+    <!-- Tabla -->
+    <div id="tableContainer">
+        <div class="table-container">
+
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Orden</th>
+                        <th>Oficio</th>
+                        <th>Aplicación</th>
+                        <th>Usuario</th>
+                        <th>Descripción</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    {% for orden in ordenes %}
+                    <tr class="hover-row">
+                        <td class="text-nowrap">{{ orden.fecha_captura }}</td>
+                        <td class="fw-bold">{{ orden.orden }}</td>
+                        <td>{{ orden.oficio }}</td>
+                        <td>{{ orden.aplicacion.descripcion }}</td>
+
+                        <td 
+                            title="{% for uo in orden.usuarios_orden.all %}{{ uo.realiza.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}"
+                        >
+                            {% for uo in orden.usuarios_orden.all|slice:":2" %}
+                                {{ uo.realiza.get_full_name }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+
+                            {% if orden.usuarios_orden.all|length > 2 %}
+                                <span class="text-primary">
+                                    (+{{ orden.usuarios_orden.all|length|add:"-2" }})
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>{{ orden.descripcion }}</td>
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4">
+                            <div class="text-muted">
+                                No hay registros con los filtros aplicados
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+</div>
+
+<style>
+.hover-row:hover {
+    background-color: #f8f9fa;
+    transition: 0.2s;
+}
+</style>
+
+{% endblock %}
