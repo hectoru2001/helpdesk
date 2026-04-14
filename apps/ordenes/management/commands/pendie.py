@@ -61,21 +61,31 @@ class Command(BaseCommand):
 
                 correos_usuarios = list(set(correos_usuarios))
 
+                # Correos por categoría
+                if o.categoria == "programadores":
+                    correos_categoria = ["jaolague@juarez.gob.mx"]
+                else:
+                    correos_categoria = ["jesus.chavez@juarez.gob.mx"]
+
+                # Base de destinatarios
+                destinatarios_base = correos_usuarios + correos_categoria
+
+
                 if 30 < porcentaje_restante <= 50 and o.nivel_alerta == 0:
-                    if correos_usuarios:
-                        self.enviar(o, "50%", correos_usuarios, nombres_usuarios)
+                    if destinatarios_base:
+                        self.enviar(o, "50%", destinatarios_base, nombres_usuarios)
                         o.nivel_alerta = 1
                         o.save(update_fields=["nivel_alerta"])
 
                 elif 0 < porcentaje_restante <= 30 and o.nivel_alerta == 1:
-                    destinatarios = correos_usuarios + ["dgic.h_uribe@juarez.gob.mx"]
+                    destinatarios = destinatarios_base + ["dgic.direccion@juarez.gob.mx"]
 
                     self.enviar(o, "30%", destinatarios, nombres_usuarios)
                     o.nivel_alerta = 2
                     o.save(update_fields=["nivel_alerta"])
 
                 elif porcentaje_restante <= 0 and o.nivel_alerta == 2:
-                    destinatarios = correos_usuarios + ["dgic.h_uribe@juarez.gob.mx"]
+                    destinatarios = destinatarios_base + ["dgic.direccion@juarez.gob.mx"]
 
                     self.enviar(o, "VENCIDO", destinatarios, nombres_usuarios)
                     o.nivel_alerta = 3
