@@ -749,6 +749,8 @@ def detalle_orden_api(request, pk):
 
     # 🔹 CAMBIO: Obtener todos los usuarios asignados a esta orden
     asignaciones = UsuariosxOrden.objects.filter(orden=orden).select_related('realiza')
+    print(f"Asignaciones encontradas para orden {asignaciones.count()}: {[a.realiza.id for a in asignaciones]}")
+    usuarios_asignados = [a.realiza.id for a in asignaciones]
 
     # Creamos una lista con los detalles de cada solución/técnico
     soluciones_detalladas = []
@@ -769,6 +771,7 @@ def detalle_orden_api(request, pk):
         "descripcion": orden.descripcion,
         "estatus": orden.get_estatus_display(),
         "solucion_general": orden.solucion if orden.solucion else "",
+        "usuarios_asignados": usuarios_asignados,
 
         # 🔹 NUEVA ESTRUCTURA: Lista de soluciones de todos los usuarios
         "todas_las_soluciones": soluciones_detalladas,
@@ -1165,6 +1168,8 @@ def usuarios_disponibles(request, orden_id):
 
     return JsonResponse({'usuarios': lista})
 
+from django.db import transaction
+
 @require_POST
 def reasignar_orden(request: HttpRequest):
     try:
@@ -1173,6 +1178,7 @@ def reasignar_orden(request: HttpRequest):
         orden_id = data.get('orden_id')
         usuarios_ids = data.get('usuarios_ids', [])
         comentario = data.get('comentario', '')
+        modo = data.get("modoReasignacion")
 
         if not orden_id or not usuarios_ids:
             return JsonResponse(
@@ -1190,7 +1196,6 @@ def reasignar_orden(request: HttpRequest):
 
         orden = get_object_or_404(Orden, pk=orden_id)
         usuario_que_asigna = request.user
-
         usuarios_nuevos = User.objects.filter(id__in=usuarios_ids)
 
         if not usuarios_nuevos.exists():
@@ -1199,30 +1204,75 @@ def reasignar_orden(request: HttpRequest):
                 status=400
             )
 
-        UsuariosxOrden.objects.filter(orden=orden).delete()
         timestamp = timezone.localtime().strftime('%d/%m/%Y %H:%M')
-        registros = []
-        for usuario in usuarios_nuevos:
-            registros.append(
-                UsuariosxOrden(
-                    orden=orden,
-                    realiza=usuario,
-                    asigna=usuario_que_asigna,
-                    estatus="A",
-                    estatus_orden="A",
-                    comentarios=(
-                        f"[{timestamp}] Reasignación: {comentario}"
-                        if comentario
-                        else f"[{timestamp}] Reasignación"
+
+        with transaction.atomic():
+
+            existentes_qs = UsuariosxOrden.objects.filter(orden=orden)
+            existentes_ids = set(existentes_qs.values_list('realiza_id', flat=True))
+
+            nuevos_registros = []
+
+            if modo == "reiniciar":
+                # BORRARTode
+                existentes_qs.delete()
+
+                orden.estatus = "A"
+                orden.fecha_inicio = None
+                orden.fecha_vencimiento = None
+                orden.save(update_fields=['estatus', 'fecha_inicio', 'fecha_vencimiento'])
+
+                for usuario in usuarios_nuevos:
+                    nuevos_registros.append(
+                        UsuariosxOrden(
+                            orden=orden,
+                            realiza=usuario,
+                            asigna=usuario_que_asigna,
+                            estatus="A",
+                            estatus_orden="A",
+                            comentarios=(
+                                f"[{timestamp}] Reasignación (reinicio): {comentario}"
+                                if comentario
+                                else f"[{timestamp}] Reasignación (reinicio)"
+                            )
+                        )
                     )
-                )
-            )
 
-        UsuariosxOrden.objects.bulk_create(registros)
+            else:
+                # MANTENER PROGRESO
+                for usuario in usuarios_nuevos:
 
+                    if usuario.id not in existentes_ids:
+                        # NUEVO
+                        nuevos_registros.append(
+                            UsuariosxOrden(
+                                orden=orden,
+                                realiza=usuario,
+                                asigna=usuario_que_asigna,
+                                estatus="A",
+                                estatus_orden="A",
+                                comentarios=(
+                                    f"[{timestamp}] Asignado sin reinicio: {comentario}"
+                                    if comentario
+                                    else f"[{timestamp}] Asignado sin reinicio"
+                                )
+                            )
+                        )
+
+
+                # Quitar usuarios que ya no están seleccionados
+                usuarios_a_remover = existentes_qs.exclude(realiza_id__in=usuarios_ids)
+                usuarios_a_remover.delete()
+
+            # CREAR NUEVOS
+            if nuevos_registros:
+                UsuariosxOrden.objects.bulk_create(nuevos_registros)
+
+        # NOTIFICACIONES 
         for usuario in usuarios_nuevos:
 
             if notificaciones_activadas(usuario.id):
+
                 Notificar.crear(
                     usuario=usuario,
                     mensaje=f"Has sido reasignado a la orden #{orden.orden}.",
@@ -1246,28 +1296,28 @@ def reasignar_orden(request: HttpRequest):
                 if 0 > 1:
                     Notificar.enviar_telegram(
                         f"""
-                    🔔 <b>Reasignación de Orden</b>
+                            🔔 <b>Reasignación de Orden</b>
 
-                    👤 <b>Usuario:</b> {usuario.get_full_name() or usuario.username}
-                    📦 <b>Orden:</b> #{orden.orden}
-                    💬 <b>Descripción:</b> {orden.descripcion}
-                    📌 <b>Acción:</b> Usuario reasignado a orden
+                            👤 <b>Usuario:</b> {usuario.get_full_name() or usuario.username}
+                            📦 <b>Orden:</b> #{orden.orden}
+                            💬 <b>Descripción:</b> {orden.descripcion}
+                            📌 <b>Acción:</b> Usuario reasignado a orden
 
-                    🔗 Ver orden:
-                        {(f"https://hlpdesk.gobjuarez.mpio/ordenes/detalles/{orden.orden}")}""".strip() 
-                    )
+                            🔗 Ver orden:
+                            {(f"https://hlpdesk.gobjuarez.mpio/ordenes/detalles/{orden.orden}")}
+                            """.strip()
+                        )
 
         return JsonResponse({
             "success": True,
             "message": f"Orden {orden.orden} reasignada correctamente.",
             "total_usuarios": usuarios_nuevos.count(),
+            "modo": modo
         })
 
     except json.JSONDecodeError:
-        return JsonResponse(
-            {"error": "JSON inválido."},
-            status=400
-        )
+        return JsonResponse({"error": "JSON inválido."}, status=400)
+
     except Exception as e:
         return JsonResponse(
             {"error": f"Error interno: {str(e)}"},

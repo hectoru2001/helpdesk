@@ -75,22 +75,36 @@ function cargarUsuariosReasignacion(ordenId) {
             ).join('');
 
             contenedor.innerHTML = `
-                <div class="mb-3">
-                    <label class="form-label">Usuarios</label>
-                    <select id="usuarioReasignar" class="form-select" multiple>
-                        ${opciones}
-                    </select>
-                </div>
+                
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Modo de reasignación</strong></label>
+                        <select id="modoReasignacion" class="form-select">
+                            <option value="mantener" selected> Mantener progreso actual</option>
+                            <option value="reiniciar"> Reiniciar orden desde cero</option>
+                        </select>
+                        <div class="form-text">
+                            "Mantener" conserva el avance de los usuarios actuales. "Reiniciar" borra todo el progreso.
+                        </div>
+                    </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Comentario</label>
-                    <textarea id="comentarioReasignar" class="form-control" rows="3"></textarea>
-                </div>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Usuarios</strong></label>
+                        <select class="form-select" id="usuarioReasignar" multiple>
+                            ${opciones}
+                        </select>
+                    </div>
 
-                <button class="btn btn-primary w-100" id="btn-confirmar-reasignacion">
-                    Confirmar reasignación
-                </button>
-            `;
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Comentario</strong></label>
+                        <textarea id="comentarioReasignar" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <button id="btn-confirmar-reasignacion"
+                            class="btn btn-primary w-100"
+                            data-orden-id="${ordenId}">
+                        Confirmar reasignación
+                    </button>
+                `;
 
             $('#usuarioReasignar').select2({
                 placeholder: "Selecciona los usuarios...",
@@ -111,6 +125,7 @@ function cargarUsuariosReasignacion(ordenId) {
 // --- Evento principal cuando carga el DOM ---
 document.addEventListener("DOMContentLoaded", function () {
     const modalReasignar = document.getElementById("reasignarOrdenModal");
+    let usuariosAsignados = [];
 
     modalReasignar.addEventListener("show.bs.modal", function (event) {
         const button = event.relatedTarget;
@@ -128,6 +143,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(res => res.json())
             .then(data => {
 
+                usuariosAsignados = data.usuarios_asignados || [];
                 modalBody.innerHTML = `
                     <div class="p-3 border rounded mb-3">
 
@@ -224,6 +240,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
 
                 contenedor.innerHTML = `
+                
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Modo de reasignación</strong></label>
+                        <select id="modoReasignacion" class="form-select">
+                            <option value="mantener" selected> Mantener progreso actual</option>
+                            <option value="reiniciar"> Reiniciar orden desde cero</option>
+                        </select>
+                        <div class="form-text">
+                            "Mantener" conserva el avance de los usuarios actuales. "Reiniciar" borra todo el progreso.
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label"><strong>Usuarios</strong></label>
                         <select class="form-select" id="usuarioReasignar" multiple>
@@ -248,6 +276,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     dropdownParent: $('#reasignarOrdenModal'),
                     width: '100%'
                 });
+
+                const modo = document.getElementById("modoReasignacion")?.value;
+
+                if (modo === "mantener" && usuariosAsignados.length > 0) {
+                    $('#usuarioReasignar')
+                        .val(usuariosAsignados.map(String))
+                        .trigger('change');
+                }
             })
             .catch(err => {
                 console.error(err);
@@ -283,7 +319,8 @@ document.addEventListener("DOMContentLoaded", function () {
             body: JSON.stringify({
                 orden_id: ordenId,
                 usuarios_ids: usuariosIds,
-                comentario: comentario
+                comentario: comentario,
+                modoReasignacion: document.getElementById("modoReasignacion").value
             })
         })
             .then(res => {

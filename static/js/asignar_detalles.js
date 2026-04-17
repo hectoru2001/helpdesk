@@ -641,6 +641,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     
     const modalReasignar = document.getElementById("reasignarOrdenModal");
+    let usuariosAsignados = [];
 
     modalReasignar.addEventListener("show.bs.modal", function (event) {
         const button = event.relatedTarget;
@@ -658,6 +659,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(res => res.json())
             .then(data => {
 
+                usuariosAsignados = data.usuarios_asignados || [];
                 modalBody.innerHTML = `
                     <div class="p-3 border rounded mb-3">
 
@@ -754,6 +756,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
 
                 contenedor.innerHTML = `
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Modo de reasignación</strong></label>
+                        <select id="modoReasignacion" class="form-select">
+                            <option value="mantener" selected> Mantener progreso actual</option>
+                            <option value="reiniciar"> Reiniciar orden desde cero</option>
+                        </select>
+                        <div class="form-text">
+                            "Mantener" conserva el avance de los usuarios actuales. "Reiniciar" borra todo el progreso.
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label"><strong>Usuarios</strong></label>
                         <select class="form-select" id="usuarioReasignar" multiple>
@@ -778,6 +792,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     dropdownParent: $('#reasignarOrdenModal'),
                     width: '100%'
                 });
+
+                const modo = document.getElementById("modoReasignacion")?.value;
+
+                if (modo === "mantener" && usuariosAsignados.length > 0) {
+                    $('#usuarioReasignar')
+                        .val(usuariosAsignados.map(String))
+                        .trigger('change');
+                }
+
             })
             .catch(err => {
                 console.error(err);
@@ -814,7 +837,8 @@ document.addEventListener("DOMContentLoaded", function () {
             body: JSON.stringify({
                 orden_id: ordenId,
                 usuarios_ids: usuariosIds,
-                comentario: comentario
+                comentario: comentario,
+                modoReasignacion: document.getElementById("modoReasignacion").value
             })
         })
             .then(res => {
