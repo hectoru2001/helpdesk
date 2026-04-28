@@ -102,7 +102,9 @@ class OrdenCreateTicket(CreateView):
                         tipo="task"
                     )
 
-
+                    if orden.oficio != "S/N":
+                        oficio_texto = f" ({orden.oficio})"
+                        
                     Notificar.correo_html(
                         user.email,
                         mensaje,
@@ -127,6 +129,7 @@ class OrdenCreateTicket(CreateView):
                             else "Usuario"
                         ),
                         "resumen": orden.descripcion,
+                        "oficio_texto": oficio_texto if orden.oficio != "S/N" else "",
                         "fecha_creacion": orden.fecha_captura,
                     }
 

@@ -26,7 +26,7 @@
                         Consulta el listado de órdenes registradas, su estado, fechas y seguimiento dentro del sistema.
                     </p>
 
-                    <a href="#" class="btn btn-primary">
+                    <a href="{% url 'ordenes_por_usuario' %}" class="btn btn-primary">
                         Ver reporte
                     </a>
 
@@ -49,7 +49,7 @@
                         Visualiza las órdenes agrupadas por dependencia y analiza la carga de trabajo por área.
                     </p>
 
-                    <a href="#" class="btn btn-success">
+                    <a href="{% url 'ordenes_por_dependencia' %}" class="btn btn-success">
                         Ver reporte
                     </a>
 
@@ -72,7 +72,30 @@
                         Consulta estadísticas de satisfacción y calificación del servicio proporcionado.
                     </p>
 
-                    <a href="#" class="btn btn-warning">
+                    <a href="{% url 'reporte_calificaciones' %}" class="btn btn-warning">
+                        Ver reporte
+                    </a>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Reporte 4 -->
+        <div class="col-md-4">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+
+                    <i class="fas fa-clock fa-3x text-info mb-3"></i>
+
+                    <h5 class="card-title">
+                        Reporte por Tiempos
+                    </h5>
+
+                    <p class="card-text text-muted">
+                        Analiza los tiempos de atención y resolución de las órdenes para identificar áreas de mejora.
+                    </p>
+
+                    <a href="{% url 'reporte_ordenes_tiempo' %}" class="btn btn-info">
                         Ver reporte
                     </a>
 

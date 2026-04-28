@@ -39,10 +39,21 @@
                                 Estimad@ {{ nombre_usuario }},
                             </h2>
 
-                            <p style="font-size:15px; line-height:1.6; margin-bottom:18px;">
-                                Su orden ha sido registrada exitosamente con el número <strong>#{{ orden_id }}</strong>. 
-                                El personal correspondiente ha sido notificado y procederá a atender su solicitud.
-                            </p>
+                            {% if oficio_texto %}
+
+                                <p style="font-size:15px; line-height:1.6; margin-bottom:18px;">
+                                    Su orden ha sido registrada exitosamente con el número <strong>#{{ orden_id }}</strong> con el oficio <strong>{{ oficio_texto }}</strong>. 
+                                    El personal correspondiente ha sido notificado y procederá a atender su solicitud.
+                                </p>
+
+                            {% else %}
+
+                                <p style="font-size:15px; line-height:1.6; margin-bottom:18px;">
+                                    Su orden ha sido registrada exitosamente con el número <strong>#{{ orden_id }}</strong>. 
+                                    El personal correspondiente ha sido notificado y procederá a atender su solicitud.
+                                </p>
+
+                            {% endif %}
 
                             <p style="font-size:15px; line-height:1.6; margin-bottom:15px;">
                                 <strong>Fecha de creación:</strong><br>
