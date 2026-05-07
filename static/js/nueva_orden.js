@@ -252,10 +252,11 @@ document.addEventListener("DOMContentLoaded", () => {
             "beneficiado_departamento",
             "beneficiado_telefono",
             "beneficiado_puesto",
-            "aplicacion",
-            "clasificacion",
+            "id_aplicacion",
+            "id_clasificacion",
+            "id_categoria",
             "problema",
-            "descripcion"
+            "id_descripcion"
         ];
 
         camposRequeridos.forEach(id => {
