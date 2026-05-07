@@ -12,6 +12,10 @@ from django.views.generic import CreateView, ListView, DetailView, UpdateView, D
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
+from core.decorators.permisos import administrador_required
+from django.utils.decorators import method_decorator
+
+@method_decorator(administrador_required(False), name='dispatch')
 
 class ConfiguracionesView(TemplateView):
     template_name = "configuraciones.html"
