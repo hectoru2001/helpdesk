@@ -84,12 +84,22 @@ class Command(BaseCommand):
                     o.nivel_alerta = 2
                     o.save(update_fields=["nivel_alerta"])
 
-                elif porcentaje_restante <= 0 and o.nivel_alerta == 2:
-                    destinatarios = destinatarios_base + ["dgic.direccion@juarez.gob.mx"]
+                elif porcentaje_restante <= 0:
+                    hoy = timezone.localdate()
 
-                    self.enviar(o, "VENCIDO", destinatarios, nombres_usuarios)
-                    o.nivel_alerta = 3
-                    o.save(update_fields=["nivel_alerta"])
+                    if o.ultima_alerta_vencido != hoy:
+
+                        destinatarios = destinatarios_base + ["dgic.direccion@juarez.gob.mx"]
+
+                        self.enviar(o, "VENCIDO", destinatarios, nombres_usuarios)
+
+                        o.nivel_alerta = 3
+                        o.ultima_alerta_vencido = hoy
+
+                        o.save(update_fields=[
+                            "nivel_alerta",
+                            "ultima_alerta_vencido"
+                        ])
 
             except Exception as e:
                 self.stdout.write(self.style.ERROR(

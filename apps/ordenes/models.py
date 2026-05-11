@@ -51,7 +51,7 @@ class Orden(models.Model):
     fecha_terminado = models.DateTimeField(**vacios)
     fecha_vencimiento = models.DateTimeField(**vacios)
     nivel_alerta = models.IntegerField(default=0, blank=True, null=True)
-
+    ultima_alerta_vencido = models.DateField(blank=True, null=True)
 
 
 
