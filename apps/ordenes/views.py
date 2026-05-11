@@ -219,6 +219,11 @@ class DetallesOrdenes(DetailView):
         context = super().get_context_data(**kwargs)
         orden = self.get_object()
 
+        orden_anterior = Orden.objects.filter(orden__lt=orden.orden).order_by('-orden').first()
+        orden_siguiente = Orden.objects.filter(orden__gt=orden.orden).order_by('orden').first()
+        context['orden_anterior'] = orden_anterior
+        context['orden_siguiente'] = orden_siguiente
+
         # 🔹 Obtener todos los registros de usuarios asignados a esta orden
         usuarios_orden = orden.usuarios_orden.all().select_related('realiza')
         

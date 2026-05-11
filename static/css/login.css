@@ -33,7 +33,7 @@ html, body {
 
 body {
     font-family: 'Inter', sans-serif;
-    background: url('../img/bg-pyj.png') no-repeat center center;
+    background: url('../img/bg-helpdesk.png') no-repeat center center;
     background-size: cover; 
     background-attachment: fixed;
     color: white;
@@ -42,6 +42,27 @@ body {
     flex-direction: column;
     padding: 24px;
     position: relative;
+}
+
+.system-banner{
+    width: 100%;
+    background: linear-gradient(90deg, rgba(131,31,70,0.85) 0%, rgba(82,91,104,0.85) 100%);
+    color: white;
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    padding: 18px 20px;
+
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+}
+
+@media (max-width: 768px){
+    .system-banner{
+        font-size: 1.3rem;
+        padding: 15px;
+        letter-spacing: 1px;
+    }
 }
 
 .login-wrapper {
@@ -78,7 +99,7 @@ body {
     overflow: hidden;
     box-shadow: var(--shadow-lg);
     position: relative;
-    margin: 13% 0;
+    margin: 11% 0;
 }
 
 .login-hero {

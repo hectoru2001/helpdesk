@@ -8,6 +8,25 @@
 
 {% block content %}
 <div class="container-fluid py-3">
+    {% if tipo_usuario == "A" %}
+        <div class="container-fluid py-3 d-flex justify-content-between">
+            
+            {% if orden_anterior %}
+                <a class="btn btn-outline-primary" href="{% url 'detalle_orden' orden_anterior.orden %}">
+                    Anterior
+                </a>
+            {% else %}
+                <span></span>
+            {% endif %}
+
+            {% if orden_siguiente %}
+                <a class="btn btn-outline-primary" href="{% url 'detalle_orden' orden_siguiente.orden %}">
+                    Siguiente
+                </a>
+            {% endif %}
+
+        </div>
+    {% endif %}
     <div class="row">
         <!-- Columna principal -->
         <div class="col-lg-8">
